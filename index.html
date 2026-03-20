@@ -432,6 +432,102 @@
     text-align: center; margin-bottom: 1rem;
   }
 
+  /* ===== SUPPLIER DETAIL CARD ===== */
+  .supplier-detail-card {
+    background: var(--navy-card);
+    border: 1px solid var(--border-light);
+    border-radius: 12px; padding: 1.4rem 1.6rem;
+    margin-top: 1rem;
+  }
+  .sdc-header {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem;
+    border-bottom: 1px solid var(--border); padding-bottom: 0.8rem;
+  }
+  .sdc-name { font-size: 1.05rem; font-weight: 800; color: var(--gold); }
+  .sdc-meta { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
+  .sdc-location { font-size: 0.75rem; color: var(--text-secondary); background: rgba(255,255,255,0.06); padding: 0.2rem 0.6rem; border-radius: 20px; }
+  .sdc-tier-badge { font-size: 0.72rem; font-weight: 700; padding: 0.2rem 0.6rem; border-radius: 4px; }
+  .sdc-tier-1 { background: rgba(201,168,76,0.2); color: var(--gold); border: 1px solid var(--gold-dark); }
+  .sdc-tier-2 { background: rgba(160,160,160,0.15); color: #b0b8cc; border: 1px solid #666; }
+  .sdc-score { font-size: 0.78rem; color: var(--text-secondary); }
+  .sdc-desc { font-size: 0.82rem; color: var(--text-primary); line-height: 1.65; margin-bottom: 1rem; }
+  .sdc-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 0.6rem; margin-bottom: 1rem;
+  }
+  .sdc-item {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 8px; padding: 0.6rem 0.8rem;
+  }
+  .sdc-label { font-size: 0.68rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 0.25rem; text-transform: uppercase; letter-spacing: 0.3px; }
+  .sdc-value { font-size: 0.78rem; color: var(--text-primary); word-break: break-all; }
+  .sdc-tips-box {
+    background: rgba(201,168,76,0.06);
+    border: 1px solid rgba(201,168,76,0.2);
+    border-radius: 8px; padding: 0.8rem 1rem;
+  }
+  .sdc-tips-title { font-size: 0.75rem; font-weight: 700; color: var(--gold); margin-bottom: 0.4rem; }
+  .sdc-tips-text { font-size: 0.8rem; color: var(--text-primary); line-height: 1.6; }
+
+  /* ===== REF PANELS ===== */
+  .ref-panels-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 1rem; margin-top: 1rem;
+  }
+  @media (max-width: 900px) { .ref-panels-grid { grid-template-columns: 1fr; } }
+  .ref-panel {
+    background: var(--navy-card);
+    border: 1px solid var(--border);
+    border-radius: 12px; padding: 1.25rem 1.4rem;
+  }
+  .ref-panel-title {
+    font-size: 0.85rem; font-weight: 800; color: var(--text-primary);
+    margin-bottom: 0.3rem;
+  }
+  .ref-panel-sub {
+    font-size: 0.74rem; color: var(--text-secondary);
+    margin-bottom: 1rem; line-height: 1.5;
+  }
+  .spec-table {
+    width: 100%; border-collapse: collapse; font-size: 0.76rem;
+  }
+  .spec-table thead th {
+    background: var(--navy-dark); padding: 0.5rem 0.7rem;
+    color: var(--text-secondary); font-weight: 700;
+    border-bottom: 1px solid var(--border); text-align: left;
+  }
+  .spec-table tbody tr { border-bottom: 1px solid rgba(255,255,255,0.04); }
+  .spec-table tbody tr:hover { background: rgba(201,168,76,0.04); }
+  .spec-table tbody td {
+    padding: 0.55rem 0.7rem; color: var(--text-primary);
+    vertical-align: top; line-height: 1.55;
+  }
+  .spec-table tbody td:last-child { color: var(--text-secondary); font-size: 0.72rem; }
+  .spec-table em { color: var(--gold); font-style: normal; font-weight: 600; }
+
+  .tip-section { margin-bottom: 0.85rem; }
+  .tip-section:last-child { margin-bottom: 0; }
+  .tip-section-title {
+    font-size: 0.78rem; font-weight: 700; color: var(--gold);
+    margin-bottom: 0.3rem;
+  }
+  .tip-section-body {
+    font-size: 0.78rem; color: var(--text-primary); line-height: 1.6;
+    padding-left: 0.5rem; border-left: 2px solid rgba(201,168,76,0.3);
+  }
+  .choose-guide-grid { display: flex; flex-direction: column; gap: 0.4rem; }
+  .choose-item { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; font-size: 0.77rem; }
+  .choose-tag {
+    display: inline-block; padding: 0.15rem 0.55rem; border-radius: 20px;
+    font-size: 0.68rem; font-weight: 700; white-space: nowrap;
+  }
+  .tag-q { background: rgba(76,160,201,0.15); color: #7ec8e3; border: 1px solid rgba(76,160,201,0.3); }
+  .tag-s { background: rgba(76,201,130,0.15); color: #7ee3a8; border: 1px solid rgba(76,201,130,0.3); }
+  .tag-p { background: rgba(180,76,201,0.15); color: #d4a0e8; border: 1px solid rgba(180,76,201,0.3); }
+  .choose-arrow { color: var(--text-secondary); font-size: 0.8rem; }
+
   /* ===== SIMULATOR ===== */
   .simulator-layout {
     display: grid; grid-template-columns: 1fr 1fr;
@@ -858,8 +954,132 @@
       </div>
       <div class="radar-card">
         <div class="radar-title">공급업체 역량 레이더 분석</div>
-        <div class="radar-company" id="radar-company-name">中铝集团 (CHALCO)</div>
+        <div class="radar-company" id="radar-company-name">Chalco</div>
         <canvas id="radarChart" style="max-height:280px;"></canvas>
+      </div>
+    </div>
+
+    <!-- 선택 업체 상세 카드 -->
+    <div class="supplier-detail-card" id="supplier-detail-card">
+      <div class="sdc-header">
+        <div class="sdc-name" id="sdc-name"></div>
+        <div class="sdc-meta">
+          <span class="sdc-location" id="sdc-location"></span>
+          <span class="sdc-tier-badge" id="sdc-tier"></span>
+          <span class="sdc-score" id="sdc-score"></span>
+        </div>
+      </div>
+      <div class="sdc-body">
+        <div class="sdc-desc" id="sdc-desc"></div>
+        <div class="sdc-grid">
+          <div class="sdc-item">
+            <div class="sdc-label">📜 인증</div>
+            <div class="sdc-value" id="sdc-cert"></div>
+          </div>
+          <div class="sdc-item">
+            <div class="sdc-label">✉️ 이메일</div>
+            <div class="sdc-value" id="sdc-email"></div>
+          </div>
+          <div class="sdc-item">
+            <div class="sdc-label">🌐 웹사이트</div>
+            <div class="sdc-value" id="sdc-web"></div>
+          </div>
+          <div class="sdc-item">
+            <div class="sdc-label">📦 MOQ</div>
+            <div class="sdc-value" id="sdc-moq"></div>
+          </div>
+          <div class="sdc-item">
+            <div class="sdc-label">📞 연락 방법</div>
+            <div class="sdc-value" id="sdc-contact"></div>
+          </div>
+        </div>
+        <div class="sdc-tips-box">
+          <div class="sdc-tips-title">💡 업무 팁</div>
+          <div class="sdc-tips-text" id="sdc-tips"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 기술 사양 가이드 + 구매 팁 -->
+    <div class="ref-panels-grid">
+      <!-- 기술 사양 가이드 -->
+      <div class="ref-panel">
+        <div class="ref-panel-title">📐 기술 사양 가이드 — 발주 전 체크리스트</div>
+        <div class="ref-panel-sub">중국 업체 견적 요청 시 아래 사양을 명확히 전달해야 정확한 견적을 받을 수 있습니다.</div>
+        <table class="spec-table">
+          <thead>
+            <tr><th>항목</th><th>권장 규격</th><th>비고</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>합금 (Alloy)</strong></td>
+              <td>1100 / 1050 / 1060 <em>(기본)</em><br>3003 <em>(강도 필요 시)</em></td>
+              <td>1000계열 = 고순도 알루미늄<br>3003 = Mn 함유, 강도↑</td>
+            </tr>
+            <tr>
+              <td><strong>경도 (Temper)</strong></td>
+              <td><strong>H18</strong> (경질)</td>
+              <td>드릴 시 버(Burr) 최소화를 위해 H18 필수</td>
+            </tr>
+            <tr>
+              <td><strong>두께 (Thickness)</strong></td>
+              <td>0.15mm ~ 0.30mm</td>
+              <td>가장 일반적: 0.15 / 0.18 / 0.20mm<br>설비에 맞는 수치 사전 확인 필요</td>
+            </tr>
+            <tr>
+              <td><strong>폭 (Width)</strong></td>
+              <td>1,000mm / 1,200mm</td>
+              <td>공장 설비 규격에 따라 지정</td>
+            </tr>
+            <tr>
+              <td><strong>표면 처리 (Surface)</strong></td>
+              <td>Grease-free (탈지 처리)<br>평탄도(Flatness) 확보</td>
+              <td>드릴 비트 오염 방지 필수 조건<br>윤활 코팅 옵션은 Kexin 문의</td>
+            </tr>
+            <tr>
+              <td><strong>초도 수량 (Trial MOQ)</strong></td>
+              <td>500kg ~ 1MT</td>
+              <td>첫 거래는 소량 샘플로 드릴링 테스트 후 본계약 권장</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 구매 팁 -->
+      <div class="ref-panel">
+        <div class="ref-panel-title">🛒 구매 실무 팁</div>
+        <div class="ref-panel-sub">중국 업체와 실제 거래 시 참고할 핵심 사항입니다.</div>
+
+        <div class="tip-section">
+          <div class="tip-section-title">① 샘플 테스트 필수</div>
+          <div class="tip-section-body">PCB 드릴용 소재는 비트 수명과 직결됩니다. 반드시 샘플을 받아 <strong>실제 드릴링 테스트</strong>(버(Burr) 발생 여부·방열 효과)를 거친 후 본계약을 진행하세요. 대부분의 업체가 샘플 발송에 협조적이나, <strong>DHL·FedEx 운송비는 수취인 부담</strong>인 경우가 많습니다.</div>
+        </div>
+
+        <div class="tip-section">
+          <div class="tip-section-title">② B2B 플랫폼 활용</div>
+          <div class="tip-section-body">모든 업체가 <strong>Alibaba.com</strong> 또는 <strong>Made-in-China.com</strong>에 입점해 있습니다. 검색어: <em>'PCB Aluminum Entry Sheet'</em> 또는 <em>'Aluminum Foil for PCB Drilling'</em> — 담당자와 실시간 채팅이 가능합니다.</div>
+        </div>
+
+        <div class="tip-section">
+          <div class="tip-section-title">③ 위챗(WeChat) 병행 활용</div>
+          <div class="tip-section-body">중국 담당자는 이메일보다 <strong>위챗 응답이 훨씬 빠릅니다</strong>. 첫 이메일에 위챗 ID를 함께 기재하거나, 상대방 위챗 ID를 요청하면 소통 속도가 크게 향상됩니다.</div>
+        </div>
+
+        <div class="tip-section">
+          <div class="tip-section-title">④ 박람회 현장 미팅</div>
+          <div class="tip-section-body"><strong>2026 상하이 알루미늄 박람회</strong>에 Chalco·Haomei 등 주요 업체가 반드시 참가합니다. 현장에서 직접 샘플을 확인하고 가격·납기를 협의하는 것이 가장 효율적입니다.</div>
+        </div>
+
+        <div class="tip-section">
+          <div class="tip-section-title">⑤ 업체 선택 가이드</div>
+          <div class="tip-section-body">
+            <div class="choose-guide-grid">
+              <div class="choose-item"><span class="choose-tag tag-q">품질·신뢰도 최우선</span><span class="choose-arrow">→</span><strong>Chalco, Dingsheng</strong> (대형 국영·상장사, MOQ 높음)</div>
+              <div class="choose-item"><span class="choose-tag tag-s">빠른 응대·소량 가능</span><span class="choose-arrow">→</span><strong>Haomei, TMR</strong> (해외 수출팀 보유, 샘플 협조적)</div>
+              <div class="choose-item"><span class="choose-tag tag-p">고사양 드릴링 특화</span><span class="choose-arrow">→</span><strong>Kexin Electronics</strong> (윤활 코팅 엔트리 시트 전문)</div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -1265,24 +1485,39 @@ async function loadRealData() {
 const suppliers = [
   { rank:1, name:'Chalco (中国铝业公司)', nameShort:'Chalco', score:88.0, tier:1,
     cap:95, qual:88, fin:95, logi:80, price:68,
+    location:'베이징 / 전국',
     desc:'중국 최대 국영 알루미늄 기업. 1100·1060·3003 등 PCB 드릴용 표준 합금 시트 대량 공급. ISO 9001·IPC-4562·RoHS 인증 보유. 안정적 공급망과 최고 수준의 재무 신뢰도.',
-    cert:'ISO 9001, IPC-4562, RoHS', email:'sale@chalcoaluminum.com', website:'www.chalco.com.cn' },
+    cert:'ISO 9001, IPC-4562, RoHS', email:'sale@chalcoaluminum.com', website:'www.chalco.com.cn',
+    tips:'국영기업 특성상 재무·품질 신뢰도 최상. MOQ(최소주문수량)가 다소 높을 수 있으므로 초도 거래 시 사전 협의 필수. 알리바바·Made-in-China 입점. 2026 상하이 알루미늄 박람회 참가 예정.',
+    moq:'협의 (대형 발주 선호)', contact:'이메일 선문의 → 담당자 배정' },
   { rank:2, name:'Dingsheng New Material (鼎盛新材料)', nameShort:'鼎盛新材料', score:85.3, tier:1,
     cap:88, qual:92, fin:85, logi:78, price:70,
-    desc:'PCB·전자용 정밀 알루미늄 코일 전문. 3003-H18·1100-H18 기준 두께 편차 ±0.003mm 관리. 글로벌 전자업체 다수 공급 이력. 기술력 최상위권.',
-    cert:'ISO 9001, IATF 16949, RoHS', email:'jiayin.yang@dingshenggroup.com', website:'www.dingshenggroup.com' },
+    location:'장쑤성 전장(镇江)',
+    desc:'전 세계 알루미늄 호일 시장 점유율 상위권. PCB·전자용 정밀 알루미늄 코일 전문. 3003-H18·1100-H18 기준 두께 편차 ±0.003mm 관리. 글로벌 전자업체 다수 공급 이력.',
+    cert:'ISO 9001, IATF 16949, RoHS', email:'jiayin.yang@dingshenggroup.com', website:'www.dingshenggroup.com',
+    tips:'기술 데이터시트(TDS) 상세 제공. 상장기업(A주)으로 재무 투명성 높음. MOQ가 높을 수 있으므로 초도 소량 샘플→검증→본계약 순서를 권장.',
+    moq:'협의 (상장기업, 대형 발주 선호)', contact:'이메일 또는 위챗(WeChat) 담당자 연락' },
   { rank:3, name:'Haomei Aluminum (好美铝业)', nameShort:'好美铝业', score:81.6, tier:1,
     cap:75, qual:90, fin:72, logi:88, price:82,
-    desc:'PCB 드릴 엔트리·백업 시트 특화 알루미늄 제조사. 소량 커스텀 주문 대응 우수, 빠른 납기·물류 경쟁력 강점. 해외 수출 경험 풍부.',
-    cert:'ISO 9001, RoHS', email:'alu@haomeicn.com', website:'www.haomeicn.com' },
+    location:'허난성 정저우(郑州)',
+    desc:'PCB 엔트리 시트 전문 라인 보유. 두께 오차 최소화, 표면 탈지(Grease-free) 처리 우수. 한국 등 해외 수출 경험 다수 보유. 소량 커스텀 주문 대응 강점.',
+    cert:'ISO 9001, RoHS', email:'alu@haomeicn.com', website:'www.haomeicn.com',
+    tips:'해외 바이어 전담팀 운영으로 응대 속도 빠름. 샘플 발송에 매우 협조적. 소량 긴급 오더 가능. 2026 상하이 알루미늄 박람회 참가 예정으로 현장 미팅 추천.',
+    moq:'소량 가능 (해외 샘플 대응 우수)', contact:'이메일 → 해외영업 담당자 직접 연결' },
   { rank:4, name:'TMR Aluminum', nameShort:'TMR', score:76.3, tier:2,
     cap:70, qual:80, fin:65, logi:85, price:90,
-    desc:'PCB용 알루미늄 코일·시트 전문 무역·유통사. 다양한 합금·규격 재고 보유, 소량·긴급 오더 대응 강점. 가격 경쟁력 우수하나 재무 규모는 중소형.',
-    cert:'ISO 9001', email:'홈페이지 문의 양식 활용', website:'' },
+    location:'허난성 정저우(郑州)',
+    desc:'1000·3000 계열 PCB 드릴링 전용 엔트리 소재 전문 생산. 다양한 합금·규격 재고 상시 보유. 가성비 우수. 소량·긴급 오더 대응 강점.',
+    cert:'ISO 9001', email:'홈페이지 문의 양식', website:'',
+    tips:'수출 전담 대응팀 보유로 해외 바이어 응대 빠름. 홈페이지 내 채팅/문의 양식으로 첫 접촉 권장. 알리바바 입점 여부 확인 후 실시간 채팅도 가능.',
+    moq:'소량 가능 (긴급 대응 강점)', contact:'홈페이지 문의 양식 또는 알리바바 채팅' },
   { rank:5, name:'Kexin Electronics (科新电子)', nameShort:'科新电子', score:75.8, tier:2,
     cap:65, qual:88, fin:68, logi:80, price:75,
-    desc:'PCB 드릴용 알루미늄 엔트리 시트 전문 제조사. 품질 관리 체계 우수, 전자업계 인증 다수 보유. 생산 규모는 중소형이나 전문성 높음.',
-    cert:'ISO 9001, RoHS, IPC', email:'sales@kexindg.com', website:'' },
+    location:'광둥성 둥관(东莞)',
+    desc:'PCB 부자재 전문 기업. 일반 알루미늄 시트 외에도 드릴 비트 윤활을 돕는 윤활 코팅(Lubricant-coated) 알루미늄 엔트리 시트 취급. 고사양 PCB 드릴링에 특화.',
+    cert:'ISO 9001, RoHS, IPC', email:'sales@kexindg.com', website:'',
+    tips:'단순 알루미늄판재가 아닌 윤활 처리된 특수 엔트리 시트를 취급하므로 고정밀·고사양 드릴링 공정에 적합. 일반 시트 대비 버(Burr) 발생 저감 효과 기대.',
+    moq:'협의 (중소형 로트 대응)', contact:'이메일 또는 Made-in-China.com 채팅' },
 ];
 
 // ===================== DOM INIT =====================
@@ -1342,6 +1577,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   initFxChart();
   renderSupplierTable();
   renderRadarChart(0);
+  updateSupplierDetailCard(0);
   calculateSimulator();
 });
 
@@ -1659,8 +1895,26 @@ function renderSupplierTable() {
   });
 }
 
+function updateSupplierDetailCard(idx) {
+  const s = suppliers[idx];
+  document.getElementById('sdc-name').textContent = s.name;
+  document.getElementById('sdc-location').textContent = '📍 ' + s.location;
+  const tierEl = document.getElementById('sdc-tier');
+  tierEl.textContent = 'Tier ' + s.tier;
+  tierEl.className = 'sdc-tier-badge sdc-tier-' + s.tier;
+  document.getElementById('sdc-score').textContent = '종합점수 ' + s.score + '점';
+  document.getElementById('sdc-desc').textContent = s.desc;
+  document.getElementById('sdc-cert').textContent = s.cert;
+  document.getElementById('sdc-email').textContent = s.email;
+  document.getElementById('sdc-web').textContent = s.website || '—';
+  document.getElementById('sdc-moq').textContent = s.moq;
+  document.getElementById('sdc-contact').textContent = s.contact;
+  document.getElementById('sdc-tips').textContent = s.tips;
+}
+
 function renderRadarChart(idx) {
   document.getElementById('radar-company-name').textContent = suppliers[idx].name;
+  updateSupplierDetailCard(idx);
   const s = suppliers[idx];
   const data = [s.cap, s.qual, s.fin, s.logi, s.price];
   const labels = ['생산능력', '제품품질', '신용재무', '납기물류', '가격경쟁력'];
