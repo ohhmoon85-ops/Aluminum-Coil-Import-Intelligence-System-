@@ -803,6 +803,39 @@
   .mkt-gap-neg { color: var(--green) !important; }
 
   /* ===== COST COMPOSITION DETAIL ===== */
+  .cost-comp-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;
+  }
+  .cci-reset-btn {
+    font-size: 0.7rem; font-weight: 700; padding: 0.25rem 0.75rem;
+    background: rgba(255,255,255,0.05); color: var(--text-secondary);
+    border: 1px solid var(--border); border-radius: 6px;
+    cursor: pointer; font-family: inherit; transition: all 0.2s;
+  }
+  .cci-reset-btn:hover { border-color: var(--gold-dark); color: var(--gold); }
+  .cci-editable { border-color: rgba(201,168,76,0.2) !important; }
+  .cci-edit-tag {
+    font-size: 0.58rem; font-weight: 700; padding: 0.08rem 0.35rem;
+    background: rgba(201,168,76,0.12); color: var(--gold-dark);
+    border: 1px solid rgba(201,168,76,0.25); border-radius: 3px;
+    vertical-align: middle; margin-left: 0.3rem;
+  }
+  .cci-auto-tag {
+    font-size: 0.58rem; font-weight: 700; padding: 0.08rem 0.35rem;
+    background: rgba(76,201,130,0.1); color: #7ee3a8;
+    border: 1px solid rgba(76,201,130,0.25); border-radius: 3px;
+    vertical-align: middle; margin-left: 0.3rem;
+  }
+  .cci-input-wrap { display: flex; align-items: center; gap: 0.35rem; margin-top: 0.25rem; }
+  .cci-input {
+    flex: 1; min-width: 0; padding: 0.3rem 0.5rem;
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(201,168,76,0.3);
+    color: var(--gold); border-radius: 6px; font-size: 0.88rem; font-weight: 800;
+    font-family: inherit; transition: border-color 0.2s;
+  }
+  .cci-input:focus { outline: none; border-color: var(--gold); background: rgba(201,168,76,0.06); }
+  .cci-unit-tag { font-size: 0.65rem; color: var(--text-secondary); white-space: nowrap; }
   .cost-comp-wrap {
     background: var(--navy-card); border: 1px solid var(--border);
     border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 1rem;
@@ -1566,40 +1599,66 @@ Best regards,
 
     <!-- 단가 구성 상세 -->
     <div class="cost-comp-wrap" id="cost-comp-wrap">
-      <div class="cost-comp-title">📊 중국 단가 구성 (선택 제품 기준)</div>
+      <div class="cost-comp-header">
+        <div class="cost-comp-title">📊 중국 단가 구성 (선택 제품 기준) — 수정 가능</div>
+        <button class="cci-reset-btn" onclick="resetCostComp()" title="선택 제품 기본값으로 초기화">↺ 초기화</button>
+      </div>
       <div class="cost-comp-grid">
-        <div class="cost-comp-item">
-          <div class="cci-label">생알미늄 가격</div>
-          <div class="cci-value">24.39 <span>CNY/kg</span></div>
+        <!-- 입력 가능 -->
+        <div class="cost-comp-item cci-editable">
+          <div class="cci-label">생알미늄 가격 <span class="cci-edit-tag">수정가능</span></div>
+          <div class="cci-input-wrap">
+            <input class="cci-input" type="number" id="cci-al-price" value="24.39" min="1" max="200" step="0.01" oninput="recalcCostComp()">
+            <span class="cci-unit-tag">CNY/kg</span>
+          </div>
         </div>
-        <div class="cost-comp-item">
-          <div class="cci-label">가공비</div>
-          <div class="cci-value">4.00 <span>CNY/kg</span></div>
+        <div class="cost-comp-item cci-editable">
+          <div class="cci-label">가공비 <span class="cci-edit-tag">수정가능</span></div>
+          <div class="cci-input-wrap">
+            <input class="cci-input" type="number" id="cci-proc-price" value="4.00" min="0" max="100" step="0.01" oninput="recalcCostComp()">
+            <span class="cci-unit-tag">CNY/kg</span>
+          </div>
         </div>
+        <!-- 자동계산 -->
         <div class="cost-comp-item">
-          <div class="cci-label">kg 합산단가</div>
-          <div class="cci-value">28.39 <span>CNY/kg</span></div>
+          <div class="cci-label">kg 합산단가 <span class="cci-auto-tag">자동계산</span></div>
+          <div class="cci-value cci-auto" id="cci-kg-total">28.39 <span>CNY/kg</span></div>
         </div>
-        <div class="cost-comp-item">
-          <div class="cci-label">㎡당 알미늄 중량</div>
-          <div class="cci-value cci-auto" id="cci-weight">0.3252 <span>kg/㎡</span></div>
+        <!-- 입력 가능 -->
+        <div class="cost-comp-item cci-editable">
+          <div class="cci-label">㎡당 알미늄 중량 <span class="cci-edit-tag">수정가능</span></div>
+          <div class="cci-input-wrap">
+            <input class="cci-input" type="number" id="cci-weight" value="0.3252" min="0.01" max="2" step="0.0001" oninput="recalcCostComp()">
+            <span class="cci-unit-tag">kg/㎡</span>
+          </div>
         </div>
+        <!-- 자동계산 -->
         <div class="cost-comp-item">
-          <div class="cci-label">㎡당 알미늄 원료비</div>
+          <div class="cci-label">㎡당 알미늄 원료비 <span class="cci-auto-tag">자동계산</span></div>
           <div class="cci-value cci-auto" id="cci-al-cost">9.232 <span>CNY/㎡</span></div>
         </div>
-        <div class="cost-comp-item">
-          <div class="cci-label">㎡당 가공비</div>
-          <div class="cci-value cci-auto" id="cci-proc-cost">2.22 <span>CNY/㎡</span></div>
+        <!-- 입력 가능 -->
+        <div class="cost-comp-item cci-editable">
+          <div class="cci-label">㎡당 가공비 <span class="cci-edit-tag">수정가능</span></div>
+          <div class="cci-input-wrap">
+            <input class="cci-input" type="number" id="cci-proc-cost" value="2.22" min="0" max="100" step="0.01" oninput="recalcCostComp()">
+            <span class="cci-unit-tag">CNY/㎡</span>
+          </div>
         </div>
+        <!-- 최종 단가 — 자동계산 → sim-cny-sqm 연동 -->
         <div class="cost-comp-item cci-highlight">
-          <div class="cci-label">최종 단가</div>
+          <div class="cci-label">최종 단가 <span class="cci-auto-tag">자동계산 → 계산기 반영</span></div>
           <div class="cci-value cci-auto" id="cci-unit">11.452 <span>CNY/㎡</span></div>
         </div>
-        <div class="cost-comp-item">
-          <div class="cci-label">국내 비교가 (홍지)</div>
-          <div class="cci-value cci-domestic">2,536 <span>원/㎡</span></div>
+        <!-- 국내 비교가 — 입력 가능 -->
+        <div class="cost-comp-item cci-editable">
+          <div class="cci-label">국내 비교가 (홍지) <span class="cci-edit-tag">수정가능</span></div>
+          <div class="cci-input-wrap">
+            <input class="cci-input" type="number" id="cci-domestic-price" value="2536" min="100" max="20000" step="1" oninput="syncDomesticPrice()">
+            <span class="cci-unit-tag">원/㎡</span>
+          </div>
         </div>
+        <!-- 기준일 환율 -->
         <div class="cost-comp-item">
           <div class="cci-label">기준일 환율</div>
           <div class="cci-value">212 <span>원/위안</span></div>
@@ -2638,6 +2697,43 @@ function updateMktGap() {
     : 'SMM < SHFE: 실물 공급 여유. 가격 인하 협상 가능.';
 }
 
+// 단가 구성 재계산 — 입력값 변경 시 호출
+function recalcCostComp() {
+  const alPrice  = parseFloat(document.getElementById('cci-al-price').value)  || 0;
+  const procPrice= parseFloat(document.getElementById('cci-proc-price').value) || 0;
+  const weight   = parseFloat(document.getElementById('cci-weight').value)    || 0;
+  const procCost = parseFloat(document.getElementById('cci-proc-cost').value) || 0;
+
+  const kgTotal  = parseFloat((alPrice + procPrice).toFixed(3));
+  const alCost   = parseFloat((alPrice * weight).toFixed(3));
+  const unitPrice= parseFloat((alCost + procCost).toFixed(3));
+
+  document.getElementById('cci-kg-total').innerHTML = kgTotal + ' <span>CNY/kg</span>';
+  document.getElementById('cci-al-cost').innerHTML  = alCost  + ' <span>CNY/㎡</span>';
+  document.getElementById('cci-unit').innerHTML     = unitPrice+ ' <span>CNY/㎡</span>';
+
+  // 계산기 중국단가 필드 자동 연동
+  document.getElementById('sim-cny-sqm').value = unitPrice;
+}
+
+// 국내 비교가 동기화
+function syncDomesticPrice() {
+  const v = parseFloat(document.getElementById('cci-domestic-price').value);
+  if (!isNaN(v)) document.getElementById('sim-domestic').value = v;
+}
+
+// 선택 제품 기본값으로 초기화
+function resetCostComp() {
+  const p = PRODUCT_PRESETS[currentProductId];
+  document.getElementById('cci-al-price').value   = 24.39;
+  document.getElementById('cci-proc-price').value  = 4.00;
+  document.getElementById('cci-weight').value      = p.weight;
+  document.getElementById('cci-proc-cost').value   = p.procCost;
+  document.getElementById('cci-domestic-price').value = 2536;
+  recalcCostComp();
+  syncDomesticPrice();
+}
+
 function selectProduct(id) {
   currentProductId = id;
   const p = PRODUCT_PRESETS[id];
@@ -2645,18 +2741,16 @@ function selectProduct(id) {
   Object.keys(PRODUCT_PRESETS).forEach(k => {
     document.getElementById('prod-' + k).classList.toggle('active', k === id);
   });
-  // 단가 입력 자동 업데이트
-  document.getElementById('sim-cny-sqm').value = p.cnyPerSqm;
-  document.getElementById('sim-tariff').value  = p.ftaRate;
+  // 단가 구성 입력값 업데이트 (생알미늄·가공비kg은 공통 유지, 중량·㎡당가공비만 변경)
+  document.getElementById('cci-weight').value     = p.weight;
+  document.getElementById('cci-proc-cost').value  = p.procCost;
+  recalcCostComp(); // 최종단가 자동 재계산 → sim-cny-sqm 연동
+  // 관세율 업데이트
+  document.getElementById('sim-tariff').value = p.ftaRate;
   // HSCODE 바 업데이트
   document.getElementById('prod-hscode-display').textContent = p.hscode;
   document.getElementById('prod-fta-display').textContent    = p.ftaRate + '%';
   document.getElementById('prod-tariff-applied').textContent = '한중FTA ' + p.ftaRate + '%';
-  // 단가 구성 상세 업데이트
-  document.getElementById('cci-weight').innerHTML    = p.weight + ' <span>kg/㎡</span>';
-  document.getElementById('cci-al-cost').innerHTML   = p.alCost + ' <span>CNY/㎡</span>';
-  document.getElementById('cci-proc-cost').innerHTML = p.procCost + ' <span>CNY/㎡</span>';
-  document.getElementById('cci-unit').innerHTML      = p.cnyPerSqm + ' <span>CNY/㎡</span>';
   document.getElementById('cost-comp-note').textContent = '※ ' + p.note;
   // customs 테이블 활성 행 업데이트
   ['7606','7607a','7607b','7607c'].forEach(k => {
