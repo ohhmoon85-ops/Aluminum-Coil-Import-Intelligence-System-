@@ -40,6 +40,41 @@
     line-height: 1.6;
   }
 
+  /* ===== 데이터 구분 배지 ===== */
+  .data-badge {
+    display: inline-flex; align-items: center; gap: 3px;
+    font-size: 0.62rem; font-weight: 700; letter-spacing: 0.03em;
+    padding: 2px 7px; border-radius: 20px; white-space: nowrap;
+    vertical-align: middle; margin-left: 5px;
+  }
+  .data-badge::before { font-size: 0.7rem; }
+  .badge-real    { background: rgba(46,204,113,0.18); color: #2ecc71; border: 1px solid rgba(46,204,113,0.35); }
+  .badge-calc    { background: rgba(241,196,15,0.18); color: #f1c40f; border: 1px solid rgba(241,196,15,0.35); }
+  .badge-pred    { background: rgba(168,85,247,0.18); color: #a855f7; border: 1px solid rgba(168,85,247,0.35); }
+  .badge-ref     { background: rgba(231,76,60,0.18);  color: #e74c3c; border: 1px solid rgba(231,76,60,0.35); }
+  .badge-est     { background: rgba(255,157,78,0.18); color: #ff9d4e; border: 1px solid rgba(255,157,78,0.35); }
+
+  /* 데이터 구분 범례 박스 */
+  .data-legend-box {
+    display: flex; flex-wrap: wrap; gap: 0.5rem;
+    background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px; padding: 0.7rem 1rem; margin-bottom: 1.2rem;
+    font-size: 0.72rem; color: var(--text-secondary);
+  }
+  .data-legend-box strong { color: var(--text-primary); margin-right: 4px; }
+  .data-legend-item { display: flex; align-items: center; gap: 5px; }
+
+  /* 섹션 데이터 출처 바 */
+  .data-source-bar {
+    font-size: 0.7rem; color: var(--text-secondary);
+    background: rgba(255,255,255,0.03); border-left: 3px solid;
+    padding: 5px 10px; border-radius: 0 6px 6px 0; margin-bottom: 0.8rem;
+  }
+  .source-bar-real  { border-color: #2ecc71; }
+  .source-bar-pred  { border-color: #a855f7; }
+  .source-bar-ref   { border-color: #e74c3c; }
+  .source-bar-calc  { border-color: #f1c40f; }
+
   /* ===== LOADING ===== */
   #loading-overlay {
     position: fixed; inset: 0; background: var(--navy-dark);
@@ -620,6 +655,16 @@
 <!-- Main Content -->
 <main class="main-content">
 
+  <!-- 데이터 구분 범례 -->
+  <div class="data-legend-box">
+    <strong>데이터 구분:</strong>
+    <div class="data-legend-item"><span class="data-badge badge-real">● 실제 데이터</span> API로 수집한 실시간 값</div>
+    <div class="data-legend-item"><span class="data-badge badge-calc">● 계산값</span> 실제 데이터 기반 공식 산출</div>
+    <div class="data-legend-item"><span class="data-badge badge-pred">● 통계 예측</span> 선형회귀 + Holt 앙상블 (참고용)</div>
+    <div class="data-legend-item"><span class="data-badge badge-est">● 추정값</span> 고정 파라미터 (실제와 다를 수 있음)</div>
+    <div class="data-legend-item"><span class="data-badge badge-ref">● 참고용</span> 수동 입력 — 실제 검증 필요</div>
+  </div>
+
   <!-- ① KPI Cards -->
   <section class="section" id="sec-kpi">
     <div class="section-header">
@@ -630,28 +675,28 @@
     <div class="kpi-grid">
       <div class="kpi-card">
         <div class="kpi-icon">🏷</div>
-        <div class="kpi-label">SHFE 알루미늄 현물가</div>
+        <div class="kpi-label">SHFE 알루미늄 현물가 <span class="data-badge badge-real" id="shfe-badge">● 실제 데이터</span></div>
         <div class="kpi-value" id="kpi-lme">20,500</div>
-        <div class="kpi-unit">CNY/MT (SHFE)</div>
+        <div class="kpi-unit">CNY/MT · 东方财富(Eastmoney)</div>
         <div class="kpi-change up" id="kpi-lme-chg">▲ +0.82%</div>
       </div>
       <div class="kpi-card">
         <div class="kpi-icon">💱</div>
-        <div class="kpi-label">CNY/KRW 환율</div>
+        <div class="kpi-label">CNY/KRW 환율 <span class="data-badge badge-real">● 실제 데이터</span></div>
         <div class="kpi-value" id="kpi-cny">190.3</div>
-        <div class="kpi-unit">원/위안</div>
+        <div class="kpi-unit">원/위안 · 한국은행 ECOS</div>
         <div class="kpi-change down" id="kpi-cny-chg">▼ -0.15%</div>
       </div>
       <div class="kpi-card">
         <div class="kpi-icon">📊</div>
-        <div class="kpi-label">RPCI 실질구매비용지수</div>
+        <div class="kpi-label">RPCI 실질구매비용지수 <span class="data-badge badge-calc">● 계산값</span></div>
         <div class="kpi-value" id="kpi-rpci">--</div>
-        <div class="kpi-unit">원/MT</div>
+        <div class="kpi-unit">원/MT · SHFE × CNY/KRW + 운임</div>
         <div class="kpi-change neutral" id="kpi-rpci-chg">MA60 대비 산출중</div>
       </div>
       <div class="kpi-card">
         <div class="kpi-icon">🚦</div>
-        <div class="kpi-label">오늘의 구매 신호</div>
+        <div class="kpi-label">오늘의 구매 신호 <span class="data-badge badge-calc">● 계산값</span></div>
         <div style="padding: 0.5rem 0 0.3rem;">
           <span class="signal-badge buy" id="kpi-signal-badge">매수</span>
         </div>
@@ -669,6 +714,7 @@
       <div class="section-title">SHFE 알루미늄 가격 추세 <small id="pred-method-label" style="font-size:0.7rem;color:#c9a84c;margin-left:8px;"></small></div>
       <div class="section-sub">최근 90일 실적 + 향후 30일 예측</div>
     </div>
+    <div class="data-source-bar source-bar-real"><span class="data-badge badge-real">● 실제 데이터</span> 90일 실적 — 上海期货交易所(SHFE) AL9999 주력합약, CNY/MT &nbsp;|&nbsp; <span class="data-badge badge-pred">● 통계 예측</span> 30일 예측선 + 95% 신뢰구간 — 선형회귀 + Holt 이중지수평활 앙상블 &nbsp;|&nbsp; <span class="data-badge badge-calc">● 계산값</span> MA20, MA60, 볼린저밴드</div>
     <div class="chart-card">
       <div class="chart-toolbar">
         <button class="chart-btn active" id="price-btn-all" onclick="setPriceView('all', this)">전체</button>
@@ -695,6 +741,7 @@
       <div class="section-title">환율 추세 차트</div>
       <div class="section-sub">CNY/KRW 및 USD/KRW 90일 실적 + 30일 예측</div>
     </div>
+    <div class="data-source-bar source-bar-real"><span class="data-badge badge-real">● 실제 데이터</span> 90일 실적 — 한국은행 ECOS API (매매기준율 731Y001, 오전 11시 기준) &nbsp;|&nbsp; <span class="data-badge badge-pred">● 통계 예측</span> 30일 예측선 + 95% 신뢰구간 — 선형회귀 + Holt 앙상블</div>
     <div class="chart-card">
       <div class="chart-toolbar">
         <button class="chart-btn active" id="fx-btn-cny" onclick="setFxView('cny', this)">CNY/KRW</button>
@@ -720,6 +767,7 @@
       <div class="section-title">구매 신호 패널</div>
       <div class="section-sub">RPCI 기반 단기/중장기 구매 권고 신호</div>
     </div>
+    <div class="data-source-bar source-bar-calc"><span class="data-badge badge-calc">● 계산값</span> RPCI = (SHFE가격 × CNY/KRW + 해상운임) × (1 + 관세율 + 부대비용) &nbsp;|&nbsp; <span class="data-badge badge-est">● 추정값</span> 해상운임 55,000원/MT (SCFI 기준 고정 추정) · 관세율 5% · 부대비용 3%</div>
     <div class="signal-grid">
       <div class="signal-card">
         <div class="signal-card-title">단기 신호 (1~2주)</div>
@@ -787,6 +835,7 @@
       <div class="section-title">공급업체 종합 평가</div>
       <div class="section-sub">중국 알루미늄 코일 주요 공급업체 TOP 5 — 클릭하여 상세 레이더 확인</div>
     </div>
+    <div class="data-source-bar source-bar-ref"><span class="data-badge badge-ref">● 참고용</span> 업체명은 실제 존재하는 기업이나, 평가 점수는 수동 입력값입니다. 실제 업무 적용 전 D&amp;B · SGS · 阿里巴巴 등 공식 데이터로 검증이 필요합니다.</div>
     <div class="supplier-layout">
       <div class="table-card">
         <table class="data-table" id="supplier-table">
@@ -824,6 +873,7 @@
       <div class="section-title">구매 시뮬레이터</div>
       <div class="section-sub">입력값 조정 후 예상 수입 원가를 즉시 계산</div>
     </div>
+    <div class="data-source-bar source-bar-calc"><span class="data-badge badge-real">● 실제 데이터</span> SHFE 가격·환율은 API에서 자동 입력 &nbsp;|&nbsp; <span class="data-badge badge-est">● 추정값</span> 해상운임·관세율·부대비용은 기본값 제공 (직접 수정 가능) &nbsp;|&nbsp; <span class="data-badge badge-calc">● 계산값</span> 결과값은 RPCI 공식으로 즉시 산출</div>
     <div class="simulator-layout">
       <div class="sim-card">
         <div class="sim-card-title">입력 파라미터</div>
@@ -1196,12 +1246,18 @@ async function loadRealData() {
 
     badge.textContent = '실시간 데이터';
     badge.style.background = '#27ae60';
+    // SHFE 배지도 실제 데이터로 표시
+    const shfeBadge = document.getElementById('shfe-badge');
+    if (shfeBadge) { shfeBadge.textContent = '● 실제 데이터'; shfeBadge.className = 'data-badge badge-real'; }
 
   } catch (err) {
     console.warn('[ACIS] 실시간 데이터 로딩 실패, 모의 데이터로 대체:', err.message);
     generateMockData();
     badge.textContent = '모의 데이터 (API 오류)';
     badge.style.background = '#e67e22';
+    // SHFE 배지를 모의 데이터로 표시
+    const shfeBadge = document.getElementById('shfe-badge');
+    if (shfeBadge) { shfeBadge.textContent = '● 모의 데이터'; shfeBadge.className = 'data-badge badge-ref'; }
   }
 }
 
