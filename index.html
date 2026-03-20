@@ -580,6 +580,69 @@
   .email-cl-text { color: var(--text-primary); }
   .email-cl-text strong { color: var(--gold); }
 
+  /* ===== PRICE SOURCE TOGGLE ===== */
+  .price-source-toggle-wrap {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 10px; padding: 0.85rem 1rem;
+    margin-bottom: 1.1rem;
+  }
+  .price-source-label {
+    font-size: 0.7rem; font-weight: 700; color: var(--text-secondary);
+    text-transform: uppercase; letter-spacing: 0.4px;
+    display: block; margin-bottom: 0.5rem;
+  }
+  .price-source-toggle { display: flex; gap: 0.5rem; margin-bottom: 0.65rem; }
+  .pst-btn {
+    flex: 1; padding: 0.55rem 0.5rem; text-align: center;
+    font-size: 0.75rem; font-weight: 700; line-height: 1.35;
+    background: var(--navy-dark); color: var(--text-secondary);
+    border: 1px solid var(--border); border-radius: 8px;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .pst-btn:hover { border-color: var(--gold-dark); color: var(--text-primary); }
+  .pst-btn.active { background: rgba(201,168,76,0.12); color: var(--gold); border-color: var(--gold); }
+  .pst-sub { font-size: 0.62rem; font-weight: 400; color: inherit; opacity: 0.75; }
+  .price-source-desc { font-size: 0.72rem; color: var(--text-secondary); line-height: 1.5; }
+  .psd-badge {
+    display: inline-block; padding: 0.1rem 0.45rem; border-radius: 4px;
+    font-size: 0.65rem; font-weight: 700; margin-right: 0.3rem;
+  }
+  .psd-shfe { background: rgba(201,168,76,0.2); color: var(--gold); border: 1px solid var(--gold-dark); }
+  .psd-smm  { background: rgba(76,160,201,0.2); color: #7ec8e3; border: 1px solid rgba(76,160,201,0.4); }
+  .auto-tag {
+    font-size: 0.62rem; font-weight: 700; padding: 0.1rem 0.4rem;
+    background: rgba(76,201,130,0.15); color: #7ee3a8;
+    border: 1px solid rgba(76,201,130,0.3); border-radius: 4px;
+    vertical-align: middle; margin-left: 0.3rem;
+  }
+  .manual-tag {
+    font-size: 0.62rem; font-weight: 700; padding: 0.1rem 0.4rem;
+    background: rgba(76,160,201,0.15); color: #7ec8e3;
+    border: 1px solid rgba(76,160,201,0.3); border-radius: 4px;
+    vertical-align: middle; margin-left: 0.3rem;
+  }
+  .smm-ref-row {
+    display: flex; align-items: center; gap: 0.6rem;
+    margin-top: 0.35rem; flex-wrap: wrap;
+  }
+  .smm-ref-shfe { font-size: 0.72rem; color: var(--text-secondary); }
+  .smm-ref-shfe strong { color: var(--gold); }
+  .smm-gap {
+    font-size: 0.68rem; font-weight: 700; padding: 0.1rem 0.5rem;
+    border-radius: 4px;
+  }
+  .smm-gap-pos { background: rgba(231,76,60,0.15); color: #e8846e; border: 1px solid rgba(231,76,60,0.3); }
+  .smm-gap-neg { background: rgba(76,201,130,0.15); color: #7ee3a8; border: 1px solid rgba(76,201,130,0.3); }
+  .smm-hint {
+    font-size: 0.68rem; color: var(--text-muted); margin-top: 0.4rem; line-height: 1.5;
+  }
+  .smm-hint em { color: var(--gold); font-style: normal; font-weight: 600; }
+  .result-source-tag {
+    font-size: 0.65rem; font-weight: 700; padding: 0.12rem 0.5rem;
+    border-radius: 4px; margin-left: 0.5rem; vertical-align: middle;
+  }
+
   /* ===== SIMULATOR ===== */
   .simulator-layout {
     display: grid; grid-template-columns: 1fr 1fr;
@@ -1218,14 +1281,38 @@ Best regards,
     <div class="simulator-layout">
       <div class="sim-card">
         <div class="sim-card-title">입력 파라미터</div>
+
+        <!-- 가격 기준 토글 -->
+        <div class="price-source-toggle-wrap">
+          <span class="price-source-label">알루미늄 가격 기준</span>
+          <div class="price-source-toggle">
+            <button class="pst-btn active" id="pst-shfe" onclick="setPriceSource('shfe')">SHFE 선물가<br><span class="pst-sub">자동 (API)</span></button>
+            <button class="pst-btn" id="pst-smm" onclick="setPriceSource('smm')">SMM 현물가<br><span class="pst-sub">수동 입력</span></button>
+          </div>
+          <div class="price-source-desc" id="price-source-desc">
+            <span class="psd-badge psd-shfe">SHFE</span> 상하이 선물거래소 — 미래 계약 가격. 실물가와 ±1~3% 괴리 가능. API 자동 수집.
+          </div>
+        </div>
+
         <div class="form-row">
           <div class="form-group">
             <label class="form-label">발주 수량 (MT)</label>
             <input class="form-control" type="number" id="sim-qty" value="100" min="1" max="10000">
           </div>
-          <div class="form-group">
-            <label class="form-label">SHFE 알루미늄 현물가 (CNY/MT)</label>
+          <!-- SHFE 입력 (기본) -->
+          <div class="form-group" id="grp-shfe">
+            <label class="form-label">SHFE 알루미늄 선물가 (CNY/MT) <span class="auto-tag">API 자동</span></label>
             <input class="form-control" type="number" id="sim-lme" value="20500" min="10000" max="35000" step="10">
+          </div>
+          <!-- SMM 입력 (토글 시 표시) -->
+          <div class="form-group" id="grp-smm" style="display:none;">
+            <label class="form-label">SMM 현물가 수동 입력 (CNY/MT) <span class="manual-tag">수동</span></label>
+            <input class="form-control" type="number" id="sim-smm" value="" min="10000" max="35000" step="10" placeholder="예: 20350">
+            <div class="smm-ref-row">
+              <span class="smm-ref-shfe">SHFE 참고: <strong id="smm-shfe-ref">--</strong> CNY/MT</span>
+              <span class="smm-gap" id="smm-gap-badge" style="display:none;"></span>
+            </div>
+            <div class="smm-hint">※ SMM 현물가 확인: <em>price.metal.com</em> 또는 <em>smm.cn</em> (중국 업체 견적 협상 시 이 가격 사용 권장)</div>
           </div>
         </div>
         <div class="form-row">
@@ -1252,7 +1339,7 @@ Best regards,
       </div>
 
       <div class="sim-card">
-        <div class="sim-card-title">시뮬레이션 결과</div>
+        <div class="sim-card-title">시뮬레이션 결과 <span class="result-source-tag" id="result-source-tag"></span></div>
         <div class="result-grid">
           <div class="result-item">
             <div class="result-label">예상 수입 원가 (단가)</div>
@@ -1700,6 +1787,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   renderRadarChart(0);
   updateSupplierDetailCard(0);
   calculateSimulator();
+
+  // SMM 입력 이벤트 리스너
+  document.getElementById('sim-smm').addEventListener('input', updateSmmGap);
+  document.getElementById('sim-lme').addEventListener('input', () => {
+    if (priceSource === 'smm') updateSmmGap();
+  });
 });
 
 // ===================== SIGNAL PANEL =====================
@@ -2138,15 +2231,65 @@ function renderRadarChart(idx) {
 // ===================== SIMULATOR =====================
 // rpciMA60Avg는 computeDerived()에서 계산됨
 
+let priceSource = 'shfe'; // 'shfe' | 'smm'
+
+function setPriceSource(src) {
+  priceSource = src;
+  const isSmm = src === 'smm';
+
+  document.getElementById('pst-shfe').classList.toggle('active', !isSmm);
+  document.getElementById('pst-smm').classList.toggle('active', isSmm);
+  document.getElementById('grp-shfe').style.display = isSmm ? 'none' : '';
+  document.getElementById('grp-smm').style.display = isSmm ? '' : 'none';
+
+  const descEl = document.getElementById('price-source-desc');
+  if (isSmm) {
+    descEl.innerHTML = '<span class="psd-badge psd-smm">SMM</span> 상하이 메탈 마켓 — 실물 유통 현물가. 공급업체 협상 단가에 더 가까움. <em>price.metal.com</em> 또는 <em>smm.cn</em>에서 확인 후 직접 입력.';
+    // SHFE 참조값 업데이트
+    const shfeVal = parseFloat(document.getElementById('sim-lme').value) || lastLme;
+    document.getElementById('smm-shfe-ref').textContent = shfeVal.toLocaleString();
+    updateSmmGap();
+  } else {
+    descEl.innerHTML = '<span class="psd-badge psd-shfe">SHFE</span> 상하이 선물거래소 — 미래 계약 가격. 실물가와 ±1~3% 괴리 가능. API 자동 수집.';
+  }
+}
+
+function updateSmmGap() {
+  const shfe = parseFloat(document.getElementById('sim-lme').value) || lastLme;
+  const smm  = parseFloat(document.getElementById('sim-smm').value);
+  document.getElementById('smm-shfe-ref').textContent = shfe.toLocaleString();
+  const gapEl = document.getElementById('smm-gap-badge');
+  if (!smm || isNaN(smm)) { gapEl.style.display = 'none'; return; }
+  const diff = smm - shfe;
+  const pct  = (diff / shfe * 100).toFixed(1);
+  gapEl.style.display = '';
+  gapEl.textContent = (diff >= 0 ? 'SMM +' : 'SMM ') + diff.toLocaleString() + ' (' + (diff >= 0 ? '+' : '') + pct + '%)';
+  gapEl.className = 'smm-gap ' + (diff >= 0 ? 'smm-gap-pos' : 'smm-gap-neg');
+}
+
+// SMM 입력 변경 시 실시간 괴리 업데이트
 function calculateSimulator() {
   const qty = parseFloat(document.getElementById('sim-qty').value) || 100;
-  const lme = parseFloat(document.getElementById('sim-lme').value) || lastLme;
+  const shfePrice = parseFloat(document.getElementById('sim-lme').value) || lastLme;
+  const smmPrice  = parseFloat(document.getElementById('sim-smm').value);
+  const useSMM = priceSource === 'smm' && smmPrice && !isNaN(smmPrice);
+  const lme = useSMM ? smmPrice : shfePrice;
   const cny = parseFloat(document.getElementById('sim-cny').value) || lastCny;
   const usd = parseFloat(document.getElementById('sim-usd').value) || lastUsd;
   const tariff = parseFloat(document.getElementById('sim-tariff').value) / 100 || 0.05;
   const misc = parseFloat(document.getElementById('sim-misc').value) / 100 || 0.03;
 
-  const rpci = calcRPCI(lme, cny, tariff, misc); // lme = SHFE CNY/MT, cny = CNY/KRW
+  // 결과 카드 출처 태그 업데이트
+  const srcTag = document.getElementById('result-source-tag');
+  if (useSMM) {
+    srcTag.textContent = 'SMM 현물가 기준';
+    srcTag.style.cssText = 'background:rgba(76,160,201,0.2);color:#7ec8e3;border:1px solid rgba(76,160,201,0.4);';
+  } else {
+    srcTag.textContent = 'SHFE 선물가 기준';
+    srcTag.style.cssText = 'background:rgba(201,168,76,0.15);color:var(--gold);border:1px solid var(--gold-dark);';
+  }
+
+  const rpci = calcRPCI(lme, cny, tariff, misc);
   const totalKrw = rpci * qty;
   const unitUsd = (rpci / usd);
 
