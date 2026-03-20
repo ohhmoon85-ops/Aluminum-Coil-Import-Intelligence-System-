@@ -630,9 +630,9 @@
     <div class="kpi-grid">
       <div class="kpi-card">
         <div class="kpi-icon">🏷</div>
-        <div class="kpi-label">LME 알루미늄 현물가</div>
-        <div class="kpi-value" id="kpi-lme">$2,487</div>
-        <div class="kpi-unit">USD/MT</div>
+        <div class="kpi-label">SHFE 알루미늄 현물가</div>
+        <div class="kpi-value" id="kpi-lme">20,500</div>
+        <div class="kpi-unit">CNY/MT (SHFE)</div>
         <div class="kpi-change up" id="kpi-lme-chg">▲ +0.82%</div>
       </div>
       <div class="kpi-card">
@@ -833,8 +833,8 @@
             <input class="form-control" type="number" id="sim-qty" value="100" min="1" max="10000">
           </div>
           <div class="form-group">
-            <label class="form-label">알루미늄 현물가 (USD/MT)</label>
-            <input class="form-control" type="number" id="sim-lme" value="2487" min="1000" max="5000" step="1">
+            <label class="form-label">SHFE 알루미늄 현물가 (CNY/MT)</label>
+            <input class="form-control" type="number" id="sim-lme" value="20500" min="10000" max="35000" step="10">
           </div>
         </div>
         <div class="form-row">
@@ -1004,13 +1004,11 @@ let lmeMa20, lmeMa60, lmeBB;
 let cnySorted, cnyDanger;
 let rpciMA60Avg;
 
-const usdCny = 7.2;
-
-// RPCI 산출 공식
-function calcRPCI(lme, cny, usd, tariff=0.05, misc=0.03) {
-  const shfe = lme * usdCny * 1.05; // CNY/MT (SHFE ≈ LME × USD/CNY × 프리미엄)
-  const shipping = 55000;            // KRW/MT (SCFI 기반 해상운임 추정)
-  return parseFloat(((shfe * cny + shipping) * (1 + tariff + misc)).toFixed(0));
+// RPCI 산출 공식 (기획서 4.3)
+// RPCI = (SHFE가격 CNY/MT × CNY/KRW + 해상운임) × (1 + 관세율 + 부대비용율)
+function calcRPCI(shfe_cny, cny_krw, tariff=0.05, misc=0.03) {
+  const shipping = 55000; // KRW/MT (SCFI 기반 해상운임 추정)
+  return parseFloat(((shfe_cny * cny_krw + shipping) * (1 + tariff + misc)).toFixed(0));
 }
 
 // 신호 판단 로직
@@ -1033,8 +1031,9 @@ function makePred(arr, min, max, step, seed) {
 }
 
 // 모의 데이터 생성 (API 실패 시 폴백)
+// lmeHist = SHFE 알루미늄 가격 (CNY/MT) — 실제 API 연동 후 SHFE 데이터로 교체됨
 function generateMockData() {
-  lmeHist = randomWalk(2487, 90, 18, 2300, 2700, 101);
+  lmeHist = randomWalk(20500, 90, 150, 19000, 22000, 101); // SHFE CNY/MT
   cnyHist = randomWalk(190.3, 90, 0.6, 186, 196, 202);
   usdHist = randomWalk(1370, 90, 5, 1330, 1410, 303);
 }
@@ -1048,7 +1047,7 @@ function padTo90(arr) {
 
 // 파생 변수 일괄 계산 (데이터 로드 후 호출)
 function computeDerived() {
-  lmePred = makePred(lmeHist, 2350, 2750, 20, 77);
+  lmePred = makePred(lmeHist, 19000, 22000, 150, 77); // SHFE CNY/MT
   cnyPred  = makePred(cnyHist, 186,  196,  0.7, 88);
   usdPred  = makePred(usdHist, 1330, 1420, 6,   55);
 
@@ -1060,7 +1059,7 @@ function computeDerived() {
   lmeChange = ((lastLme - lmePrev)/lmePrev*100).toFixed(2);
   cnyChange = ((lastCny - cnyPrev)/cnyPrev*100).toFixed(2);
 
-  rpciHist   = lmeHist.map((l,i) => calcRPCI(l, cnyHist[i], usdHist[i]));
+  rpciHist   = lmeHist.map((l,i) => calcRPCI(l, cnyHist[i])); // SHFE CNY/MT × CNY/KRW
   rpciMa60   = movingAvg(rpciHist, 60);
   rpciMa90   = movingAvg(rpciHist, 90);
   currentRPCI = rpciHist[rpciHist.length-1];
@@ -1165,7 +1164,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('kpi-date-label').textContent = '기준일: ' + formatDateKo(TODAY);
 
   // KPI values
-  document.getElementById('kpi-lme').textContent = '$' + fmtNum(lastLme, 0);
+  document.getElementById('kpi-lme').textContent = '¥' + fmtNum(lastLme, 0);
   const lmeChgEl = document.getElementById('kpi-lme-chg');
   const lmeUp = lmeChange > 0;
   lmeChgEl.textContent = (lmeUp ? '▲ +' : '▼ ') + lmeChange + '%';
@@ -1247,7 +1246,7 @@ function getSignalFactors(signal, type) {
   const base = {
     buy: [
       `RPCI가 60일 이동평균 대비 ${Math.abs(rpciPct)}% 하회 — ${type} 저점 진입`,
-      `LME 현물가 최근 하락 국면 — 저점 매수 기회`,
+      `SHFE 현물가 최근 하락 국면 — 저점 매수 기회`,
       `CNY/KRW 환율 안정세 유지 — 환리스크 제한적`,
       `기술적 지지선(MA20) 대비 유리한 가격 형성`,
     ],
@@ -1259,7 +1258,7 @@ function getSignalFactors(signal, type) {
     ],
     avoid: [
       `RPCI가 60일 이동평균 대비 ${rpciPct}% 상회 — 고비용 구간`,
-      `LME 현물가 상승세 지속 — 추가 비용 증가 우려`,
+      `SHFE 현물가 상승세 지속 — 추가 비용 증가 우려`,
       `CNY/KRW 환율 상승 압력 — 수입 원가 악화 가능성`,
       `기술적 저항선 근접 — 단기 하락 전환 가능성 모니터링 필요`,
     ]
@@ -1341,7 +1340,7 @@ function initPriceChart() {
             title: items => items[0].label,
             label: item => {
               if (item.parsed.y === null) return null;
-              return ` ${item.dataset.label}: $${fmtNum(item.parsed.y, 1)} USD/MT`;
+              return ` ${item.dataset.label}: ¥${fmtNum(item.parsed.y, 0)} CNY/MT`;
             }
           }
         },
@@ -1357,7 +1356,7 @@ function initPriceChart() {
             color: '#6b7490', font: { size: 10 },
             callback: v => '$' + fmtNum(v)
           },
-          title: { display: true, text: 'USD/MT', color: '#6b7490', font: { size: 10 } }
+          title: { display: true, text: 'CNY/MT (SHFE)', color: '#6b7490', font: { size: 10 } }
         }
       }
     }
@@ -1584,7 +1583,7 @@ function calculateSimulator() {
   const tariff = parseFloat(document.getElementById('sim-tariff').value) / 100 || 0.05;
   const misc = parseFloat(document.getElementById('sim-misc').value) / 100 || 0.03;
 
-  const rpci = calcRPCI(lme, cny, usd, tariff, misc);
+  const rpci = calcRPCI(lme, cny, tariff, misc); // lme = SHFE CNY/MT, cny = CNY/KRW
   const totalKrw = rpci * qty;
   const unitUsd = (rpci / usd);
 
