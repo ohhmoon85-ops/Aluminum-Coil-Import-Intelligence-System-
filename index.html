@@ -528,6 +528,58 @@
   .tag-p { background: rgba(180,76,201,0.15); color: #d4a0e8; border: 1px solid rgba(180,76,201,0.3); }
   .choose-arrow { color: var(--text-secondary); font-size: 0.8rem; }
 
+  /* ===== EMAIL TEMPLATE PANEL ===== */
+  .email-panel {
+    background: var(--navy-card);
+    border: 1px solid var(--border);
+    border-radius: 12px; padding: 1.25rem 1.4rem;
+    margin-top: 1rem;
+  }
+  .email-panel-header {
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+  .email-panel-title { font-size: 0.85rem; font-weight: 800; color: var(--text-primary); }
+  .email-panel-sub { font-size: 0.74rem; color: var(--text-secondary); margin-top: 0.15rem; }
+  .copy-btn {
+    padding: 0.35rem 0.9rem; font-size: 0.72rem; font-weight: 700;
+    background: rgba(201,168,76,0.12); color: var(--gold);
+    border: 1px solid rgba(201,168,76,0.35); border-radius: 6px;
+    cursor: pointer; transition: all 0.2s; white-space: nowrap;
+  }
+  .copy-btn:hover { background: rgba(201,168,76,0.22); }
+  .copy-btn.copied { background: rgba(76,201,130,0.15); color: #7ee3a8; border-color: rgba(76,201,130,0.4); }
+  .email-cols { display: grid; grid-template-columns: 1fr 320px; gap: 1.2rem; }
+  @media (max-width: 900px) { .email-cols { grid-template-columns: 1fr; } }
+  .email-body {
+    background: var(--navy-dark);
+    border: 1px solid var(--border);
+    border-radius: 8px; padding: 1.1rem 1.25rem;
+    font-size: 0.77rem; line-height: 1.75; color: var(--text-primary);
+    font-family: 'Courier New', monospace;
+    white-space: pre-wrap; word-break: break-word;
+  }
+  .email-field { color: var(--gold); font-weight: 700; }
+  .email-placeholder { color: #7ea8c9; font-style: italic; }
+  .email-section-head { color: #c9a84c; font-weight: 700; }
+  .email-checklist {
+    background: rgba(201,168,76,0.05);
+    border: 1px solid rgba(201,168,76,0.18);
+    border-radius: 8px; padding: 1rem 1.1rem;
+  }
+  .email-checklist-title { font-size: 0.78rem; font-weight: 800; color: var(--gold); margin-bottom: 0.7rem; }
+  .email-cl-item { display: flex; gap: 0.5rem; margin-bottom: 0.65rem; font-size: 0.77rem; line-height: 1.55; }
+  .email-cl-item:last-child { margin-bottom: 0; }
+  .email-cl-num {
+    flex-shrink: 0; width: 18px; height: 18px; background: rgba(201,168,76,0.2);
+    color: var(--gold); font-weight: 800; font-size: 0.68rem;
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    margin-top: 1px;
+  }
+  .email-cl-text { color: var(--text-primary); }
+  .email-cl-text strong { color: var(--gold); }
+
   /* ===== SIMULATOR ===== */
   .simulator-layout {
     display: grid; grid-template-columns: 1fr 1fr;
@@ -1078,6 +1130,75 @@
               <div class="choose-item"><span class="choose-tag tag-s">빠른 응대·소량 가능</span><span class="choose-arrow">→</span><strong>Haomei, TMR</strong> (해외 수출팀 보유, 샘플 협조적)</div>
               <div class="choose-item"><span class="choose-tag tag-p">고사양 드릴링 특화</span><span class="choose-arrow">→</span><strong>Kexin Electronics</strong> (윤활 코팅 엔트리 시트 전문)</div>
             </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 영문 문의 메일 초안 -->
+    <div class="email-panel">
+      <div class="email-panel-header">
+        <div>
+          <div class="email-panel-title">✉️ 영문 문의 메일 초안 (PCB 알루미늄 엔트리 시트)</div>
+          <div class="email-panel-sub">[ ] 항목을 실제 값으로 교체 후 발송 — 여러 업체에 동시 발송 후 TDS가 가장 상세한 업체를 우선 검토</div>
+        </div>
+        <button class="copy-btn" id="copy-email-btn" onclick="copyEmailTemplate()">📋 복사</button>
+      </div>
+      <div class="email-cols">
+        <div>
+          <div class="email-body" id="email-template-text"><span class="email-field">Subject:</span> Inquiry: Aluminum Entry Sheets for PCB Drilling / [Company Name]
+
+<span class="email-field">Dear Sales Manager,</span>
+
+I am writing to you on behalf of <span class="email-placeholder">[Your Company Name]</span> in South Korea. We are currently looking for a reliable supplier of Aluminum Entry Sheets specifically designed for the PCB drilling process.
+
+We have reviewed your product range and are interested in your aluminum foil products. Could you please provide us with a quotation and technical data sheet based on the following specifications?
+
+<span class="email-section-head">[Specifications Required]</span>
+  • Product: Aluminum Entry Sheet (Foil) for PCB Drilling
+  • Alloy &amp; Temper: Alloy 1100 / 1060 (H18)
+  • Thickness: <span class="email-placeholder">[e.g., 0.15mm / 0.18mm / 0.20mm]</span>
+  • Width: <span class="email-placeholder">[e.g., 1000mm / 1200mm]</span>
+  • Surface: Degreased, flat, and free of oil/scratches
+  • Quantity: <span class="email-placeholder">[e.g., 500kg or 1 Ton]</span> for a trial order
+
+In addition, I would appreciate it if you could answer the following questions:
+  1. Could you please send us your latest <strong>Product Catalog</strong> for PCB-related materials?
+  2. What is your <strong>Minimum Order Quantity (MOQ)</strong> for this specific product?
+  3. Are you able to provide <strong>samples</strong> for testing (drilling burr and heat dissipation test)?
+  4. What is the estimated <strong>lead time</strong> for the quantity mentioned above?
+
+We are looking forward to establishing a long-term business relationship with your company. I look forward to hearing from you soon.
+
+Best regards,
+
+<span class="email-placeholder">[Your Name]</span>
+<span class="email-placeholder">[Your Job Title]</span>
+<span class="email-placeholder">[Your Company Name]</span>
+<span class="email-placeholder">[Your Phone Number / WhatsApp]</span>
+<span class="email-placeholder">[Company Website, if any]</span></div>
+        </div>
+        <div class="email-checklist">
+          <div class="email-checklist-title">✅ 발송 전 체크리스트</div>
+          <div class="email-cl-item">
+            <div class="email-cl-num">1</div>
+            <div class="email-cl-text"><strong>두께·폭 확인:</strong> 현재 공장 설비에 맞는 정확한 수치를 입력하세요. 보통 0.15mm~0.20mm가 일반적입니다.</div>
+          </div>
+          <div class="email-cl-item">
+            <div class="email-cl-num">2</div>
+            <div class="email-cl-text"><strong>샘플 요청:</strong> 중국 업체들은 잠재 고객에게 샘플을 기꺼이 보내줍니다. 다만, DHL·FedEx 운송비는 수취인 부담인 경우가 많으니 참고하세요.</div>
+          </div>
+          <div class="email-cl-item">
+            <div class="email-cl-num">3</div>
+            <div class="email-cl-text"><strong>위챗(WeChat) 아이디:</strong> 중국 담당자들은 이메일보다 위챗 응답이 훨씬 빠릅니다. 메일 하단에 위챗 아이디를 적어두면 더 빨리 소통할 수 있습니다.</div>
+          </div>
+          <div class="email-cl-item">
+            <div class="email-cl-num">4</div>
+            <div class="email-cl-text"><strong>제목 업체명 교체:</strong> Subject의 [Company Name]을 수신 업체명으로 각각 교체하세요. 동일 메일을 그대로 복사·발송하면 스팸으로 처리될 수 있습니다.</div>
+          </div>
+          <div class="email-cl-item">
+            <div class="email-cl-num">5</div>
+            <div class="email-cl-text"><strong>답변 비교:</strong> 여러 업체에 동시 발송 후, 응답 속도와 TDS(기술 데이터시트) 상세도가 높은 업체를 우선 검토하세요.</div>
           </div>
         </div>
       </div>
@@ -1866,6 +1987,49 @@ function setFxView(mode, btn) {
 
 // ===================== SUPPLIER TABLE =====================
 let radarChart = null;
+
+function copyEmailTemplate() {
+  const plain = `Subject: Inquiry: Aluminum Entry Sheets for PCB Drilling / [Company Name]
+
+Dear Sales Manager,
+
+I am writing to you on behalf of [Your Company Name] in South Korea. We are currently looking for a reliable supplier of Aluminum Entry Sheets specifically designed for the PCB drilling process.
+
+We have reviewed your product range and are interested in your aluminum foil products. Could you please provide us with a quotation and technical data sheet based on the following specifications?
+
+[Specifications Required]
+  - Product: Aluminum Entry Sheet (Foil) for PCB Drilling
+  - Alloy & Temper: Alloy 1100 / 1060 (H18)
+  - Thickness: [e.g., 0.15mm / 0.18mm / 0.20mm]
+  - Width: [e.g., 1000mm / 1200mm]
+  - Surface: Degreased, flat, and free of oil/scratches
+  - Quantity: [e.g., 500kg or 1 Ton] for a trial order
+
+In addition, I would appreciate it if you could answer the following questions:
+  1. Could you please send us your latest Product Catalog for PCB-related materials?
+  2. What is your Minimum Order Quantity (MOQ) for this specific product?
+  3. Are you able to provide samples for testing (drilling burr and heat dissipation test)?
+  4. What is the estimated lead time for the quantity mentioned above?
+
+We are looking forward to establishing a long-term business relationship with your company. I look forward to hearing from you soon.
+
+Best regards,
+
+[Your Name]
+[Your Job Title]
+[Your Company Name]
+[Your Phone Number / WhatsApp]
+[Company Website, if any]`;
+
+  navigator.clipboard.writeText(plain).then(() => {
+    const btn = document.getElementById('copy-email-btn');
+    btn.textContent = '✅ 복사됨';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = '📋 복사'; btn.classList.remove('copied'); }, 2000);
+  }).catch(() => {
+    alert('복사 실패: 브라우저에서 직접 텍스트를 선택해 복사하세요.');
+  });
+}
 
 function renderSupplierTable() {
   const tbody = document.getElementById('supplier-tbody');
