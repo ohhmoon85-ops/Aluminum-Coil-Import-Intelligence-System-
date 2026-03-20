@@ -1136,10 +1136,21 @@
       </div>
       <div class="kpi-card">
         <div class="kpi-icon">💱</div>
-        <div class="kpi-label">CNY/KRW 환율 <span class="data-badge badge-real">● 실제 데이터</span></div>
-        <div class="kpi-value" id="kpi-cny">190.3</div>
-        <div class="kpi-unit">원/위안 · 한국은행 ECOS</div>
-        <div class="kpi-change down" id="kpi-cny-chg">▼ -0.15%</div>
+        <div class="kpi-label">환율 현황 <span class="data-badge badge-real">● 실제 데이터</span></div>
+        <div style="display:flex; gap:1rem; align-items:flex-start; flex-wrap:wrap; margin-top:0.2rem;">
+          <div>
+            <div style="font-size:0.68rem; color:var(--text-secondary); margin-bottom:0.1rem;">CNY/KRW</div>
+            <div class="kpi-value" id="kpi-cny" style="font-size:1.6rem;">190.3</div>
+            <div class="kpi-change down" id="kpi-cny-chg" style="font-size:0.72rem;">▼ -0.15%</div>
+          </div>
+          <div style="width:1px; background:rgba(255,255,255,0.12); align-self:stretch; margin:0.1rem 0;"></div>
+          <div>
+            <div style="font-size:0.68rem; color:var(--text-secondary); margin-bottom:0.1rem;">USD/KRW</div>
+            <div class="kpi-value" id="kpi-usd" style="font-size:1.6rem;">1,370</div>
+            <div class="kpi-change neutral" id="kpi-usd-chg" style="font-size:0.72rem;">-- %</div>
+          </div>
+        </div>
+        <div class="kpi-unit" style="margin-top:0.4rem;">원 · 한국은행 ECOS</div>
       </div>
       <div class="kpi-card">
         <div class="kpi-icon">📊</div>
@@ -1904,7 +1915,7 @@ for (let i = 1; i <= 30; i++) {
 // ===================== DATA VARIABLES (실제 API 연동) =====================
 let lmeHist, lmePred, lmePredUpper, lmePredLower, lmePredMethod, lastLme, lmePrev, lmeChange;
 let cnyHist, cnyPred, cnyPredUpper, cnyPredLower, lastCny, cnyPrev, cnyChange;
-let usdHist, usdPred, usdPredUpper, usdPredLower, lastUsd;
+let usdHist, usdPred, usdPredUpper, usdPredLower, lastUsd, usdPrev, usdChange;
 let rpciHist, rpciMa60, rpciMa90, currentRPCI, currentMA60, currentMA90;
 let shortSignal, longSignal;
 let lmeMa20, lmeMa60, lmeBB;
@@ -2039,8 +2050,10 @@ function computeDerived() {
   lastUsd = usdHist[usdHist.length-1];
   lmePrev = lmeHist[lmeHist.length-2];
   cnyPrev = cnyHist[cnyHist.length-2];
+  usdPrev = usdHist[usdHist.length-2];
   lmeChange = ((lastLme - lmePrev)/lmePrev*100).toFixed(2);
   cnyChange = ((lastCny - cnyPrev)/cnyPrev*100).toFixed(2);
+  usdChange = ((lastUsd - usdPrev)/usdPrev*100).toFixed(2);
 
   rpciHist   = lmeHist.map((l,i) => calcRPCI(l, cnyHist[i])); // SHFE CNY/MT × CNY/KRW
   rpciMa60   = movingAvg(rpciHist, 60);
@@ -2188,6 +2201,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   const cnyUp = cnyChange > 0;
   cnyChgEl.textContent = (cnyUp ? '▲ +' : '▼ ') + cnyChange + '%';
   cnyChgEl.className = 'kpi-change ' + (cnyUp ? 'up' : 'down');
+
+  document.getElementById('kpi-usd').textContent = fmtNum(lastUsd, 0);
+  const usdChgEl = document.getElementById('kpi-usd-chg');
+  const usdUp = usdChange > 0;
+  usdChgEl.textContent = (usdUp ? '▲ +' : '▼ ') + usdChange + '%';
+  usdChgEl.className = 'kpi-change ' + (usdUp ? 'up' : 'down');
 
   document.getElementById('kpi-rpci').textContent = fmtNum(currentRPCI);
   const rpciVsMa = ((currentRPCI - currentMA60)/currentMA60*100).toFixed(1);
