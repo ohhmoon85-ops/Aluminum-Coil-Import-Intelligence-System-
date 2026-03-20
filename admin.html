@@ -1,0 +1,1736 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ACIS - 공급업체 관리자 페이지</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --navy: #1a2744;
+    --navy-light: #223060;
+    --navy-mid: #1e3060;
+    --navy-dark: #111d35;
+    --navy-card: #1c2e52;
+    --gold: #c9a84c;
+    --gold-light: #e0bf70;
+    --gold-dark: #a8882e;
+    --green: #2ecc71;
+    --yellow: #f1c40f;
+    --red: #e74c3c;
+    --silver: #aab4c8;
+    --text-primary: #e8eaf0;
+    --text-secondary: #9aa3ba;
+    --text-muted: #6b7490;
+    --border: #2a3a6a;
+    --border-light: #3a4a7a;
+    --shadow: 0 4px 24px rgba(0,0,0,0.4);
+    --shadow-sm: 0 2px 12px rgba(0,0,0,0.3);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--navy-dark);
+    color: var(--text-primary);
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+
+  /* ===== SCROLLBAR ===== */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--navy-dark); }
+  ::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 3px; }
+
+  /* ===== LOGIN SCREEN ===== */
+  #login-screen {
+    position: fixed; inset: 0;
+    background: var(--navy-dark);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 9999;
+    transition: opacity 0.4s ease;
+  }
+  #login-screen.hidden { opacity: 0; pointer-events: none; }
+
+  .login-card {
+    background: var(--navy-card);
+    border: 1px solid var(--border-light);
+    border-radius: 18px;
+    padding: 3rem 2.5rem;
+    width: 100%;
+    max-width: 420px;
+    box-shadow: 0 8px 48px rgba(0,0,0,0.6);
+    text-align: center;
+  }
+
+  .login-logo {
+    font-size: 2.8rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 60%, var(--gold) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.3rem;
+  }
+
+  .login-subtitle {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-bottom: 0.6rem;
+  }
+
+  .login-admin-badge {
+    display: inline-block;
+    background: rgba(201,168,76,0.15);
+    border: 1px solid rgba(201,168,76,0.4);
+    color: var(--gold);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    padding: 3px 12px;
+    border-radius: 20px;
+    margin-bottom: 2rem;
+  }
+
+  .login-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1.2rem;
+    text-align: left;
+  }
+
+  .login-field label {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+  }
+
+  .login-input {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--border-light);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    color: var(--text-primary);
+    font-size: 1rem;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .login-input:focus { border-color: var(--gold); }
+
+  .login-btn {
+    width: 100%;
+    background: linear-gradient(135deg, var(--gold-dark), var(--gold));
+    border: none;
+    border-radius: 8px;
+    padding: 0.85rem;
+    color: var(--navy-dark);
+    font-size: 1rem;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.15s;
+    margin-top: 0.4rem;
+  }
+  .login-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+  .login-btn:active { transform: translateY(0); }
+
+  .login-error {
+    color: var(--red);
+    font-size: 0.82rem;
+    margin-top: 0.6rem;
+    min-height: 1.2em;
+    text-align: center;
+  }
+
+  /* ===== NOTICE BAR ===== */
+  #notice-bar {
+    background: rgba(201,168,76,0.12);
+    border-bottom: 1px solid rgba(201,168,76,0.3);
+    padding: 0.55rem 1.5rem;
+    font-size: 0.78rem;
+    color: #d4b870;
+    text-align: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  /* ===== HEADER ===== */
+  #main-header {
+    background: linear-gradient(180deg, var(--navy) 0%, var(--navy-mid) 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 0.9rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+  }
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .back-link {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.82rem;
+    padding: 0.35rem 0.8rem;
+    border: 1px solid var(--border-light);
+    border-radius: 6px;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .back-link:hover { color: var(--gold); border-color: var(--gold); background: rgba(201,168,76,0.08); }
+
+  .header-title-group { display: flex; align-items: center; gap: 0.75rem; }
+
+  .header-logo {
+    font-size: 1.5rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 60%, var(--gold) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .header-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  #save-indicator {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+  #save-indicator.saved { color: var(--green); }
+
+  .logout-btn {
+    background: rgba(231,76,60,0.15);
+    border: 1px solid rgba(231,76,60,0.35);
+    color: #e74c3c;
+    padding: 0.35rem 0.9rem;
+    border-radius: 6px;
+    font-size: 0.82rem;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .logout-btn:hover { background: rgba(231,76,60,0.25); }
+
+  /* ===== MAIN CONTENT ===== */
+  #app {
+    display: none;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+  #app.visible { display: flex; }
+
+  .main-content {
+    padding: 1.5rem;
+    max-width: 1400px;
+    margin: 0 auto;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  /* ===== SECTION TITLES ===== */
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .section-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--gold);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  /* ===== CARDS ===== */
+  .card {
+    background: var(--navy-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.5rem;
+    box-shadow: var(--shadow-sm);
+  }
+
+  /* ===== TABLE ===== */
+  .table-wrapper {
+    overflow-x: auto;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 900px;
+  }
+
+  thead tr {
+    background: rgba(201,168,76,0.1);
+    border-bottom: 2px solid rgba(201,168,76,0.25);
+  }
+
+  th {
+    padding: 0.65rem 0.8rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--gold);
+    text-align: center;
+    white-space: nowrap;
+    letter-spacing: 0.03em;
+  }
+
+  tbody tr {
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    transition: background 0.15s;
+    cursor: pointer;
+  }
+
+  tbody tr:hover { background: rgba(255,255,255,0.04); }
+  tbody tr.selected { background: rgba(201,168,76,0.08); border-left: 3px solid var(--gold); }
+
+  td {
+    padding: 0.6rem 0.8rem;
+    font-size: 0.82rem;
+    text-align: center;
+    color: var(--text-primary);
+    vertical-align: middle;
+  }
+
+  td.name-cell { text-align: left; font-weight: 600; }
+  td.name-cn { text-align: left; color: var(--text-secondary); font-size: 0.78rem; }
+
+  .rank-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    font-weight: 700;
+    font-size: 0.82rem;
+  }
+  .rank-1 { background: linear-gradient(135deg, #c9a84c, #e0bf70); color: #111; }
+  .rank-2 { background: linear-gradient(135deg, #aab4c8, #cdd5e0); color: #111; }
+  .rank-3 { background: rgba(205,127,50,0.3); color: #cd7f32; border: 1px solid #cd7f32; }
+  .rank-other { background: rgba(255,255,255,0.08); color: var(--text-secondary); }
+
+  .score-cell { font-weight: 700; font-size: 0.88rem; }
+
+  .tier-badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+  }
+  .tier-1 { background: rgba(201,168,76,0.2); color: var(--gold); border: 1px solid rgba(201,168,76,0.4); }
+  .tier-2 { background: rgba(170,180,200,0.15); color: var(--silver); border: 1px solid rgba(170,180,200,0.3); }
+  .tier-0 { background: rgba(231,76,60,0.15); color: var(--red); border: 1px solid rgba(231,76,60,0.3); }
+
+  .score-bar-wrap {
+    width: 70px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 3px;
+    height: 6px;
+    display: inline-block;
+    vertical-align: middle;
+    overflow: hidden;
+  }
+  .score-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    background: linear-gradient(90deg, var(--gold-dark), var(--gold));
+    transition: width 0.4s ease;
+  }
+
+  .action-btn {
+    padding: 3px 10px;
+    border-radius: 5px;
+    font-size: 0.72rem;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.15s;
+    border: 1px solid;
+    white-space: nowrap;
+  }
+  .btn-edit {
+    background: rgba(201,168,76,0.12);
+    border-color: rgba(201,168,76,0.35);
+    color: var(--gold);
+  }
+  .btn-edit:hover { background: rgba(201,168,76,0.22); }
+  .btn-delete {
+    background: rgba(231,76,60,0.1);
+    border-color: rgba(231,76,60,0.3);
+    color: var(--red);
+    margin-left: 4px;
+  }
+  .btn-delete:hover { background: rgba(231,76,60,0.22); }
+
+  .table-empty {
+    text-align: center;
+    color: var(--text-muted);
+    padding: 3rem 1rem;
+    font-size: 0.9rem;
+  }
+
+  /* ===== FORM SECTION ===== */
+  #form-section {
+    display: none;
+    animation: slideDown 0.3s ease;
+  }
+  #form-section.open { display: block; }
+
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 1.5rem;
+    align-items: start;
+  }
+
+  @media (max-width: 900px) {
+    .form-grid { grid-template-columns: 1fr; }
+  }
+
+  /* Score Preview Box */
+  .score-preview-box {
+    background: rgba(201,168,76,0.08);
+    border: 1px solid rgba(201,168,76,0.25);
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  .score-preview-main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .score-preview-label {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    letter-spacing: 0.05em;
+    margin-bottom: 2px;
+  }
+
+  .score-preview-value {
+    font-size: 2.4rem;
+    font-weight: 900;
+    color: var(--gold);
+    line-height: 1;
+  }
+
+  .score-preview-tier {
+    font-size: 0.9rem;
+    font-weight: 700;
+    padding: 4px 14px;
+    border-radius: 20px;
+    margin-top: 4px;
+  }
+
+  /* Form fields */
+  .form-fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.9rem;
+  }
+
+  @media (max-width: 600px) {
+    .form-fields { grid-template-columns: 1fr; }
+  }
+
+  .form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+  .form-field.full-width { grid-column: 1 / -1; }
+
+  .form-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    letter-spacing: 0.02em;
+  }
+  .form-label span {
+    color: var(--text-muted);
+    font-weight: 400;
+    font-size: 0.68rem;
+  }
+
+  .form-input, .form-textarea {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border-light);
+    border-radius: 7px;
+    padding: 0.55rem 0.8rem;
+    color: var(--text-primary);
+    font-size: 0.85rem;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .form-input:focus, .form-textarea:focus { border-color: var(--gold); background: rgba(255,255,255,0.07); }
+
+  .form-textarea { resize: vertical; min-height: 70px; }
+
+  /* Slider row */
+  .slider-row {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  .slider-range {
+    flex: 1;
+    -webkit-appearance: none;
+    height: 5px;
+    border-radius: 3px;
+    background: var(--border-light);
+    outline: none;
+    cursor: pointer;
+  }
+  .slider-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: var(--gold);
+    cursor: pointer;
+    box-shadow: 0 0 0 3px rgba(201,168,76,0.2);
+    transition: box-shadow 0.2s;
+  }
+  .slider-range::-webkit-slider-thumb:hover { box-shadow: 0 0 0 5px rgba(201,168,76,0.3); }
+
+  .slider-num {
+    width: 52px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--border-light);
+    border-radius: 6px;
+    padding: 3px 6px;
+    color: var(--text-primary);
+    font-size: 0.85rem;
+    font-family: inherit;
+    text-align: center;
+    outline: none;
+  }
+  .slider-num:focus { border-color: var(--gold); }
+
+  .slider-weight {
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+
+  /* Form buttons */
+  .form-actions {
+    display: flex;
+    gap: 0.6rem;
+    margin-top: 1.2rem;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    padding: 0.6rem 1.4rem;
+    border-radius: 7px;
+    font-size: 0.85rem;
+    font-family: inherit;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    border: 1px solid;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--gold-dark), var(--gold));
+    border-color: var(--gold);
+    color: var(--navy-dark);
+  }
+  .btn-primary:hover { opacity: 0.88; transform: translateY(-1px); }
+
+  .btn-secondary {
+    background: transparent;
+    border-color: var(--border-light);
+    color: var(--text-secondary);
+  }
+  .btn-secondary:hover { border-color: var(--gold); color: var(--gold); }
+
+  .btn-danger {
+    background: rgba(231,76,60,0.1);
+    border-color: rgba(231,76,60,0.35);
+    color: var(--red);
+  }
+  .btn-danger:hover { background: rgba(231,76,60,0.2); }
+
+  .btn-success {
+    background: rgba(46,204,113,0.12);
+    border-color: rgba(46,204,113,0.35);
+    color: var(--green);
+  }
+  .btn-success:hover { background: rgba(46,204,113,0.22); }
+
+  /* ===== RADAR CHART PANEL ===== */
+  .chart-panel {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .chart-panel-title {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    letter-spacing: 0.05em;
+    text-align: center;
+  }
+
+  #radarChart {
+    max-width: 280px;
+    max-height: 280px;
+  }
+
+  /* ===== DATA MANAGEMENT ===== */
+  .data-mgmt-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 0.9rem;
+  }
+
+  .data-mgmt-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+    padding: 1rem 1.1rem;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid;
+    font-family: inherit;
+    text-align: left;
+  }
+
+  .data-mgmt-btn .btn-icon { font-size: 1.3rem; }
+  .data-mgmt-btn .btn-title { font-size: 0.85rem; font-weight: 700; }
+  .data-mgmt-btn .btn-desc { font-size: 0.7rem; }
+
+  .dmb-export {
+    background: rgba(46,204,113,0.08);
+    border-color: rgba(46,204,113,0.3);
+    color: var(--green);
+  }
+  .dmb-export:hover { background: rgba(46,204,113,0.16); }
+
+  .dmb-import {
+    background: rgba(52,152,219,0.08);
+    border-color: rgba(52,152,219,0.3);
+    color: #3498db;
+  }
+  .dmb-import:hover { background: rgba(52,152,219,0.16); }
+
+  .dmb-reset {
+    background: rgba(231,76,60,0.08);
+    border-color: rgba(231,76,60,0.3);
+    color: var(--red);
+  }
+  .dmb-reset:hover { background: rgba(231,76,60,0.16); }
+
+  .dmb-password {
+    background: rgba(201,168,76,0.08);
+    border-color: rgba(201,168,76,0.3);
+    color: var(--gold);
+  }
+  .dmb-password:hover { background: rgba(201,168,76,0.16); }
+
+  /* ===== MODAL ===== */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.65);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 5000;
+    padding: 1rem;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s;
+  }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+
+  .modal-card {
+    background: var(--navy-card);
+    border: 1px solid var(--border-light);
+    border-radius: 14px;
+    padding: 2rem;
+    width: 100%;
+    max-width: 420px;
+    box-shadow: 0 8px 48px rgba(0,0,0,0.6);
+    transform: scale(0.95);
+    transition: transform 0.25s;
+  }
+  .modal-overlay.open .modal-card { transform: scale(1); }
+
+  .modal-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--gold);
+    margin-bottom: 1rem;
+  }
+
+  .modal-body { font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 1.25rem; }
+
+  .modal-actions { display: flex; gap: 0.6rem; justify-content: flex-end; }
+
+  .modal-field {
+    display: flex; flex-direction: column; gap: 0.35rem;
+    margin-bottom: 0.9rem;
+  }
+
+  .modal-label { font-size: 0.78rem; color: var(--text-secondary); font-weight: 600; }
+
+  .modal-input {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border-light);
+    border-radius: 7px;
+    padding: 0.55rem 0.8rem;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .modal-input:focus { border-color: var(--gold); }
+
+  .modal-error { color: var(--red); font-size: 0.78rem; min-height: 1em; margin-top: -0.4rem; margin-bottom: 0.5rem; }
+
+  /* ===== TOAST ===== */
+  #toast-container {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    z-index: 9000;
+    pointer-events: none;
+  }
+
+  .toast {
+    background: var(--navy-card);
+    border: 1px solid var(--border-light);
+    border-radius: 8px;
+    padding: 0.7rem 1rem;
+    font-size: 0.82rem;
+    color: var(--text-primary);
+    box-shadow: var(--shadow);
+    opacity: 0;
+    transform: translateX(20px);
+    transition: all 0.3s ease;
+    pointer-events: none;
+    max-width: 280px;
+  }
+  .toast.show { opacity: 1; transform: translateX(0); }
+  .toast.toast-success { border-left: 3px solid var(--green); }
+  .toast.toast-error { border-left: 3px solid var(--red); }
+  .toast.toast-info { border-left: 3px solid var(--gold); }
+
+  /* ===== ADD BUTTON ===== */
+  .add-new-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 1.1rem;
+    background: rgba(201,168,76,0.12);
+    border: 1px solid rgba(201,168,76,0.35);
+    border-radius: 7px;
+    color: var(--gold);
+    font-size: 0.82rem;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .add-new-btn:hover { background: rgba(201,168,76,0.22); }
+
+  /* ===== STATS ROW ===== */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 0.9rem;
+  }
+
+  .stat-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.9rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+
+  .stat-card-label {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    letter-spacing: 0.04em;
+  }
+
+  .stat-card-value {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: var(--gold);
+    line-height: 1.1;
+  }
+
+  .stat-card-sub {
+    font-size: 0.72rem;
+    color: var(--text-secondary);
+  }
+
+  /* Hidden file input */
+  #import-file-input { display: none; }
+
+  /* Form section open btn label */
+  .form-mode-label {
+    font-size: 0.72rem;
+    color: var(--text-secondary);
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+  }
+  .form-mode-label.mode-edit { color: var(--gold); border-color: rgba(201,168,76,0.3); background: rgba(201,168,76,0.08); }
+  .form-mode-label.mode-add { color: var(--green); border-color: rgba(46,204,113,0.3); background: rgba(46,204,113,0.08); }
+
+</style>
+</head>
+<body>
+
+<!-- ===== LOGIN SCREEN ===== -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">ACIS</div>
+    <div class="login-subtitle">알루미늄 코일 수입 인텔리전스 시스템</div>
+    <div class="login-admin-badge">ADMIN</div>
+
+    <div class="login-field">
+      <label for="login-pw">관리자 비밀번호</label>
+      <input type="password" id="login-pw" class="login-input" placeholder="비밀번호를 입력하세요" autocomplete="current-password">
+    </div>
+
+    <button class="login-btn" onclick="doLogin()">로그인</button>
+    <div class="login-error" id="login-error"></div>
+  </div>
+</div>
+
+<!-- ===== MAIN APP ===== -->
+<div id="app">
+
+  <!-- Notice Bar -->
+  <div id="notice-bar">
+    ⚠️ 이 데이터는 이 기기의 브라우저(localStorage)에만 저장됩니다. 다른 기기에서 사용하려면 JSON 내보내기 후 가져오기 하세요.
+  </div>
+
+  <!-- Header -->
+  <header id="main-header">
+    <div class="header-left">
+      <a href="./index.html" class="back-link">← 대시보드로 돌아가기</a>
+      <div class="header-title-group">
+        <span class="header-logo">ACIS</span>
+        <span class="header-title">공급업체 관리자 페이지</span>
+      </div>
+    </div>
+    <div class="header-right">
+      <span id="save-indicator">저장 대기 중</span>
+      <button class="logout-btn" onclick="doLogout()">로그아웃</button>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <div class="main-content">
+
+    <!-- Stats Row -->
+    <div class="stats-row" id="stats-row">
+      <!-- populated by JS -->
+    </div>
+
+    <!-- Supplier Table Section -->
+    <div class="card">
+      <div class="section-header">
+        <div class="section-title">📋 공급업체 목록</div>
+        <button class="add-new-btn" onclick="openAddForm()">+ 새 공급업체 추가</button>
+      </div>
+      <div class="table-wrapper">
+        <table id="supplier-table">
+          <thead>
+            <tr>
+              <th>순위</th>
+              <th style="text-align:left">업체명 (한글)</th>
+              <th style="text-align:left">업체명 (중문)</th>
+              <th>종합점수</th>
+              <th>Tier</th>
+              <th>생산능력<br><span style="font-weight:400;color:var(--text-muted);font-size:0.65rem">×25%</span></th>
+              <th>제품품질<br><span style="font-weight:400;color:var(--text-muted);font-size:0.65rem">×30%</span></th>
+              <th>신용재무<br><span style="font-weight:400;color:var(--text-muted);font-size:0.65rem">×20%</span></th>
+              <th>납기물류<br><span style="font-weight:400;color:var(--text-muted);font-size:0.65rem">×15%</span></th>
+              <th>가격경쟁력<br><span style="font-weight:400;color:var(--text-muted);font-size:0.65rem">×10%</span></th>
+              <th>수정 / 삭제</th>
+            </tr>
+          </thead>
+          <tbody id="supplier-tbody">
+            <!-- populated by JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Add / Edit Form Section -->
+    <div id="form-section" class="card">
+      <div class="section-header">
+        <div class="section-title" id="form-section-title">
+          ✏️ 공급업체 추가
+          <span class="form-mode-label mode-add" id="form-mode-label">신규 추가</span>
+        </div>
+        <button class="btn btn-secondary" onclick="closeForm()" style="padding:0.35rem 0.8rem;font-size:0.8rem">✕ 닫기</button>
+      </div>
+
+      <!-- Score Preview -->
+      <div class="score-preview-box">
+        <div class="score-preview-main">
+          <div class="score-preview-label">종합점수</div>
+          <div class="score-preview-value" id="preview-score">0.0</div>
+          <div class="score-preview-tier tier-badge tier-0" id="preview-tier">미권장</div>
+        </div>
+        <div style="flex:1;min-width:160px">
+          <div style="font-size:0.72rem;color:var(--text-muted);margin-bottom:0.35rem">가중 점수 분포</div>
+          <div id="preview-breakdown" style="font-size:0.75rem;color:var(--text-secondary);display:flex;flex-direction:column;gap:2px"></div>
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <!-- Left: Form Fields -->
+        <div>
+          <div class="form-fields">
+            <div class="form-field">
+              <label class="form-label">업체명 (한국어 표시명) <span>*필수</span></label>
+              <input type="text" id="f-nameKo" class="form-input" placeholder="예: 중알그룹 (CHALCO)">
+            </div>
+            <div class="form-field">
+              <label class="form-label">업체명 원문 (중문) <span>*필수</span></label>
+              <input type="text" id="f-name" class="form-input" placeholder="예: 中铝集团 (CHALCO)">
+            </div>
+            <div class="form-field">
+              <label class="form-label">업체명 약칭</label>
+              <input type="text" id="f-nameShort" class="form-input" placeholder="예: 中铝集团">
+            </div>
+            <div class="form-field">
+              <label class="form-label">주요 인증</label>
+              <input type="text" id="f-cert" class="form-input" placeholder="예: ISO 9001, IPC-4562">
+            </div>
+            <div class="form-field">
+              <label class="form-label">연락처 이메일</label>
+              <input type="email" id="f-email" class="form-input" placeholder="example@domain.com">
+            </div>
+            <div class="form-field">
+              <label class="form-label">웹사이트 URL</label>
+              <input type="text" id="f-website" class="form-input" placeholder="www.example.com">
+            </div>
+
+            <!-- Sliders -->
+            <div class="form-field full-width" style="margin-top:0.3rem">
+              <label class="form-label">생산능력 점수 <span>(가중치 25%)</span></label>
+              <div class="slider-row">
+                <input type="range" class="slider-range" id="s-cap" min="0" max="100" value="50">
+                <input type="number" class="slider-num" id="n-cap" min="0" max="100" value="50">
+                <span class="slider-weight">/ 100</span>
+              </div>
+            </div>
+            <div class="form-field full-width">
+              <label class="form-label">제품품질 점수 <span>(가중치 30%)</span></label>
+              <div class="slider-row">
+                <input type="range" class="slider-range" id="s-qual" min="0" max="100" value="50">
+                <input type="number" class="slider-num" id="n-qual" min="0" max="100" value="50">
+                <span class="slider-weight">/ 100</span>
+              </div>
+            </div>
+            <div class="form-field full-width">
+              <label class="form-label">신용·재무 점수 <span>(가중치 20%)</span></label>
+              <div class="slider-row">
+                <input type="range" class="slider-range" id="s-fin" min="0" max="100" value="50">
+                <input type="number" class="slider-num" id="n-fin" min="0" max="100" value="50">
+                <span class="slider-weight">/ 100</span>
+              </div>
+            </div>
+            <div class="form-field full-width">
+              <label class="form-label">납기·물류 점수 <span>(가중치 15%)</span></label>
+              <div class="slider-row">
+                <input type="range" class="slider-range" id="s-logi" min="0" max="100" value="50">
+                <input type="number" class="slider-num" id="n-logi" min="0" max="100" value="50">
+                <span class="slider-weight">/ 100</span>
+              </div>
+            </div>
+            <div class="form-field full-width">
+              <label class="form-label">가격경쟁력 점수 <span>(가중치 10%)</span></label>
+              <div class="slider-row">
+                <input type="range" class="slider-range" id="s-price" min="0" max="100" value="50">
+                <input type="number" class="slider-num" id="n-price" min="0" max="100" value="50">
+                <span class="slider-weight">/ 100</span>
+              </div>
+            </div>
+
+            <div class="form-field full-width">
+              <label class="form-label">업체 설명</label>
+              <textarea id="f-desc" class="form-textarea" placeholder="업체에 대한 간략한 설명을 입력하세요"></textarea>
+            </div>
+            <div class="form-field full-width">
+              <label class="form-label">비고</label>
+              <textarea id="f-note" class="form-textarea" placeholder="기타 참고사항"></textarea>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button class="btn btn-primary" onclick="saveSupplier()">💾 저장</button>
+            <button class="btn btn-secondary" onclick="closeForm()">취소</button>
+            <button class="btn btn-danger" onclick="resetForm()" style="margin-left:auto">초기화</button>
+          </div>
+        </div>
+
+        <!-- Right: Radar Chart -->
+        <div class="chart-panel">
+          <div class="chart-panel-title">레이더 차트 미리보기</div>
+          <canvas id="radarChart" width="280" height="280"></canvas>
+          <div style="font-size:0.68rem;color:var(--text-muted);text-align:center;margin-top:0.25rem">슬라이더 조절 시 실시간 업데이트</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Data Management Section -->
+    <div class="card">
+      <div class="section-header">
+        <div class="section-title">⚙️ 데이터 관리</div>
+      </div>
+      <div class="data-mgmt-grid">
+        <button class="data-mgmt-btn dmb-export" onclick="exportJSON()">
+          <span class="btn-icon">📤</span>
+          <span class="btn-title">JSON 내보내기</span>
+          <span class="btn-desc">현재 데이터를 파일로 저장</span>
+        </button>
+        <button class="data-mgmt-btn dmb-import" onclick="document.getElementById('import-file-input').click()">
+          <span class="btn-icon">📥</span>
+          <span class="btn-title">JSON 가져오기</span>
+          <span class="btn-desc">파일로 데이터 불러오기</span>
+        </button>
+        <button class="data-mgmt-btn dmb-reset" onclick="openResetModal()">
+          <span class="btn-icon">🔄</span>
+          <span class="btn-title">기본값 초기화</span>
+          <span class="btn-desc">기본 5개 업체로 리셋</span>
+        </button>
+        <button class="data-mgmt-btn dmb-password" onclick="openPasswordModal()">
+          <span class="btn-icon">🔑</span>
+          <span class="btn-title">비밀번호 변경</span>
+          <span class="btn-desc">관리자 비밀번호 재설정</span>
+        </button>
+      </div>
+    </div>
+
+  </div><!-- /main-content -->
+</div><!-- /app -->
+
+<!-- Hidden file input for import -->
+<input type="file" id="import-file-input" accept=".json" onchange="importJSON(event)">
+
+<!-- Toast Container -->
+<div id="toast-container"></div>
+
+<!-- Confirm Delete Modal -->
+<div class="modal-overlay" id="modal-delete">
+  <div class="modal-card">
+    <div class="modal-title">⚠️ 공급업체 삭제</div>
+    <div class="modal-body" id="modal-delete-body">정말 삭제하시겠습니까?</div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('modal-delete')">취소</button>
+      <button class="btn btn-danger" id="modal-delete-confirm">삭제</button>
+    </div>
+  </div>
+</div>
+
+<!-- Reset Modal -->
+<div class="modal-overlay" id="modal-reset">
+  <div class="modal-card">
+    <div class="modal-title">🔄 기본값으로 초기화</div>
+    <div class="modal-body">모든 현재 데이터를 삭제하고 기본 5개 업체 데이터로 초기화합니다. 이 작업은 되돌릴 수 없습니다.</div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('modal-reset')">취소</button>
+      <button class="btn btn-danger" onclick="doReset()">초기화</button>
+    </div>
+  </div>
+</div>
+
+<!-- Password Modal -->
+<div class="modal-overlay" id="modal-password">
+  <div class="modal-card">
+    <div class="modal-title">🔑 비밀번호 변경</div>
+    <div class="modal-field">
+      <label class="modal-label">현재 비밀번호</label>
+      <input type="password" id="pw-current" class="modal-input" placeholder="현재 비밀번호">
+    </div>
+    <div class="modal-field">
+      <label class="modal-label">새 비밀번호</label>
+      <input type="password" id="pw-new" class="modal-input" placeholder="새 비밀번호 (4자 이상)">
+    </div>
+    <div class="modal-field">
+      <label class="modal-label">새 비밀번호 확인</label>
+      <input type="password" id="pw-confirm" class="modal-input" placeholder="새 비밀번호 다시 입력">
+    </div>
+    <div class="modal-error" id="pw-error"></div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('modal-password')">취소</button>
+      <button class="btn btn-primary" onclick="changePassword()">변경</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== CONSTANTS =====
+const LS_SUPPLIERS = 'acis_suppliers';
+const LS_PW       = 'acis_admin_pw';
+const DEFAULT_PW  = 'acis2026';
+
+const DEFAULT_SUPPLIERS = [
+  { id: genId(), name:'中铝集团 (CHALCO)', nameKo:'중알그룹 (CHALCO)', nameShort:'中铝集团',
+    cap:95, qual:92, fin:90, logi:88, price:72,
+    desc:'세계 최대 알루미늄 생산기업. 국영기업 신뢰도 최상, 생산설비 최신화.',
+    cert:'ISO 9001, IPC-4562, RoHS', email:'', website:'www.chalco.com.cn', note:'' },
+  { id: genId(), name:'南山铝业 (Nanshan)', nameKo:'난산알루미늄', nameShort:'南山铝业',
+    cap:88, qual:90, fin:82, logi:85, price:80,
+    desc:'일체형 알루미늄 생산 체계 보유. 판재·코일 품질 안정성 우수.',
+    cert:'ISO 9001, RoHS', email:'', website:'www.nanshanalu.com', note:'' },
+  { id: genId(), name:'魏桥铝电 (Weiqiao)', nameKo:'웨이챠오알루미늄', nameShort:'魏桥铝电',
+    cap:92, qual:78, fin:75, logi:82, price:88,
+    desc:'중국 최대 민영 알루미늄 기업. 생산량 세계 Top3 수준.',
+    cert:'ISO 9001', email:'', website:'', note:'' },
+  { id: genId(), name:'东阳光铝 (DYLAL)', nameKo:'동양광알루미늄', nameShort:'东阳光铝',
+    cap:75, qual:85, fin:70, logi:78, price:82,
+    desc:'PCB 기판용 고순도 알루미늄 코일 특화 생산업체.',
+    cert:'ISO 9001, IPC-4562, REACH', email:'', website:'', note:'' },
+  { id: genId(), name:'云铝股份 (Yunnan Al)', nameKo:'윈난알루미늄', nameShort:'云铝股份',
+    cap:80, qual:72, fin:78, logi:70, price:90,
+    desc:'운남성 수력발전 기반 친환경 그린 알루미늄 생산.',
+    cert:'ISO 9001, ISO 14064', email:'', website:'', note:'' },
+];
+
+// ===== HELPERS =====
+function genId() {
+  return 'sup_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+}
+
+function calcScore(s) {
+  return parseFloat(((s.cap * 25 + s.qual * 30 + s.fin * 20 + s.logi * 15 + s.price * 10) / 100).toFixed(1));
+}
+
+function getTier(score) {
+  return score >= 80 ? 1 : score >= 60 ? 2 : 0;
+}
+
+function getTierLabel(tier) {
+  return tier === 1 ? 'Tier 1' : tier === 2 ? 'Tier 2' : '미권장';
+}
+
+function getTierClass(tier) {
+  return tier === 1 ? 'tier-1' : tier === 2 ? 'tier-2' : 'tier-0';
+}
+
+function getPW() {
+  return localStorage.getItem(LS_PW) || DEFAULT_PW;
+}
+
+function formatTime(d) {
+  return d.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+}
+
+// ===== STATE =====
+let suppliers = [];
+let editingId = null;
+let radarChart = null;
+
+// ===== LOAD / SAVE =====
+function loadSuppliers() {
+  try {
+    const raw = localStorage.getItem(LS_SUPPLIERS);
+    if (raw) {
+      suppliers = JSON.parse(raw);
+    } else {
+      suppliers = JSON.parse(JSON.stringify(DEFAULT_SUPPLIERS)).map(s => ({ ...s, id: genId() }));
+      saveSuppliers(false);
+    }
+  } catch(e) {
+    suppliers = JSON.parse(JSON.stringify(DEFAULT_SUPPLIERS)).map(s => ({ ...s, id: genId() }));
+  }
+}
+
+function saveSuppliers(showIndicator = true) {
+  localStorage.setItem(LS_SUPPLIERS, JSON.stringify(suppliers));
+  if (showIndicator) {
+    const el = document.getElementById('save-indicator');
+    el.textContent = '마지막 저장: ' + formatTime(new Date());
+    el.classList.add('saved');
+    setTimeout(() => el.classList.remove('saved'), 3000);
+  }
+}
+
+// ===== LOGIN =====
+document.getElementById('login-pw').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') doLogin();
+});
+
+function doLogin() {
+  const pw = document.getElementById('login-pw').value;
+  const err = document.getElementById('login-error');
+  if (!pw) { err.textContent = '비밀번호를 입력하세요.'; return; }
+  if (pw !== getPW()) {
+    err.textContent = '비밀번호가 올바르지 않습니다.';
+    document.getElementById('login-pw').value = '';
+    document.getElementById('login-pw').focus();
+    return;
+  }
+  err.textContent = '';
+  const ls = document.getElementById('login-screen');
+  ls.classList.add('hidden');
+  setTimeout(() => { ls.style.display = 'none'; }, 400);
+  document.getElementById('app').classList.add('visible');
+  loadSuppliers();
+  renderAll();
+  initRadarChart();
+}
+
+function doLogout() {
+  document.getElementById('app').classList.remove('visible');
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('login-screen').classList.remove('hidden');
+  document.getElementById('login-pw').value = '';
+  document.getElementById('login-error').textContent = '';
+}
+
+// ===== RENDER =====
+function renderAll() {
+  renderStats();
+  renderTable();
+}
+
+function sortedSuppliers() {
+  return [...suppliers].sort((a, b) => calcScore(b) - calcScore(a));
+}
+
+function renderStats() {
+  const sorted = sortedSuppliers();
+  const t1 = sorted.filter(s => getTier(calcScore(s)) === 1).length;
+  const t2 = sorted.filter(s => getTier(calcScore(s)) === 2).length;
+  const t0 = sorted.filter(s => getTier(calcScore(s)) === 0).length;
+  const avg = sorted.length > 0
+    ? (sorted.reduce((acc, s) => acc + calcScore(s), 0) / sorted.length).toFixed(1)
+    : '0.0';
+
+  document.getElementById('stats-row').innerHTML = `
+    <div class="stat-card">
+      <div class="stat-card-label">총 공급업체</div>
+      <div class="stat-card-value">${sorted.length}</div>
+      <div class="stat-card-sub">등록된 업체 수</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-label">Tier 1 업체</div>
+      <div class="stat-card-value" style="color:var(--gold)">${t1}</div>
+      <div class="stat-card-sub">80점 이상</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-label">Tier 2 업체</div>
+      <div class="stat-card-value" style="color:var(--silver)">${t2}</div>
+      <div class="stat-card-sub">60~79점</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-label">미권장 업체</div>
+      <div class="stat-card-value" style="color:var(--red)">${t0}</div>
+      <div class="stat-card-sub">59점 이하</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-label">평균 종합점수</div>
+      <div class="stat-card-value">${avg}</div>
+      <div class="stat-card-sub">전체 업체 평균</div>
+    </div>
+  `;
+}
+
+function renderTable() {
+  const tbody = document.getElementById('supplier-tbody');
+  const sorted = sortedSuppliers();
+
+  if (sorted.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="11" class="table-empty">등록된 공급업체가 없습니다. 새 공급업체를 추가하세요.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = sorted.map((s, idx) => {
+    const rank = idx + 1;
+    const score = calcScore(s);
+    const tier = getTier(score);
+    const rankClass = rank === 1 ? 'rank-1' : rank === 2 ? 'rank-2' : rank === 3 ? 'rank-3' : 'rank-other';
+    const isSelected = editingId === s.id;
+
+    const scoreBarHTML = (val) => `
+      <div style="display:flex;align-items:center;gap:5px">
+        <span>${val}</span>
+        <div class="score-bar-wrap"><div class="score-bar-fill" style="width:${val}%"></div></div>
+      </div>`;
+
+    return `<tr onclick="onRowClick('${s.id}')" class="${isSelected ? 'selected' : ''}">
+      <td><span class="rank-badge ${rankClass}">${rank}</span></td>
+      <td class="name-cell">${escHtml(s.nameKo || s.name)}</td>
+      <td class="name-cn">${escHtml(s.name)}</td>
+      <td class="score-cell" style="color:${score >= 80 ? 'var(--gold)' : score >= 60 ? 'var(--silver)' : 'var(--red)'}">${score}</td>
+      <td><span class="tier-badge ${getTierClass(tier)}">${getTierLabel(tier)}</span></td>
+      <td>${scoreBarHTML(s.cap)}</td>
+      <td>${scoreBarHTML(s.qual)}</td>
+      <td>${scoreBarHTML(s.fin)}</td>
+      <td>${scoreBarHTML(s.logi)}</td>
+      <td>${scoreBarHTML(s.price)}</td>
+      <td>
+        <button class="action-btn btn-edit" onclick="event.stopPropagation();openEditForm('${s.id}')">수정</button>
+        <button class="action-btn btn-delete" onclick="event.stopPropagation();openDeleteModal('${s.id}')">삭제</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function escHtml(str) {
+  return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ===== ROW CLICK =====
+function onRowClick(id) {
+  if (editingId === id && document.getElementById('form-section').classList.contains('open')) {
+    closeForm();
+  } else {
+    openEditForm(id);
+  }
+}
+
+// ===== FORM =====
+function openAddForm() {
+  editingId = null;
+  resetForm();
+  document.getElementById('form-section-title').innerHTML = `✏️ 공급업체 추가 <span class="form-mode-label mode-add" id="form-mode-label">신규 추가</span>`;
+  document.getElementById('form-section').classList.add('open');
+  document.getElementById('form-section').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  renderTable();
+}
+
+function openEditForm(id) {
+  const s = suppliers.find(x => x.id === id);
+  if (!s) return;
+  editingId = id;
+
+  // Populate form
+  document.getElementById('f-nameKo').value = s.nameKo || '';
+  document.getElementById('f-name').value = s.name || '';
+  document.getElementById('f-nameShort').value = s.nameShort || '';
+  document.getElementById('f-cert').value = s.cert || '';
+  document.getElementById('f-email').value = s.email || '';
+  document.getElementById('f-website').value = s.website || '';
+  document.getElementById('f-desc').value = s.desc || '';
+  document.getElementById('f-note').value = s.note || '';
+
+  setSlider('cap',   s.cap);
+  setSlider('qual',  s.qual);
+  setSlider('fin',   s.fin);
+  setSlider('logi',  s.logi);
+  setSlider('price', s.price);
+
+  document.getElementById('form-section-title').innerHTML = `✏️ 공급업체 수정 <span class="form-mode-label mode-edit" id="form-mode-label">수정 중: ${escHtml(s.nameKo || s.name)}</span>`;
+  document.getElementById('form-section').classList.add('open');
+  document.getElementById('form-section').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+  updatePreview();
+  renderTable();
+}
+
+function closeForm() {
+  document.getElementById('form-section').classList.remove('open');
+  editingId = null;
+  renderTable();
+}
+
+function resetForm() {
+  document.getElementById('f-nameKo').value = '';
+  document.getElementById('f-name').value = '';
+  document.getElementById('f-nameShort').value = '';
+  document.getElementById('f-cert').value = '';
+  document.getElementById('f-email').value = '';
+  document.getElementById('f-website').value = '';
+  document.getElementById('f-desc').value = '';
+  document.getElementById('f-note').value = '';
+  setSlider('cap',   50);
+  setSlider('qual',  50);
+  setSlider('fin',   50);
+  setSlider('logi',  50);
+  setSlider('price', 50);
+  updatePreview();
+}
+
+function setSlider(key, val) {
+  val = Math.max(0, Math.min(100, parseInt(val) || 0));
+  document.getElementById('s-' + key).value = val;
+  document.getElementById('n-' + key).value = val;
+}
+
+function getFormValues() {
+  return {
+    cap:   parseInt(document.getElementById('n-cap').value)   || 0,
+    qual:  parseInt(document.getElementById('n-qual').value)  || 0,
+    fin:   parseInt(document.getElementById('n-fin').value)   || 0,
+    logi:  parseInt(document.getElementById('n-logi').value)  || 0,
+    price: parseInt(document.getElementById('n-price').value) || 0,
+  };
+}
+
+function updatePreview() {
+  const v = getFormValues();
+  const score = calcScore(v);
+  const tier = getTier(score);
+
+  document.getElementById('preview-score').textContent = score.toFixed(1);
+
+  const tierEl = document.getElementById('preview-tier');
+  tierEl.textContent = getTierLabel(tier);
+  tierEl.className = 'score-preview-tier tier-badge ' + getTierClass(tier);
+
+  // Breakdown
+  const breakdown = [
+    { label: '생산능력', val: v.cap, w: 25 },
+    { label: '제품품질', val: v.qual, w: 30 },
+    { label: '신용재무', val: v.fin, w: 20 },
+    { label: '납기물류', val: v.logi, w: 15 },
+    { label: '가격경쟁력', val: v.price, w: 10 },
+  ];
+  document.getElementById('preview-breakdown').innerHTML = breakdown.map(b =>
+    `<div style="display:flex;gap:6px;align-items:center">
+      <span style="width:60px;color:var(--text-muted)">${b.label}</span>
+      <span style="width:28px;text-align:right">${b.val}</span>
+      <span style="color:var(--text-muted);font-size:0.68rem">→</span>
+      <span style="color:var(--gold-light)">${(b.val * b.w / 100).toFixed(1)}점</span>
+    </div>`
+  ).join('');
+
+  // Radar chart
+  updateRadarChart(v);
+}
+
+// ===== SAVE SUPPLIER =====
+function saveSupplier() {
+  const nameKo = document.getElementById('f-nameKo').value.trim();
+  const name   = document.getElementById('f-name').value.trim();
+
+  if (!nameKo || !name) {
+    showToast('업체명(한국어)과 업체명 원문(중문)은 필수 입력 항목입니다.', 'error');
+    return;
+  }
+
+  const v = getFormValues();
+  const data = {
+    name:      name,
+    nameKo:    nameKo,
+    nameShort: document.getElementById('f-nameShort').value.trim(),
+    cap:       Math.max(0, Math.min(100, v.cap)),
+    qual:      Math.max(0, Math.min(100, v.qual)),
+    fin:       Math.max(0, Math.min(100, v.fin)),
+    logi:      Math.max(0, Math.min(100, v.logi)),
+    price:     Math.max(0, Math.min(100, v.price)),
+    desc:      document.getElementById('f-desc').value.trim(),
+    cert:      document.getElementById('f-cert').value.trim(),
+    email:     document.getElementById('f-email').value.trim(),
+    website:   document.getElementById('f-website').value.trim(),
+    note:      document.getElementById('f-note').value.trim(),
+  };
+
+  if (editingId) {
+    const idx = suppliers.findIndex(s => s.id === editingId);
+    if (idx !== -1) {
+      suppliers[idx] = { ...suppliers[idx], ...data };
+      showToast(`'${nameKo}' 수정 완료`, 'success');
+    }
+  } else {
+    suppliers.push({ id: genId(), ...data });
+    showToast(`'${nameKo}' 추가 완료`, 'success');
+  }
+
+  saveSuppliers();
+  closeForm();
+  renderAll();
+}
+
+// ===== DELETE =====
+let pendingDeleteId = null;
+
+function openDeleteModal(id) {
+  const s = suppliers.find(x => x.id === id);
+  if (!s) return;
+  pendingDeleteId = id;
+  document.getElementById('modal-delete-body').textContent =
+    `'${s.nameKo || s.name}' 업체를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.`;
+  document.getElementById('modal-delete-confirm').onclick = doDelete;
+  openModal('modal-delete');
+}
+
+function doDelete() {
+  if (!pendingDeleteId) return;
+  const s = suppliers.find(x => x.id === pendingDeleteId);
+  const name = s ? (s.nameKo || s.name) : '';
+  suppliers = suppliers.filter(x => x.id !== pendingDeleteId);
+  pendingDeleteId = null;
+  if (editingId) { editingId = null; closeForm(); }
+  saveSuppliers();
+  closeModal('modal-delete');
+  renderAll();
+  showToast(`'${name}' 삭제 완료`, 'info');
+}
+
+// ===== RESET =====
+function openResetModal() { openModal('modal-reset'); }
+
+function doReset() {
+  suppliers = JSON.parse(JSON.stringify(DEFAULT_SUPPLIERS)).map(s => ({ ...s, id: genId() }));
+  saveSuppliers();
+  closeModal('modal-reset');
+  if (document.getElementById('form-section').classList.contains('open')) closeForm();
+  renderAll();
+  showToast('기본 5개 업체 데이터로 초기화 완료', 'success');
+}
+
+// ===== EXPORT / IMPORT =====
+function exportJSON() {
+  const blob = new Blob([JSON.stringify(suppliers, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  const ts = new Date().toISOString().slice(0,10).replace(/-/g,'');
+  a.download = `acis_suppliers_${ts}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('JSON 파일 내보내기 완료', 'success');
+}
+
+function importJSON(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    try {
+      const data = JSON.parse(ev.target.result);
+      if (!Array.isArray(data)) throw new Error('배열 형식이 아닙니다.');
+      // Validate minimal fields
+      data.forEach(s => {
+        if (!s.name) throw new Error('name 필드가 없는 항목이 있습니다.');
+      });
+      suppliers = data.map(s => ({ ...s, id: s.id || genId() }));
+      saveSuppliers();
+      renderAll();
+      showToast(`${data.length}개 업체 데이터 가져오기 완료`, 'success');
+    } catch(err) {
+      showToast('JSON 파일 오류: ' + err.message, 'error');
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+}
+
+// ===== PASSWORD CHANGE =====
+function openPasswordModal() {
+  document.getElementById('pw-current').value = '';
+  document.getElementById('pw-new').value = '';
+  document.getElementById('pw-confirm').value = '';
+  document.getElementById('pw-error').textContent = '';
+  openModal('modal-password');
+}
+
+function changePassword() {
+  const cur     = document.getElementById('pw-current').value;
+  const newPw   = document.getElementById('pw-new').value;
+  const confirm = document.getElementById('pw-confirm').value;
+  const errEl   = document.getElementById('pw-error');
+
+  if (cur !== getPW()) { errEl.textContent = '현재 비밀번호가 올바르지 않습니다.'; return; }
+  if (newPw.length < 4) { errEl.textContent = '새 비밀번호는 4자 이상이어야 합니다.'; return; }
+  if (newPw !== confirm) { errEl.textContent = '새 비밀번호가 일치하지 않습니다.'; return; }
+
+  localStorage.setItem(LS_PW, newPw);
+  closeModal('modal-password');
+  showToast('비밀번호가 변경되었습니다.', 'success');
+}
+
+// ===== MODAL HELPERS =====
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+// Close modal on overlay click
+document.querySelectorAll('.modal-overlay').forEach(el => {
+  el.addEventListener('click', function(e) {
+    if (e.target === this) closeModal(this.id);
+  });
+});
+
+// ===== TOAST =====
+function showToast(msg, type = 'info') {
+  const container = document.getElementById('toast-container');
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+  toast.textContent = msg;
+  container.appendChild(toast);
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => toast.classList.add('show'));
+  });
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => toast.remove(), 350);
+  }, 3000);
+}
+
+// ===== SLIDER SYNC =====
+['cap','qual','fin','logi','price'].forEach(key => {
+  const slider = document.getElementById('s-' + key);
+  const numInput = document.getElementById('n-' + key);
+
+  slider.addEventListener('input', function() {
+    numInput.value = this.value;
+    updatePreview();
+  });
+
+  numInput.addEventListener('input', function() {
+    let v = parseInt(this.value) || 0;
+    v = Math.max(0, Math.min(100, v));
+    this.value = v;
+    slider.value = v;
+    updatePreview();
+  });
+
+  numInput.addEventListener('blur', function() {
+    let v = parseInt(this.value) || 0;
+    v = Math.max(0, Math.min(100, v));
+    this.value = v;
+    slider.value = v;
+    updatePreview();
+  });
+});
+
+// ===== RADAR CHART =====
+function initRadarChart() {
+  const ctx = document.getElementById('radarChart').getContext('2d');
+
+  radarChart = new Chart(ctx, {
+    type: 'radar',
+    data: {
+      labels: ['생산능력', '제품품질', '신용재무', '납기물류', '가격경쟁력'],
+      datasets: [{
+        label: '점수',
+        data: [50, 50, 50, 50, 50],
+        backgroundColor: 'rgba(201,168,76,0.18)',
+        borderColor: 'rgba(201,168,76,0.8)',
+        pointBackgroundColor: '#c9a84c',
+        pointBorderColor: '#e0bf70',
+        pointRadius: 4,
+        borderWidth: 2,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      scales: {
+        r: {
+          min: 0,
+          max: 100,
+          ticks: {
+            stepSize: 20,
+            color: 'rgba(154,163,186,0.6)',
+            backdropColor: 'transparent',
+            font: { size: 9 },
+          },
+          grid: { color: 'rgba(255,255,255,0.08)' },
+          angleLines: { color: 'rgba(255,255,255,0.08)' },
+          pointLabels: {
+            color: '#9aa3ba',
+            font: { size: 10, family: "'Malgun Gothic', sans-serif" }
+          }
+        }
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => `${ctx.label}: ${ctx.raw}점`
+          }
+        }
+      },
+      animation: { duration: 250 }
+    }
+  });
+
+  updatePreview();
+}
+
+function updateRadarChart(v) {
+  if (!radarChart) return;
+  radarChart.data.datasets[0].data = [v.cap, v.qual, v.fin, v.logi, v.price];
+  radarChart.update();
+}
+
+// ===== INIT =====
+// Initialize preview on page load (before login)
+document.addEventListener('DOMContentLoaded', function() {
+  // Nothing — chart initialized after login
+});
+</script>
+</body>
+</html>
