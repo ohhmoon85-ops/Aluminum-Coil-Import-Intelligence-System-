@@ -755,6 +755,53 @@
     padding: 0 1rem; font-size: 0.62rem; color: var(--text-muted);
   }
 
+  /* ===== MARKET REFERENCE PANEL ===== */
+  .mkt-ref-panel {
+    background: var(--navy-card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 1rem;
+  }
+  .mkt-ref-title {
+    font-size: 0.78rem; font-weight: 800; color: var(--text-secondary);
+    margin-bottom: 0.75rem; text-transform: uppercase; letter-spacing: 0.4px;
+  }
+  .mkt-ref-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.6rem;
+  }
+  @media (max-width: 900px) { .mkt-ref-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 500px) { .mkt-ref-grid { grid-template-columns: 1fr; } }
+  .mkt-ref-card {
+    background: var(--navy-dark); border: 1px solid var(--border);
+    border-radius: 10px; padding: 0.8rem 0.9rem;
+  }
+  .mkt-shfe  { border-color: rgba(201,168,76,0.3); }
+  .mkt-smm   { border-color: rgba(76,160,201,0.3); }
+  .mkt-gap-card { border-color: rgba(160,160,160,0.25); }
+  .mkt-quote { border-color: rgba(76,201,130,0.3); }
+  .mkt-ref-card-header { display: flex; align-items: center; gap: 0.45rem; margin-bottom: 0.55rem; }
+  .mkt-badge {
+    font-size: 0.62rem; font-weight: 800; padding: 0.12rem 0.5rem;
+    border-radius: 4px; letter-spacing: 0.3px;
+  }
+  .mkt-badge-shfe  { background: rgba(201,168,76,0.2);  color: var(--gold);  border: 1px solid var(--gold-dark); }
+  .mkt-badge-smm   { background: rgba(76,160,201,0.2);  color: #7ec8e3; border: 1px solid rgba(76,160,201,0.4); }
+  .mkt-badge-gap   { background: rgba(160,160,160,0.15); color: #b0b8cc; border: 1px solid #555; }
+  .mkt-badge-quote { background: rgba(76,201,130,0.15); color: #7ee3a8; border: 1px solid rgba(76,201,130,0.3); }
+  .mkt-ref-card-sub { font-size: 0.65rem; color: var(--text-muted); }
+  .mkt-ref-value { font-size: 1.1rem; font-weight: 800; color: var(--gold); margin-bottom: 0.25rem; }
+  .mkt-ref-unit { font-size: 0.65rem; color: var(--text-secondary); margin-bottom: 0.25rem; }
+  .mkt-ref-unit em { color: var(--gold); font-style: normal; font-weight: 600; }
+  .mkt-ref-hint { font-size: 0.63rem; color: var(--text-muted); line-height: 1.4; }
+  .mkt-smm-input {
+    width: 100%; padding: 0.4rem 0.6rem; margin-bottom: 0.25rem;
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(76,160,201,0.35);
+    color: #7ec8e3; border-radius: 6px; font-size: 0.9rem; font-weight: 700;
+    font-family: inherit; transition: border-color 0.2s;
+  }
+  .mkt-smm-input:focus { outline: none; border-color: #7ec8e3; }
+  .mkt-smm-input::placeholder { color: var(--text-muted); font-weight: 400; font-size: 0.8rem; }
+  .mkt-gap-pos { color: var(--red) !important; }
+  .mkt-gap-neg { color: var(--green) !important; }
+
   /* ===== COST COMPOSITION DETAIL ===== */
   .cost-comp-wrap {
     background: var(--navy-card); border: 1px solid var(--border);
@@ -1440,6 +1487,53 @@ Best regards,
       <div class="section-title">PCB 엔트리시트 수입원가 계산기</div>
       <div class="section-sub">실제 거래 데이터 기반 — 중국 수입원가 vs 국내 구매가 비교 (기준일: 2026.03.04)</div>
     </div>
+
+    <!-- SHFE / SMM 참고 패널 -->
+    <div class="mkt-ref-panel">
+      <div class="mkt-ref-title">📈 알루미늄 시장가 참고 — 중국 단가 협상 시 활용</div>
+      <div class="mkt-ref-grid">
+        <!-- SHFE -->
+        <div class="mkt-ref-card mkt-shfe">
+          <div class="mkt-ref-card-header">
+            <span class="mkt-badge mkt-badge-shfe">SHFE</span>
+            <span class="mkt-ref-card-sub">상하이 선물거래소 · 자동 수집</span>
+          </div>
+          <div class="mkt-ref-value" id="mkt-shfe-val">--</div>
+          <div class="mkt-ref-unit">CNY/MT (알루미늄 주력합약 AL9999)</div>
+          <div class="mkt-ref-hint">미래 계약가 · 실물가와 ±1~3% 괴리 가능</div>
+        </div>
+        <!-- SMM 수동 입력 -->
+        <div class="mkt-ref-card mkt-smm">
+          <div class="mkt-ref-card-header">
+            <span class="mkt-badge mkt-badge-smm">SMM</span>
+            <span class="mkt-ref-card-sub">상하이 메탈 마켓 · 수동 입력</span>
+          </div>
+          <input class="mkt-smm-input" type="number" id="mkt-smm-val" placeholder="예: 20,350" min="10000" max="35000" step="10" oninput="updateMktGap()">
+          <div class="mkt-ref-unit">CNY/MT — <em>price.metal.com</em> 또는 <em>smm.cn</em> 확인 후 입력</div>
+          <div class="mkt-ref-hint">실물 유통 현물가 · 공급업체 협상 단가에 더 근접</div>
+        </div>
+        <!-- SHFE vs SMM 차이 -->
+        <div class="mkt-ref-card mkt-gap-card">
+          <div class="mkt-ref-card-header">
+            <span class="mkt-badge mkt-badge-gap">GAP</span>
+            <span class="mkt-ref-card-sub">SHFE vs SMM 괴리</span>
+          </div>
+          <div class="mkt-ref-value" id="mkt-gap-val" style="color:var(--text-muted);">SMM 미입력</div>
+          <div class="mkt-ref-unit" id="mkt-gap-unit">CNY/MT 차이 · % 괴리율</div>
+          <div class="mkt-ref-hint" id="mkt-gap-hint">SMM 가격 입력 시 자동 계산</div>
+        </div>
+        <!-- 중국 견적 기준 생알미늄가 -->
+        <div class="mkt-ref-card mkt-quote">
+          <div class="mkt-ref-card-header">
+            <span class="mkt-badge mkt-badge-quote">견적</span>
+            <span class="mkt-ref-card-sub">중국 견적 기준 생알미늄가</span>
+          </div>
+          <div class="mkt-ref-value" style="color:#7ec8e3;">24.39</div>
+          <div class="mkt-ref-unit">CNY/kg · 가공비 4.00 CNY/kg 별도</div>
+          <div class="mkt-ref-hint">중국 공급업체 견적(2026.03) 기준 · 시장가 변동 시 재협상 필요</div>
+        </div>
+      </div>
+    </div>
     <div class="data-source-bar source-bar-calc">
       <span class="data-badge badge-real">● 실제 데이터</span> 중국 단가: 중국 공급업체 견적(2026.03) &nbsp;|&nbsp; 운송비: 포워더 견적(2026.02.11) &nbsp;|&nbsp; 관세: 관세청 HS Code 기준 &nbsp;|&nbsp;
       <span class="data-badge badge-calc">● 계산값</span> 수입원가·절감액은 입력값 기반 즉시 산출
@@ -2063,6 +2157,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   renderRadarChart(0);
   updateSupplierDetailCard(0);
   calculateSimulator();
+
+  // SHFE 참고 패널 초기값
+  const shfeEl = document.getElementById('mkt-shfe-val');
+  if (shfeEl) shfeEl.textContent = lastLme ? fmtNum(lastLme, 0) : '--';
 });
 
 // ===================== SIGNAL PANEL =====================
@@ -2516,6 +2614,29 @@ const PRODUCT_PRESETS = {
            note:'Water-based coating (수용성). HSCODE 7607.20.1000 (99.99% 순알미늄+코팅). 한중FTA 0%. 코팅 가공비가 비수용성 대비 약 2.8배 높음.' },
 };
 let currentProductId = 'oil17';
+
+function updateMktGap() {
+  const shfe = lastLme || 0;
+  const smm  = parseFloat(document.getElementById('mkt-smm-val').value);
+  if (!smm || isNaN(smm)) {
+    document.getElementById('mkt-gap-val').textContent  = 'SMM 미입력';
+    document.getElementById('mkt-gap-val').className    = 'mkt-ref-value';
+    document.getElementById('mkt-gap-val').style.color  = 'var(--text-muted)';
+    document.getElementById('mkt-gap-unit').textContent = 'CNY/MT 차이 · % 괴리율';
+    document.getElementById('mkt-gap-hint').textContent = 'SMM 가격 입력 시 자동 계산';
+    return;
+  }
+  const diff = smm - shfe;
+  const pct  = shfe ? (diff / shfe * 100).toFixed(1) : 0;
+  const gapEl = document.getElementById('mkt-gap-val');
+  gapEl.textContent = (diff >= 0 ? '+' : '') + diff.toLocaleString('ko-KR', {maximumFractionDigits:0}) + ' CNY/MT';
+  gapEl.style.color = '';
+  gapEl.className   = 'mkt-ref-value ' + (diff >= 0 ? 'mkt-gap-pos' : 'mkt-gap-neg');
+  document.getElementById('mkt-gap-unit').textContent = 'SMM이 SHFE 대비 ' + (diff >= 0 ? '+' : '') + pct + '% ' + (diff >= 0 ? '높음' : '낮음');
+  document.getElementById('mkt-gap-hint').textContent = diff >= 0
+    ? 'SMM > SHFE: 실물 수급 타이트. 협상 여지 적을 수 있음.'
+    : 'SMM < SHFE: 실물 공급 여유. 가격 인하 협상 가능.';
+}
 
 function selectProduct(id) {
   currentProductId = id;
