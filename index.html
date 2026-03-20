@@ -598,7 +598,7 @@
     </div>
     <div class="header-meta">
       <div class="header-time">
-        <div><span class="live-dot"></span>실시간 데이터</div>
+        <div><span class="live-dot"></span><span id="data-source-badge" style="background:#888;color:#fff;font-size:0.7rem;padding:2px 8px;border-radius:10px;font-weight:600;">데이터 로딩중...</span></div>
         <div>최종 갱신: <span id="last-updated">--</span></div>
       </div>
     </div>
@@ -994,78 +994,141 @@ for (let i = 1; i <= 30; i++) {
   predDates.push(formatDate(d));
 }
 
-// LME prices
-const lmeHist = randomWalk(2487, 90, 18, 2300, 2700, 101);
-const lastLme = lmeHist[lmeHist.length-1];
-const lmePred = (function() {
-  let arr = [], v = lastLme, s = 77;
-  function rng() { s=(s*1664525+1013904223)&0xffffffff; return((s>>>0)/0xffffffff); }
-  for (let i=0;i<30;i++) { v += (rng()-0.48)*20; v=Math.max(2350,Math.min(2750,v)); arr.push(parseFloat(v.toFixed(2))); }
-  return arr;
-})();
+// ===================== DATA VARIABLES (실제 API 연동) =====================
+let lmeHist, lmePred, lastLme, lmePrev, lmeChange;
+let cnyHist, cnyPred, lastCny, cnyPrev, cnyChange;
+let usdHist, usdPred, lastUsd;
+let rpciHist, rpciMa60, rpciMa90, currentRPCI, currentMA60, currentMA90;
+let shortSignal, longSignal;
+let lmeMa20, lmeMa60, lmeBB;
+let cnySorted, cnyDanger;
+let rpciMA60Avg;
 
-// CNY/KRW rates
-const cnyHist = randomWalk(190.3, 90, 0.6, 186, 196, 202);
-const lastCny = cnyHist[cnyHist.length-1];
-const cnyPred = (function() {
-  let arr=[], v=lastCny, s=88;
-  function rng(){s=(s*1664525+1013904223)&0xffffffff;return((s>>>0)/0xffffffff);}
-  for(let i=0;i<30;i++){v+=(rng()-0.47)*0.7;v=Math.max(186,Math.min(196,v));arr.push(parseFloat(v.toFixed(2)));}
-  return arr;
-})();
-
-// USD/KRW rates
-const usdHist = randomWalk(1370, 90, 5, 1330, 1410, 303);
-const lastUsd = usdHist[usdHist.length-1];
-const usdPred = (function() {
-  let arr=[], v=lastUsd, s=55;
-  function rng(){s=(s*1664525+1013904223)&0xffffffff;return((s>>>0)/0xffffffff);}
-  for(let i=0;i<30;i++){v+=(rng()-0.47)*6;v=Math.max(1330,Math.min(1420,v));arr.push(parseFloat(v.toFixed(2)));}
-  return arr;
-})();
-
-// USD/CNY derived
 const usdCny = 7.2;
 
-// RPCI calculation
+// RPCI 산출 공식
 function calcRPCI(lme, cny, usd, tariff=0.05, misc=0.03) {
-  const shfe = lme * usdCny * 1.05; // CNY/MT
-  const shipping = 55000; // KRW/MT
+  const shfe = lme * usdCny * 1.05; // CNY/MT (SHFE ≈ LME × USD/CNY × 프리미엄)
+  const shipping = 55000;            // KRW/MT (SCFI 기반 해상운임 추정)
   return parseFloat(((shfe * cny + shipping) * (1 + tariff + misc)).toFixed(0));
 }
 
-// Historical RPCI
-const rpciHist = lmeHist.map((l,i) => calcRPCI(l, cnyHist[i], usdHist[i]));
-const rpciMa60 = movingAvg(rpciHist, 60);
-const rpciMa90 = movingAvg(rpciHist, 90);
-
-const currentRPCI = rpciHist[rpciHist.length-1];
-const currentMA60 = rpciMa60[rpciMa60.length-1];
-const currentMA90 = rpciMa90[rpciMa90.length-1];
-
-// Signal logic
-function getSignal(rpci, ma60) {
-  if (rpci < ma60 * 0.97) return 'buy';
-  if (rpci > ma60 * 1.03) return 'avoid';
+// 신호 판단 로직
+function getSignal(rpci, ma) {
+  if (rpci < ma * 0.97) return 'buy';
+  if (rpci > ma * 1.03) return 'avoid';
   return 'wait';
 }
-const shortSignal = getSignal(currentRPCI, currentMA60);
-const longSignal = getSignal(currentRPCI, currentMA90 || currentMA60);
 
-// LME change
-const lmePrev = lmeHist[lmeHist.length-2];
-const lmeChange = ((lastLme - lmePrev)/lmePrev*100).toFixed(2);
-const cnyPrev = cnyHist[cnyHist.length-2];
-const cnyChange = ((lastCny - cnyPrev)/cnyPrev*100).toFixed(2);
+// 예측값 생성 (단순 추세 연장)
+function makePred(arr, min, max, step, seed) {
+  let result = [], v = arr[arr.length - 1], s = seed;
+  function rng() { s=(s*1664525+1013904223)&0xffffffff; return((s>>>0)/0xffffffff); }
+  for (let i=0; i<30; i++) {
+    v += (rng()-0.48)*step;
+    v = Math.max(min, Math.min(max, v));
+    result.push(parseFloat(v.toFixed(2)));
+  }
+  return result;
+}
 
-// MA lines
-const lmeMa20 = movingAvg(lmeHist, 20);
-const lmeMa60 = movingAvg(lmeHist, 60);
-const lmeBB = bollingerBands(lmeHist, 20, 2);
+// 모의 데이터 생성 (API 실패 시 폴백)
+function generateMockData() {
+  lmeHist = randomWalk(2487, 90, 18, 2300, 2700, 101);
+  cnyHist = randomWalk(190.3, 90, 0.6, 186, 196, 202);
+  usdHist = randomWalk(1370, 90, 5, 1330, 1410, 303);
+}
 
-// Danger zone for fx: top 15% of CNY values
-const cnySorted = [...cnyHist].sort((a,b)=>b-a);
-const cnyDanger = cnySorted[Math.floor(cnySorted.length*0.15)];
+// 배열을 90개로 맞춤 (주말·공휴일로 거래일이 부족한 경우 앞 값으로 채움)
+function padTo90(arr) {
+  const a = [...arr];
+  while (a.length < 90) a.unshift(a[0]);
+  return a.slice(-90);
+}
+
+// 파생 변수 일괄 계산 (데이터 로드 후 호출)
+function computeDerived() {
+  lmePred = makePred(lmeHist, 2350, 2750, 20, 77);
+  cnyPred  = makePred(cnyHist, 186,  196,  0.7, 88);
+  usdPred  = makePred(usdHist, 1330, 1420, 6,   55);
+
+  lastLme = lmeHist[lmeHist.length-1];
+  lastCny = cnyHist[cnyHist.length-1];
+  lastUsd = usdHist[usdHist.length-1];
+  lmePrev = lmeHist[lmeHist.length-2];
+  cnyPrev = cnyHist[cnyHist.length-2];
+  lmeChange = ((lastLme - lmePrev)/lmePrev*100).toFixed(2);
+  cnyChange = ((lastCny - cnyPrev)/cnyPrev*100).toFixed(2);
+
+  rpciHist   = lmeHist.map((l,i) => calcRPCI(l, cnyHist[i], usdHist[i]));
+  rpciMa60   = movingAvg(rpciHist, 60);
+  rpciMa90   = movingAvg(rpciHist, 90);
+  currentRPCI = rpciHist[rpciHist.length-1];
+  currentMA60 = rpciMa60[rpciMa60.length-1];
+  currentMA90 = rpciMa90[rpciMa90.length-1];
+  shortSignal = getSignal(currentRPCI, currentMA60);
+  longSignal  = getSignal(currentRPCI, currentMA90 || currentMA60);
+
+  lmeMa20 = movingAvg(lmeHist, 20);
+  lmeMa60 = movingAvg(lmeHist, 60);
+  lmeBB   = bollingerBands(lmeHist, 20, 2);
+
+  cnySorted = [...cnyHist].sort((a,b)=>b-a);
+  cnyDanger = cnySorted[Math.floor(cnySorted.length*0.15)];
+
+  const validMa60 = rpciMa60.filter(v => v !== null);
+  rpciMA60Avg = validMa60.reduce((a,b)=>a+b,0) / validMa60.length;
+}
+
+// 실제 API 데이터 로드
+async function loadRealData() {
+  const badge = document.getElementById('data-source-badge');
+  try {
+    const [ratesRes, alRes] = await Promise.all([
+      fetch('/api/rates'),
+      fetch('/api/aluminum'),
+    ]);
+
+    if (!ratesRes.ok || !alRes.ok) throw new Error(`서버 오류 ${ratesRes.status}/${alRes.status}`);
+
+    const rates = await ratesRes.json();
+    const alJson = await alRes.json();
+
+    if (rates.error) throw new Error('환율 API: ' + rates.error);
+    if (alJson.error) throw new Error('알루미늄 API: ' + alJson.error);
+
+    // 환율 처리: DATA_VALUE가 '-' 또는 빈 값인 행 제거
+    const cnyRows = (rates.cny || []).filter(r => r.DATA_VALUE && r.DATA_VALUE !== '-');
+    const usdRows = (rates.usd || []).filter(r => r.DATA_VALUE && r.DATA_VALUE !== '-');
+    if (cnyRows.length < 20 || usdRows.length < 20) throw new Error('환율 데이터 부족');
+
+    cnyHist = padTo90(cnyRows.map(r => parseFloat(r.DATA_VALUE)));
+    usdHist = padTo90(usdRows.map(r => parseFloat(r.DATA_VALUE)));
+
+    // 알루미늄 가격 처리
+    const alData = (alJson.data || []).filter(d => d.price && d.price > 0);
+    if (alData.length < 20) throw new Error('알루미늄 가격 데이터 부족');
+    lmeHist = padTo90(alData.map(d => d.price));
+
+    // histDates를 실제 거래일 기준으로 업데이트
+    const actualDates = cnyRows.slice(-90).map(r => {
+      const t = r.TIME; // 'YYYYMMDD'
+      return `${t.slice(0,4)}-${t.slice(4,6)}-${t.slice(6,8)}`;
+    });
+    if (actualDates.length === 90) {
+      histDates.splice(0, histDates.length, ...actualDates);
+    }
+
+    badge.textContent = '실시간 데이터';
+    badge.style.background = '#27ae60';
+
+  } catch (err) {
+    console.warn('[ACIS] 실시간 데이터 로딩 실패, 모의 데이터로 대체:', err.message);
+    generateMockData();
+    badge.textContent = '모의 데이터 (API 오류)';
+    badge.style.background = '#e67e22';
+  }
+}
 
 // ===================== SUPPLIERS =====================
 const suppliers = [
@@ -1087,13 +1150,15 @@ const suppliers = [
 ];
 
 // ===================== DOM INIT =====================
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  // 실제 데이터 로드 → 파생값 계산 → 렌더링
+  await loadRealData();
+  computeDerived();
+
   // Remove loading
-  setTimeout(() => {
-    const overlay = document.getElementById('loading-overlay');
-    overlay.classList.add('fade-out');
-    setTimeout(() => overlay.style.display='none', 500);
-  }, 1800);
+  const overlay = document.getElementById('loading-overlay');
+  overlay.classList.add('fade-out');
+  setTimeout(() => overlay.style.display='none', 500);
 
   // Set dates
   document.getElementById('last-updated').textContent = formatDateKo(TODAY) + ' 16:30 기준';
@@ -1509,10 +1574,7 @@ function renderRadarChart(idx) {
 }
 
 // ===================== SIMULATOR =====================
-let rpciMA60Avg = (function() {
-  const validMa60 = rpciMa60.filter(v => v !== null);
-  return validMa60.reduce((a,b)=>a+b,0)/validMa60.length;
-})();
+// rpciMA60Avg는 computeDerived()에서 계산됨
 
 function calculateSimulator() {
   const qty = parseFloat(document.getElementById('sim-qty').value) || 100;
