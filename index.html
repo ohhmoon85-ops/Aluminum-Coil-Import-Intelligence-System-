@@ -755,6 +755,169 @@
     padding: 0 1rem; font-size: 0.62rem; color: var(--text-muted);
   }
 
+  /* ===== COST COMPOSITION DETAIL ===== */
+  .cost-comp-wrap {
+    background: var(--navy-card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 1rem;
+  }
+  .cost-comp-title {
+    font-size: 0.78rem; font-weight: 800; color: var(--text-secondary);
+    margin-bottom: 0.75rem; text-transform: uppercase; letter-spacing: 0.4px;
+  }
+  .cost-comp-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem; margin-bottom: 0.6rem;
+  }
+  @media (max-width: 700px) { .cost-comp-grid { grid-template-columns: repeat(2, 1fr); } }
+  .cost-comp-item {
+    background: var(--navy-dark); border: 1px solid var(--border);
+    border-radius: 8px; padding: 0.6rem 0.75rem;
+  }
+  .cost-comp-item.cci-highlight {
+    border-color: var(--gold-dark); background: rgba(201,168,76,0.06);
+  }
+  .cci-label { font-size: 0.65rem; color: var(--text-muted); margin-bottom: 0.25rem; }
+  .cci-value { font-size: 0.88rem; font-weight: 800; color: var(--text-primary); }
+  .cci-value span { font-size: 0.62rem; font-weight: 400; color: var(--text-secondary); }
+  .cci-value.cci-auto { color: var(--gold); }
+  .cci-value.cci-domestic { color: #7ec8e3; }
+  .cost-comp-note { font-size: 0.68rem; color: var(--text-muted); line-height: 1.5; }
+
+  /* ===== PRODUCT SELECTOR ===== */
+  .product-sel-wrap { margin-bottom: 1rem; }
+  .product-sel-label {
+    font-size: 0.7rem; font-weight: 700; color: var(--text-secondary);
+    text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 0.5rem; display: block;
+  }
+  .product-sel-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem;
+  }
+  @media (max-width: 700px) { .product-sel-grid { grid-template-columns: repeat(2, 1fr); } }
+  .prod-btn {
+    padding: 0.6rem 0.5rem; text-align: center; font-size: 0.74rem; font-weight: 700;
+    line-height: 1.35; background: var(--navy-dark); color: var(--text-secondary);
+    border: 1px solid var(--border); border-radius: 8px; cursor: pointer; transition: all 0.2s;
+    font-family: inherit;
+  }
+  .prod-btn:hover { border-color: var(--gold-dark); color: var(--text-primary); }
+  .prod-btn.active { background: rgba(201,168,76,0.12); color: var(--gold); border-color: var(--gold); }
+  .prod-btn-sub { font-size: 0.62rem; font-weight: 400; opacity: 0.8; display: block; }
+  .prod-hscode-bar {
+    margin-top: 0.5rem; font-size: 0.72rem; color: var(--text-secondary);
+    background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+    border-radius: 6px; padding: 0.45rem 0.75rem;
+  }
+  .prod-hscode-bar strong { color: var(--gold); }
+
+  /* ===== COST BREAKDOWN ===== */
+  .cost-breakdown-card {
+    background: var(--navy-dark); border: 1px solid var(--border);
+    border-radius: 10px; padding: 1rem 1.1rem; margin-bottom: 0.75rem;
+  }
+  .cb-title {
+    font-size: 0.68rem; font-weight: 700; color: var(--text-secondary);
+    text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 0.7rem;
+  }
+  .cb-row {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 0.8rem; padding: 0.28rem 0; color: var(--text-primary);
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .cb-row:last-child { border-bottom: none; }
+  .cb-row-label { color: var(--text-secondary); }
+  .cb-row-value { font-weight: 700; }
+  .cb-total-row {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 0.6rem; padding-top: 0.6rem;
+    border-top: 2px solid var(--border-light);
+    font-size: 0.92rem; font-weight: 800;
+  }
+  .cb-total-label { color: var(--text-secondary); }
+  .cb-total-value { color: var(--gold); }
+
+  /* ===== DOMESTIC COMPARE ===== */
+  .domestic-compare-card {
+    background: var(--navy-dark); border: 1px solid var(--border);
+    border-radius: 10px; padding: 1rem 1.1rem; margin-bottom: 0.75rem;
+  }
+  .dc-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 0.7rem; flex-wrap: wrap; gap: 0.4rem;
+  }
+  .dc-title { font-size: 0.68rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.4px; }
+  .dc-ref-label { font-size: 0.68rem; color: var(--text-muted); }
+  .dc-bar-wrap { margin-bottom: 0.7rem; }
+  .dc-bar-labels { display: flex; justify-content: space-between; font-size: 0.7rem; margin-bottom: 0.3rem; }
+  .dc-bar-track { height: 12px; border-radius: 6px; background: rgba(255,255,255,0.06); overflow: visible; position: relative; }
+  .dc-bar-import { height: 100%; border-radius: 6px; transition: width 0.5s ease; }
+  .dc-bar-domestic { position: absolute; top: 0; height: 100%; width: 2px; background: var(--gold); }
+  .dc-stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem; }
+  .dc-stat { text-align: center; }
+  .dc-stat-label { font-size: 0.62rem; color: var(--text-muted); margin-bottom: 0.2rem; }
+  .dc-stat-value { font-size: 0.88rem; font-weight: 800; }
+  .dc-cheaper { color: var(--green); }
+  .dc-dearer  { color: var(--red); }
+  .dc-neutral { color: var(--yellow); }
+
+  /* ===== BREAK-EVEN ===== */
+  .be-card {
+    background: rgba(201,168,76,0.05); border: 1px solid rgba(201,168,76,0.2);
+    border-radius: 10px; padding: 0.85rem 1.1rem; margin-bottom: 0.75rem;
+  }
+  .be-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.3rem; }
+  .be-label { font-size: 0.75rem; color: var(--text-secondary); }
+  .be-value { font-size: 0.9rem; font-weight: 800; color: var(--gold); }
+  .be-sub { font-size: 0.7rem; color: var(--text-muted); margin-top: 0.3rem; }
+
+  /* ===== SHIPPING DETAIL ===== */
+  .shipping-toggle-btn {
+    width: 100%; padding: 0.6rem 1rem; margin-top: 0.75rem;
+    background: transparent; border: 1px solid var(--border); border-radius: 8px;
+    color: var(--text-secondary); font-size: 0.75rem; font-weight: 600;
+    cursor: pointer; text-align: left; transition: all 0.2s; font-family: inherit;
+  }
+  .shipping-toggle-btn:hover { border-color: var(--gold-dark); color: var(--text-primary); }
+  .shipping-detail-panel {
+    display: none; margin-top: 1rem;
+    background: var(--navy-card); border: 1px solid var(--border);
+    border-radius: 12px; overflow: hidden;
+  }
+  .shipping-detail-panel.open { display: block; }
+  .sdp-header {
+    background: var(--navy-dark); padding: 0.75rem 1.1rem;
+    font-size: 0.78rem; font-weight: 700; color: var(--text-secondary);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .sdp-table { width: 100%; border-collapse: collapse; font-size: 0.77rem; }
+  .sdp-table td { padding: 0.5rem 1.1rem; border-bottom: 1px solid rgba(255,255,255,0.04); color: var(--text-primary); }
+  .sdp-table td:first-child { color: var(--text-secondary); width: 55%; }
+  .sdp-table td:nth-child(2) { color: var(--text-muted); width: 15%; text-align: center; }
+  .sdp-table td:last-child { font-weight: 700; text-align: right; }
+  .sdp-total-row td { background: rgba(201,168,76,0.06); color: var(--gold) !important; font-weight: 800 !important; font-size: 0.82rem; border-top: 1px solid var(--border-light); }
+  .sdp-sqm-row td { color: var(--gold) !important; font-size: 0.78rem; }
+
+  /* ===== CUSTOMS TABLE ===== */
+  .customs-panel {
+    margin-top: 1rem; background: var(--navy-card);
+    border: 1px solid var(--border); border-radius: 12px; overflow: hidden;
+  }
+  .customs-panel-header {
+    background: var(--navy-dark); padding: 0.75rem 1.1rem;
+    font-size: 0.78rem; font-weight: 700; color: var(--text-secondary);
+  }
+  .customs-table { width: 100%; border-collapse: collapse; font-size: 0.76rem; }
+  .customs-table thead th {
+    background: rgba(255,255,255,0.03); padding: 0.5rem 1.1rem;
+    color: var(--text-secondary); font-weight: 700; text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  .customs-table tbody td { padding: 0.5rem 1.1rem; border-bottom: 1px solid rgba(255,255,255,0.04); color: var(--text-primary); }
+  .customs-table tbody tr:hover { background: rgba(201,168,76,0.04); }
+  .customs-table tbody tr.hs-active { background: rgba(201,168,76,0.08); }
+  .customs-table tbody tr.hs-active td { color: var(--gold); }
+  .hs-rate-0  { color: var(--green); font-weight: 700; }
+  .hs-rate-pos { color: var(--yellow); font-weight: 700; }
+
   /* ===== FOOTER ===== */
   #footer {
     background: var(--navy);
@@ -1270,120 +1433,233 @@ Best regards,
 
   <hr class="section-divider">
 
-  <!-- ⑥ Purchase Simulator -->
+  <!-- ⑥ PCB Entry Sheet 수입원가 계산기 -->
   <section class="section" id="sec-sim">
     <div class="section-header">
       <div class="section-num">⑥</div>
-      <div class="section-title">구매 시뮬레이터</div>
-      <div class="section-sub">입력값 조정 후 예상 수입 원가를 즉시 계산</div>
+      <div class="section-title">PCB 엔트리시트 수입원가 계산기</div>
+      <div class="section-sub">실제 거래 데이터 기반 — 중국 수입원가 vs 국내 구매가 비교 (기준일: 2026.03.04)</div>
     </div>
-    <div class="data-source-bar source-bar-calc"><span class="data-badge badge-real">● 실제 데이터</span> SHFE 가격·환율은 API에서 자동 입력 &nbsp;|&nbsp; <span class="data-badge badge-est">● 추정값</span> 해상운임·관세율·부대비용은 기본값 제공 (직접 수정 가능) &nbsp;|&nbsp; <span class="data-badge badge-calc">● 계산값</span> 결과값은 RPCI 공식으로 즉시 산출</div>
+    <div class="data-source-bar source-bar-calc">
+      <span class="data-badge badge-real">● 실제 데이터</span> 중국 단가: 중국 공급업체 견적(2026.03) &nbsp;|&nbsp; 운송비: 포워더 견적(2026.02.11) &nbsp;|&nbsp; 관세: 관세청 HS Code 기준 &nbsp;|&nbsp;
+      <span class="data-badge badge-calc">● 계산값</span> 수입원가·절감액은 입력값 기반 즉시 산출
+    </div>
+
+    <!-- 제품 선택 -->
+    <div class="product-sel-wrap">
+      <span class="product-sel-label">📦 제품 선택 — 중국 견적 기준 (생알미늄 24.39 CNY/kg · 가공비 4 CNY/kg)</span>
+      <div class="product-sel-grid">
+        <button class="prod-btn active" id="prod-oil17" onclick="selectProduct('oil17')">
+          비수용성피막<br><span class="prod-btn-sub">0.17mm · 11.452 CNY/㎡</span>
+        </button>
+        <button class="prod-btn" id="prod-oil13" onclick="selectProduct('oil13')">
+          비수용성피막<br><span class="prod-btn-sub">0.13mm · 9.734 CNY/㎡</span>
+        </button>
+        <button class="prod-btn" id="prod-wat17" onclick="selectProduct('wat17')">
+          수용성코팅<br><span class="prod-btn-sub">0.17mm · 15.032 CNY/㎡</span>
+        </button>
+        <button class="prod-btn" id="prod-wat13" onclick="selectProduct('wat13')">
+          수용성코팅<br><span class="prod-btn-sub">0.13mm · 13.484 CNY/㎡</span>
+        </button>
+      </div>
+      <div class="prod-hscode-bar" id="prod-hscode-bar">
+        HSCODE: <strong id="prod-hscode-display">7607.20.9000</strong> &nbsp;|&nbsp;
+        통상관세율: <strong>8%</strong> &nbsp;|&nbsp;
+        한중FTA: <strong id="prod-fta-display" style="color:var(--green)">1.6%</strong> &nbsp;|&nbsp;
+        적용: <strong id="prod-tariff-applied">한중FTA 1.6%</strong>
+      </div>
+    </div>
+
+    <!-- 단가 구성 상세 -->
+    <div class="cost-comp-wrap" id="cost-comp-wrap">
+      <div class="cost-comp-title">📊 중국 단가 구성 (선택 제품 기준)</div>
+      <div class="cost-comp-grid">
+        <div class="cost-comp-item">
+          <div class="cci-label">생알미늄 가격</div>
+          <div class="cci-value">24.39 <span>CNY/kg</span></div>
+        </div>
+        <div class="cost-comp-item">
+          <div class="cci-label">가공비</div>
+          <div class="cci-value">4.00 <span>CNY/kg</span></div>
+        </div>
+        <div class="cost-comp-item">
+          <div class="cci-label">kg 합산단가</div>
+          <div class="cci-value">28.39 <span>CNY/kg</span></div>
+        </div>
+        <div class="cost-comp-item">
+          <div class="cci-label">㎡당 알미늄 중량</div>
+          <div class="cci-value cci-auto" id="cci-weight">0.3252 <span>kg/㎡</span></div>
+        </div>
+        <div class="cost-comp-item">
+          <div class="cci-label">㎡당 알미늄 원료비</div>
+          <div class="cci-value cci-auto" id="cci-al-cost">9.232 <span>CNY/㎡</span></div>
+        </div>
+        <div class="cost-comp-item">
+          <div class="cci-label">㎡당 가공비</div>
+          <div class="cci-value cci-auto" id="cci-proc-cost">2.22 <span>CNY/㎡</span></div>
+        </div>
+        <div class="cost-comp-item cci-highlight">
+          <div class="cci-label">최종 단가</div>
+          <div class="cci-value cci-auto" id="cci-unit">11.452 <span>CNY/㎡</span></div>
+        </div>
+        <div class="cost-comp-item">
+          <div class="cci-label">국내 비교가 (홍지)</div>
+          <div class="cci-value cci-domestic">2,536 <span>원/㎡</span></div>
+        </div>
+        <div class="cost-comp-item">
+          <div class="cci-label">기준일 환율</div>
+          <div class="cci-value">212 <span>원/위안</span></div>
+        </div>
+      </div>
+      <div class="cost-comp-note" id="cost-comp-note">※ 비수용성피막 = Oil-based coating (지용성). HSCODE 7607.20.9000 (합금+코팅). 비교 기준: 홍지 견적서 2026.03.04 (지용성 0.17mm / ㎡당 2,536원, 부가세 별도)</div>
+    </div>
+
+    <!-- 계산기 -->
     <div class="simulator-layout">
       <div class="sim-card">
         <div class="sim-card-title">입력 파라미터</div>
-
-        <!-- 가격 기준 토글 -->
-        <div class="price-source-toggle-wrap">
-          <span class="price-source-label">알루미늄 가격 기준</span>
-          <div class="price-source-toggle">
-            <button class="pst-btn active" id="pst-shfe" onclick="setPriceSource('shfe')">SHFE 선물가<br><span class="pst-sub">자동 (API)</span></button>
-            <button class="pst-btn" id="pst-smm" onclick="setPriceSource('smm')">SMM 현물가<br><span class="pst-sub">수동 입력</span></button>
-          </div>
-          <div class="price-source-desc" id="price-source-desc">
-            <span class="psd-badge psd-shfe">SHFE</span> 상하이 선물거래소 — 미래 계약 가격. 실물가와 ±1~3% 괴리 가능. API 자동 수집.
-          </div>
-        </div>
-
         <div class="form-row">
           <div class="form-group">
-            <label class="form-label">발주 수량 (MT)</label>
-            <input class="form-control" type="number" id="sim-qty" value="100" min="1" max="10000">
+            <label class="form-label">발주 수량 (㎡)</label>
+            <input class="form-control" type="number" id="sim-qty" value="2800" min="1" max="100000" step="100">
+            <div style="font-size:0.66rem;color:var(--text-muted);margin-top:3px;">※ 1×40'HQ = 2,800㎡ (18톤 기준)</div>
           </div>
-          <!-- SHFE 입력 (기본) -->
-          <div class="form-group" id="grp-shfe">
-            <label class="form-label">SHFE 알루미늄 선물가 (CNY/MT) <span class="auto-tag">API 자동</span></label>
-            <input class="form-control" type="number" id="sim-lme" value="20500" min="10000" max="35000" step="10">
-          </div>
-          <!-- SMM 입력 (토글 시 표시) -->
-          <div class="form-group" id="grp-smm" style="display:none;">
-            <label class="form-label">SMM 현물가 수동 입력 (CNY/MT) <span class="manual-tag">수동</span></label>
-            <input class="form-control" type="number" id="sim-smm" value="" min="10000" max="35000" step="10" placeholder="예: 20350">
-            <div class="smm-ref-row">
-              <span class="smm-ref-shfe">SHFE 참고: <strong id="smm-shfe-ref">--</strong> CNY/MT</span>
-              <span class="smm-gap" id="smm-gap-badge" style="display:none;"></span>
-            </div>
-            <div class="smm-hint">※ SMM 현물가 확인: <em>price.metal.com</em> 또는 <em>smm.cn</em> (중국 업체 견적 협상 시 이 가격 사용 권장)</div>
+          <div class="form-group">
+            <label class="form-label">중국 단가 (CNY/㎡) <span class="auto-tag">제품선택 자동</span></label>
+            <input class="form-control" type="number" id="sim-cny-sqm" value="11.452" min="1" max="100" step="0.001">
           </div>
         </div>
         <div class="form-row">
           <div class="form-group">
             <label class="form-label">CNY/KRW 환율 (원/위안)</label>
-            <input class="form-control" type="number" id="sim-cny" value="190.3" min="150" max="250" step="0.1">
+            <input class="form-control" type="number" id="sim-cny" value="212" min="150" max="280" step="0.1">
+            <div style="font-size:0.66rem;color:var(--text-muted);margin-top:3px;">기준일(2026.03.04) 실거래 환율</div>
           </div>
           <div class="form-group">
-            <label class="form-label">USD/KRW 환율 (원/달러)</label>
-            <input class="form-control" type="number" id="sim-usd" value="1370" min="1000" max="2000" step="1">
+            <label class="form-label">해상운임+통관비 (원/㎡)</label>
+            <input class="form-control" type="number" id="sim-shipping" value="68" min="0" max="500" step="1">
+            <div style="font-size:0.66rem;color:var(--text-muted);margin-top:3px;">40'HQ 3,431,852원 ÷ 2,800㎡</div>
           </div>
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label class="form-label">관세율 (%)</label>
-            <input class="form-control" type="number" id="sim-tariff" value="5" min="0" max="30" step="0.1">
+            <label class="form-label">관세율 (%) <span class="auto-tag">제품선택 자동</span></label>
+            <input class="form-control" type="number" id="sim-tariff" value="1.6" min="0" max="30" step="0.1">
           </div>
           <div class="form-group">
-            <label class="form-label">부대비용율 (%)</label>
-            <input class="form-control" type="number" id="sim-misc" value="3" min="0" max="20" step="0.1">
+            <label class="form-label">국내 비교 단가 (원/㎡)</label>
+            <input class="form-control" type="number" id="sim-domestic" value="2536" min="100" max="20000" step="1">
+            <div style="font-size:0.66rem;color:var(--text-muted);margin-top:3px;">홍지 견적 2026.03.04 기준</div>
           </div>
         </div>
-        <button class="calc-btn" onclick="calculateSimulator()">계산하기 →</button>
+        <button class="calc-btn" onclick="calculateSimulator()">수입원가 계산하기 →</button>
       </div>
 
       <div class="sim-card">
-        <div class="sim-card-title">시뮬레이션 결과 <span class="result-source-tag" id="result-source-tag"></span></div>
-        <div class="result-grid">
-          <div class="result-item">
-            <div class="result-label">예상 수입 원가 (단가)</div>
-            <div class="result-value" id="res-unit-krw">--</div>
-            <div class="result-sub">원/MT</div>
+        <div class="sim-card-title">원가 분석 결과</div>
+
+        <!-- 원가 분해 -->
+        <div class="cost-breakdown-card">
+          <div class="cb-title">수입원가 분해 (원/㎡)</div>
+          <div class="cb-row">
+            <span class="cb-row-label">① 물품대 (CNY × 환율)</span>
+            <span class="cb-row-value" id="res-goods">--</span>
           </div>
-          <div class="result-item">
-            <div class="result-label">총 수입 원가</div>
-            <div class="result-value" id="res-total-krw">--</div>
-            <div class="result-sub">원 (전체 물량)</div>
+          <div class="cb-row">
+            <span class="cb-row-label">② 해상운임+통관비</span>
+            <span class="cb-row-value" id="res-ship">--</span>
           </div>
-          <div class="result-item">
-            <div class="result-label">USD 환산 단가</div>
-            <div class="result-value" id="res-unit-usd">--</div>
-            <div class="result-sub">USD/MT</div>
+          <div class="cb-row">
+            <span class="cb-row-label">③ 관세 (과세가격 × 관세율)</span>
+            <span class="cb-row-value" id="res-tariff-amt">--</span>
           </div>
-          <div class="result-item">
-            <div class="result-label">RPCI 지수</div>
-            <div class="result-value" id="res-rpci">--</div>
-            <div class="result-sub">원/MT (실질구매비용)</div>
+          <div class="cb-total-row">
+            <span class="cb-total-label">수입 총원가</span>
+            <span class="cb-total-value" id="res-import-total">--</span>
           </div>
         </div>
-        <div class="comparison-row">
-          <span class="comparison-label">60일 평균 RPCI 대비</span>
-          <span class="comparison-value positive" id="res-vs-ma60">계산 후 표시</span>
-        </div>
-        <div class="comparison-row">
-          <span class="comparison-label">절감/추가 비용 (총 물량)</span>
-          <span class="comparison-value positive" id="res-saving">계산 후 표시</span>
-        </div>
-        <div class="gauge-section">
-          <div class="gauge-title">RPCI 수준 게이지 (60일 MA 기준)</div>
-          <div class="gauge-wrapper">
-            <div class="gauge-track"></div>
-            <div class="gauge-mask"></div>
-            <div class="gauge-needle" id="gauge-needle"></div>
-            <div class="gauge-labels">
-              <span style="color:var(--red)">자제구간</span>
-              <span style="color:var(--yellow)">대기구간</span>
-              <span style="color:var(--green)">매수구간</span>
+
+        <!-- 국내가 비교 -->
+        <div class="domestic-compare-card">
+          <div class="dc-header">
+            <span class="dc-title">국내 구매가 비교</span>
+            <span class="dc-ref-label">비교 기준: <strong id="res-domestic-ref">2,536원/㎡</strong> (홍지)</span>
+          </div>
+          <div class="dc-stats-grid">
+            <div class="dc-stat">
+              <div class="dc-stat-label">수입 단가</div>
+              <div class="dc-stat-value" id="res-import-unit" style="color:var(--gold)">--</div>
+            </div>
+            <div class="dc-stat">
+              <div class="dc-stat-label">차이 (원/㎡)</div>
+              <div class="dc-stat-value" id="res-gap-unit">--</div>
+            </div>
+            <div class="dc-stat">
+              <div class="dc-stat-label">절감률</div>
+              <div class="dc-stat-value" id="res-gap-pct">--</div>
             </div>
           </div>
         </div>
+
+        <!-- 총액 + 손익분기 -->
+        <div class="be-card">
+          <div class="cb-row" style="margin-bottom:0.4rem;">
+            <span class="cb-row-label">총 발주금액 (수입 기준)</span>
+            <span class="cb-row-value" id="res-total-import">--</span>
+          </div>
+          <div class="cb-row" style="margin-bottom:0.4rem;">
+            <span class="cb-row-label">총 절감액 (vs 국내가 × 수량)</span>
+            <span class="cb-row-value" id="res-total-saving">--</span>
+          </div>
+          <div class="be-row" style="margin-top:0.5rem;padding-top:0.5rem;border-top:1px solid rgba(201,168,76,0.2);">
+            <span class="be-label">손익분기 환율 (수입=국내가)</span>
+            <span class="be-value" id="res-break-even">-- 원/위안</span>
+          </div>
+          <div class="be-sub" id="res-break-even-sub"></div>
+        </div>
       </div>
+    </div>
+
+    <!-- 운송비 상세 -->
+    <button class="shipping-toggle-btn" onclick="toggleShipping()">▼ 운송비 상세 내역 펼치기 (40'HQ · 일조→평택, 기준: 2026.02.11)</button>
+    <div class="shipping-detail-panel" id="shipping-detail-panel">
+      <div class="sdp-header">
+        <span>40'HQ 컨테이너 운송비 상세 — 일조(日照, 중국) → 평택 → 파주시 오도동</span>
+        <span>총 3,431,852원 (부가세 별도)</span>
+      </div>
+      <table class="sdp-table">
+        <tr><td>Ocean Freight</td><td>USD</td><td>$600</td></tr>
+        <tr><td>FCA Charges</td><td>USD</td><td>$550</td></tr>
+        <tr><td>BAF (연료할증료)</td><td>USD</td><td>$380</td></tr>
+        <tr><td>CAF (통화할증료)</td><td>USD</td><td>$80</td></tr>
+        <tr><td>CIC (컨테이너불균형할증)</td><td>USD</td><td>$80</td></tr>
+        <tr><td>Handling Charge</td><td>USD</td><td>$50</td></tr>
+        <tr><td>THC (터미널화물처리비)</td><td>KRW</td><td>210,000원</td></tr>
+        <tr><td>Cleaning Fee</td><td>KRW</td><td>50,000원</td></tr>
+        <tr><td>Wharfage (부두사용료)</td><td>KRW</td><td>5,062원</td></tr>
+        <tr><td>Document Fee</td><td>KRW</td><td>40,000원</td></tr>
+        <tr><td>적하보험료</td><td>KRW</td><td>14,000원</td></tr>
+        <tr><td>Trucking Charge (착지: 파주시 오도동)</td><td>KRW</td><td>579,350원</td></tr>
+        <tr class="sdp-total-row"><td colspan="2">합계 (USD $1,740 + KRW 포함)</td><td>3,431,852원</td></tr>
+        <tr class="sdp-sqm-row"><td colspan="2">㎡당 운임 (18톤 / 2,800장 기준)</td><td style="color:var(--gold);font-weight:800;">68원/㎡</td></tr>
+      </table>
+      <div style="font-size:0.68rem;color:var(--text-muted);padding:0.5rem 1.1rem;">※ 수입통관비용(관세·부가세·통관수수료) 별도. 세관검사 시 검사비용 별도.</div>
+    </div>
+
+    <!-- 관세 HSCODE 가이드 -->
+    <div class="customs-panel">
+      <div class="customs-panel-header">📋 관세 HS Code 가이드 — 알루미늄 엔트리시트 해당 분류</div>
+      <table class="customs-table">
+        <thead>
+          <tr><th>품목</th><th>HS Code</th><th>통상관세율</th><th>한중FTA</th><th>비고</th></tr>
+        </thead>
+        <tbody id="customs-tbody">
+          <tr id="hs-7606" ><td>생알미늄 (판·시트)</td><td>7606.11.1000</td><td>8%</td><td class="hs-rate-0">0%</td><td>99.99% 순알미늄</td></tr>
+          <tr id="hs-7607a"><td>생알미늄 호일</td><td>7607.11.9000</td><td>8%</td><td class="hs-rate-pos">7.2%</td><td>99.3% 합금</td></tr>
+          <tr id="hs-7607b"><td>코팅알미늄 (순)</td><td>7607.20.1000</td><td>8%</td><td class="hs-rate-0">0%</td><td>99.99% 순알미늄 + 코팅 ← 수용성코팅</td></tr>
+          <tr id="hs-7607c" class="hs-active"><td>코팅알미늄 (합금)</td><td>7607.20.9000</td><td>8%</td><td class="hs-rate-pos">1.6%</td><td>99.3% 합금 + 코팅 ← <strong>비수용성피막 해당</strong></td></tr>
+        </tbody>
+      </table>
     </div>
   </section>
 
@@ -1787,12 +2063,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   renderRadarChart(0);
   updateSupplierDetailCard(0);
   calculateSimulator();
-
-  // SMM 입력 이벤트 리스너
-  document.getElementById('sim-smm').addEventListener('input', updateSmmGap);
-  document.getElementById('sim-lme').addEventListener('input', () => {
-    if (priceSource === 'smm') updateSmmGap();
-  });
 });
 
 // ===================== SIGNAL PANEL =====================
@@ -2229,97 +2499,141 @@ function renderRadarChart(idx) {
 }
 
 // ===================== SIMULATOR =====================
-// rpciMA60Avg는 computeDerived()에서 계산됨
 
-let priceSource = 'shfe'; // 'shfe' | 'smm'
+// 제품 프리셋 (중국견적.pdf 기준 — 생알미늄 24.39 CNY/kg, 가공비 4 CNY/kg)
+const PRODUCT_PRESETS = {
+  oil17: { name:'비수용성피막 0.17mm', cnyPerSqm:11.452, hscode:'7607.20.9000', ftaRate:1.6,
+           weight:0.3252, alCost:9.232, procCost:2.22,
+           note:'Oil-based coating (지용성). HSCODE 7607.20.9000 (합금+코팅). 비교 기준: 홍지 견적서 2026.03.04 (지용성 0.17mm / ㎡당 2,536원, 부가세 별도)' },
+  oil13: { name:'비수용성피막 0.13mm', cnyPerSqm:9.734,  hscode:'7607.20.9000', ftaRate:1.6,
+           weight:0.271, alCost:7.694, procCost:2.04,
+           note:'Oil-based coating (지용성). HSCODE 7607.20.9000 (합금+코팅). 비교 기준: 홍지 견적(0.17mm 기준 2,536원/㎡). 0.13mm 국내가는 별도 확인 필요.' },
+  wat17: { name:'수용성코팅 0.17mm',   cnyPerSqm:15.032, hscode:'7607.20.1000', ftaRate:0,
+           weight:0.3252, alCost:9.232, procCost:5.80,
+           note:'Water-based coating (수용성). HSCODE 7607.20.1000 (99.99% 순알미늄+코팅). 한중FTA 0%. 코팅 가공비가 비수용성 대비 약 2.6배 높음.' },
+  wat13: { name:'수용성코팅 0.13mm',   cnyPerSqm:13.484, hscode:'7607.20.1000', ftaRate:0,
+           weight:0.271, alCost:7.694, procCost:5.79,
+           note:'Water-based coating (수용성). HSCODE 7607.20.1000 (99.99% 순알미늄+코팅). 한중FTA 0%. 코팅 가공비가 비수용성 대비 약 2.8배 높음.' },
+};
+let currentProductId = 'oil17';
 
-function setPriceSource(src) {
-  priceSource = src;
-  const isSmm = src === 'smm';
-
-  document.getElementById('pst-shfe').classList.toggle('active', !isSmm);
-  document.getElementById('pst-smm').classList.toggle('active', isSmm);
-  document.getElementById('grp-shfe').style.display = isSmm ? 'none' : '';
-  document.getElementById('grp-smm').style.display = isSmm ? '' : 'none';
-
-  const descEl = document.getElementById('price-source-desc');
-  if (isSmm) {
-    descEl.innerHTML = '<span class="psd-badge psd-smm">SMM</span> 상하이 메탈 마켓 — 실물 유통 현물가. 공급업체 협상 단가에 더 가까움. <em>price.metal.com</em> 또는 <em>smm.cn</em>에서 확인 후 직접 입력.';
-    // SHFE 참조값 업데이트
-    const shfeVal = parseFloat(document.getElementById('sim-lme').value) || lastLme;
-    document.getElementById('smm-shfe-ref').textContent = shfeVal.toLocaleString();
-    updateSmmGap();
-  } else {
-    descEl.innerHTML = '<span class="psd-badge psd-shfe">SHFE</span> 상하이 선물거래소 — 미래 계약 가격. 실물가와 ±1~3% 괴리 가능. API 자동 수집.';
-  }
+function selectProduct(id) {
+  currentProductId = id;
+  const p = PRODUCT_PRESETS[id];
+  // 버튼 활성화
+  Object.keys(PRODUCT_PRESETS).forEach(k => {
+    document.getElementById('prod-' + k).classList.toggle('active', k === id);
+  });
+  // 단가 입력 자동 업데이트
+  document.getElementById('sim-cny-sqm').value = p.cnyPerSqm;
+  document.getElementById('sim-tariff').value  = p.ftaRate;
+  // HSCODE 바 업데이트
+  document.getElementById('prod-hscode-display').textContent = p.hscode;
+  document.getElementById('prod-fta-display').textContent    = p.ftaRate + '%';
+  document.getElementById('prod-tariff-applied').textContent = '한중FTA ' + p.ftaRate + '%';
+  // 단가 구성 상세 업데이트
+  document.getElementById('cci-weight').innerHTML    = p.weight + ' <span>kg/㎡</span>';
+  document.getElementById('cci-al-cost').innerHTML   = p.alCost + ' <span>CNY/㎡</span>';
+  document.getElementById('cci-proc-cost').innerHTML = p.procCost + ' <span>CNY/㎡</span>';
+  document.getElementById('cci-unit').innerHTML      = p.cnyPerSqm + ' <span>CNY/㎡</span>';
+  document.getElementById('cost-comp-note').textContent = '※ ' + p.note;
+  // customs 테이블 활성 행 업데이트
+  ['7606','7607a','7607b','7607c'].forEach(k => {
+    document.getElementById('hs-' + k).classList.remove('hs-active');
+  });
+  if      (p.hscode === '7606.11.1000') document.getElementById('hs-7606').classList.add('hs-active');
+  else if (p.hscode === '7607.11.9000') document.getElementById('hs-7607a').classList.add('hs-active');
+  else if (p.hscode === '7607.20.1000') document.getElementById('hs-7607b').classList.add('hs-active');
+  else if (p.hscode === '7607.20.9000') document.getElementById('hs-7607c').classList.add('hs-active');
 }
 
-function updateSmmGap() {
-  const shfe = parseFloat(document.getElementById('sim-lme').value) || lastLme;
-  const smm  = parseFloat(document.getElementById('sim-smm').value);
-  document.getElementById('smm-shfe-ref').textContent = shfe.toLocaleString();
-  const gapEl = document.getElementById('smm-gap-badge');
-  if (!smm || isNaN(smm)) { gapEl.style.display = 'none'; return; }
-  const diff = smm - shfe;
-  const pct  = (diff / shfe * 100).toFixed(1);
-  gapEl.style.display = '';
-  gapEl.textContent = (diff >= 0 ? 'SMM +' : 'SMM ') + diff.toLocaleString() + ' (' + (diff >= 0 ? '+' : '') + pct + '%)';
-  gapEl.className = 'smm-gap ' + (diff >= 0 ? 'smm-gap-pos' : 'smm-gap-neg');
+function toggleShipping() {
+  const panel = document.getElementById('shipping-detail-panel');
+  const btn   = panel.previousElementSibling;
+  const open  = panel.classList.toggle('open');
+  btn.textContent = (open ? '▲ 운송비 상세 내역 접기' : '▼ 운송비 상세 내역 펼치기') + ' (40\'HQ · 일조→평택, 기준: 2026.02.11)';
 }
 
-// SMM 입력 변경 시 실시간 괴리 업데이트
 function calculateSimulator() {
-  const qty = parseFloat(document.getElementById('sim-qty').value) || 100;
-  const shfePrice = parseFloat(document.getElementById('sim-lme').value) || lastLme;
-  const smmPrice  = parseFloat(document.getElementById('sim-smm').value);
-  const useSMM = priceSource === 'smm' && smmPrice && !isNaN(smmPrice);
-  const lme = useSMM ? smmPrice : shfePrice;
-  const cny = parseFloat(document.getElementById('sim-cny').value) || lastCny;
-  const usd = parseFloat(document.getElementById('sim-usd').value) || lastUsd;
-  const tariff = parseFloat(document.getElementById('sim-tariff').value) / 100 || 0.05;
-  const misc = parseFloat(document.getElementById('sim-misc').value) / 100 || 0.03;
+  const qty      = parseFloat(document.getElementById('sim-qty').value)      || 2800;
+  const cnyPerSqm= parseFloat(document.getElementById('sim-cny-sqm').value)  || 11.452;
+  const rate     = parseFloat(document.getElementById('sim-cny').value)       || 212;
+  const shipping = parseFloat(document.getElementById('sim-shipping').value)  || 68;
+  const tariffPct= parseFloat(document.getElementById('sim-tariff').value)    || 1.6;
+  const domestic = parseFloat(document.getElementById('sim-domestic').value)  || 2536;
+  const tariff   = tariffPct / 100;
 
-  // 결과 카드 출처 태그 업데이트
-  const srcTag = document.getElementById('result-source-tag');
-  if (useSMM) {
-    srcTag.textContent = 'SMM 현물가 기준';
-    srcTag.style.cssText = 'background:rgba(76,160,201,0.2);color:#7ec8e3;border:1px solid rgba(76,160,201,0.4);';
+  // 원가 계산
+  const goods    = parseFloat((cnyPerSqm * rate).toFixed(0));         // 물품대
+  const taxBase  = goods + shipping;                                    // 과세가격
+  const tariffAmt= parseFloat((taxBase * tariff).toFixed(0));          // 관세
+  const importUnit = goods + shipping + tariffAmt;                     // 수입 총원가/㎡
+
+  // 결과 표시 — 원가 분해
+  document.getElementById('res-goods').textContent      = fmtNum(goods) + '원';
+  document.getElementById('res-ship').textContent       = fmtNum(shipping) + '원';
+  document.getElementById('res-tariff-amt').textContent = fmtNum(tariffAmt) + '원';
+  document.getElementById('res-import-total').textContent = fmtNum(importUnit) + '원/㎡';
+
+  // 국내가 비교
+  const gap    = domestic - importUnit;          // 양수 = 수입이 더 쌈
+  const gapPct = (gap / domestic * 100);
+  document.getElementById('res-import-unit').textContent = fmtNum(importUnit) + '원/㎡';
+  document.getElementById('res-domestic-ref').textContent = fmtNum(domestic) + '원/㎡ (홍지)';
+
+  const gapEl = document.getElementById('res-gap-unit');
+  const pctEl = document.getElementById('res-gap-pct');
+  if (gap > 0) {
+    gapEl.textContent = '▼ ' + fmtNum(gap) + '원 저렴';
+    gapEl.className = 'dc-stat-value dc-cheaper';
+    pctEl.textContent = gapPct.toFixed(1) + '% 절감';
+    pctEl.className = 'dc-stat-value dc-cheaper';
+  } else if (gap < 0) {
+    gapEl.textContent = '▲ ' + fmtNum(Math.abs(gap)) + '원 비쌈';
+    gapEl.className = 'dc-stat-value dc-dearer';
+    pctEl.textContent = Math.abs(gapPct).toFixed(1) + '% 추가';
+    pctEl.className = 'dc-stat-value dc-dearer';
   } else {
-    srcTag.textContent = 'SHFE 선물가 기준';
-    srcTag.style.cssText = 'background:rgba(201,168,76,0.15);color:var(--gold);border:1px solid var(--gold-dark);';
+    gapEl.textContent = '동일';
+    gapEl.className = 'dc-stat-value dc-neutral';
+    pctEl.textContent = '0.0%';
+    pctEl.className = 'dc-stat-value dc-neutral';
   }
 
-  const rpci = calcRPCI(lme, cny, tariff, misc);
-  const totalKrw = rpci * qty;
-  const unitUsd = (rpci / usd);
-
-  document.getElementById('res-unit-krw').textContent = fmtNum(rpci) + '원';
-  document.getElementById('res-total-krw').textContent = fmtNum(totalKrw) + '원';
-  document.getElementById('res-unit-usd').textContent = '$' + fmtNum(unitUsd, 1);
-  document.getElementById('res-rpci').textContent = fmtNum(rpci);
-
-  const vsMa60Pct = ((rpci - currentMA60)/currentMA60*100);
-  const vsMa60El = document.getElementById('res-vs-ma60');
-  vsMa60El.textContent = (vsMa60Pct > 0 ? '+' : '') + vsMa60Pct.toFixed(1) + '%';
-  vsMa60El.className = 'comparison-value ' + (vsMa60Pct > 0 ? 'positive' : 'negative');
-
-  const saving = (currentMA60 - rpci) * qty;
-  const savingEl = document.getElementById('res-saving');
-  if (saving > 0) {
-    savingEl.textContent = '▼ ' + fmtNum(Math.abs(saving)) + '원 절감';
-    savingEl.className = 'comparison-value negative';
+  // 총액
+  const totalImport = importUnit * qty;
+  const totalDomestic = domestic * qty;
+  const totalSaving = (domestic - importUnit) * qty;
+  document.getElementById('res-total-import').textContent = fmtNum(totalImport) + '원';
+  const savEl = document.getElementById('res-total-saving');
+  if (totalSaving > 0) {
+    savEl.textContent = '▼ ' + fmtNum(totalSaving) + '원 절감';
+    savEl.style.color = 'var(--green)';
+  } else if (totalSaving < 0) {
+    savEl.textContent = '▲ ' + fmtNum(Math.abs(totalSaving)) + '원 추가 비용';
+    savEl.style.color = 'var(--red)';
   } else {
-    savingEl.textContent = '▲ ' + fmtNum(Math.abs(saving)) + '원 추가 비용';
-    savingEl.className = 'comparison-value positive';
+    savEl.textContent = '동일 (손익분기)';
+    savEl.style.color = 'var(--yellow)';
   }
 
-  // Gauge: -10% → full left (매수), 0% → center, +10% → full right (자제)
-  // Gauge goes from -90deg to +90deg (180 range)
-  // 0% → 0deg (center), -10%→ -90deg, +10% → +90deg
-  const clampedPct = Math.max(-12, Math.min(12, vsMa60Pct));
-  const needleDeg = clampedPct / 12 * 90;
-  document.getElementById('gauge-needle').style.transform =
-    `translateX(-50%) rotate(${needleDeg}deg)`;
+  // 손익분기 환율: domestic = (cnyPerSqm × rate + shipping) × (1 + tariff)
+  // rate = (domestic/(1+tariff) - shipping) / cnyPerSqm
+  const beRate = ((domestic / (1 + tariff)) - shipping) / cnyPerSqm;
+  const beEl   = document.getElementById('res-break-even');
+  beEl.textContent = beRate.toFixed(1) + '원/위안';
+  const beSubEl = document.getElementById('res-break-even-sub');
+  const rateDiff = rate - beRate;
+  if (rateDiff > 0) {
+    beSubEl.textContent = '현재 환율(' + rate + '원)이 손익분기보다 ' + rateDiff.toFixed(1) + '원 높음 → 환율 하락 시 수입 유리';
+    beSubEl.style.color = 'var(--red)';
+  } else if (rateDiff < 0) {
+    beSubEl.textContent = '현재 환율(' + rate + '원)이 손익분기보다 ' + Math.abs(rateDiff).toFixed(1) + '원 낮음 → 수입이 국내가 대비 유리';
+    beSubEl.style.color = 'var(--green)';
+  } else {
+    beSubEl.textContent = '현재 환율이 정확히 손익분기점';
+    beSubEl.style.color = 'var(--yellow)';
+  }
 }
 
 // ===================== SCROLL NAV =====================
