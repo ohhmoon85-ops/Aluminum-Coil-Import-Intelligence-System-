@@ -1,0 +1,1593 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ACIS - 알루미늄 코일 수입 인텔리전스 시스템</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --navy: #1a2744;
+    --navy-light: #223060;
+    --navy-mid: #1e3060;
+    --navy-dark: #111d35;
+    --navy-card: #1c2e52;
+    --gold: #c9a84c;
+    --gold-light: #e0bf70;
+    --gold-dark: #a8882e;
+    --green: #2ecc71;
+    --green-dark: #27ae60;
+    --yellow: #f1c40f;
+    --yellow-dark: #d4ac0d;
+    --red: #e74c3c;
+    --red-dark: #c0392b;
+    --text-primary: #e8eaf0;
+    --text-secondary: #9aa3ba;
+    --text-muted: #6b7490;
+    --border: #2a3a6a;
+    --border-light: #3a4a7a;
+    --shadow: 0 4px 24px rgba(0,0,0,0.4);
+    --shadow-sm: 0 2px 12px rgba(0,0,0,0.3);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--navy-dark);
+    color: var(--text-primary);
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+
+  /* ===== LOADING ===== */
+  #loading-overlay {
+    position: fixed; inset: 0; background: var(--navy-dark);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    z-index: 9999; transition: opacity 0.5s;
+  }
+  #loading-overlay.fade-out { opacity: 0; pointer-events: none; }
+  .loading-logo {
+    font-size: 2.5rem; font-weight: 900; color: var(--gold);
+    letter-spacing: 4px; margin-bottom: 1rem;
+  }
+  .loading-sub { color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 2rem; }
+  .loading-bar {
+    width: 260px; height: 4px; background: var(--border);
+    border-radius: 2px; overflow: hidden;
+  }
+  .loading-progress {
+    height: 100%; background: linear-gradient(90deg, var(--gold-dark), var(--gold-light));
+    border-radius: 2px; animation: loadprogress 1.6s ease-in-out forwards;
+  }
+  @keyframes loadprogress { from { width: 0; } to { width: 100%; } }
+
+  /* ===== HEADER ===== */
+  #main-header {
+    background: var(--navy);
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 100;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.5);
+  }
+  .header-inner {
+    max-width: 1440px; margin: 0 auto;
+    padding: 0 1.5rem;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 60px;
+  }
+  .header-logo {
+    display: flex; align-items: center; gap: 0.75rem;
+  }
+  .logo-badge {
+    background: linear-gradient(135deg, var(--gold-dark), var(--gold-light));
+    color: var(--navy-dark);
+    font-weight: 900; font-size: 1.1rem;
+    padding: 0.25rem 0.65rem;
+    border-radius: 6px; letter-spacing: 1px;
+  }
+  .logo-text { font-size: 1rem; font-weight: 700; color: var(--text-primary); }
+  .logo-sub { font-size: 0.7rem; color: var(--text-secondary); display: block; }
+  .header-meta {
+    display: flex; align-items: center; gap: 1.5rem;
+  }
+  .header-time {
+    font-size: 0.78rem; color: var(--text-secondary);
+    text-align: right;
+  }
+  .header-time span { color: var(--gold); font-weight: 600; }
+  .live-dot {
+    width: 8px; height: 8px; background: var(--green);
+    border-radius: 50%; display: inline-block;
+    animation: pulse 2s infinite; margin-right: 4px;
+  }
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
+
+  /* ===== NAV TABS ===== */
+  #nav-tabs {
+    background: var(--navy);
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  #nav-tabs::-webkit-scrollbar { display: none; }
+  .nav-tabs-inner {
+    max-width: 1440px; margin: 0 auto;
+    padding: 0 1.5rem;
+    display: flex; gap: 0;
+  }
+  .nav-tab {
+    padding: 0.65rem 1.2rem;
+    font-size: 0.82rem; font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer; border: none;
+    background: none; white-space: nowrap;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+  }
+  .nav-tab:hover { color: var(--text-primary); }
+  .nav-tab.active {
+    color: var(--gold);
+    border-bottom-color: var(--gold);
+  }
+
+  /* ===== MAIN CONTENT ===== */
+  .main-content {
+    max-width: 1440px; margin: 0 auto;
+    padding: 1.5rem;
+  }
+
+  /* ===== SECTION ===== */
+  .section {
+    margin-bottom: 2rem;
+  }
+  .section-header {
+    display: flex; align-items: center; gap: 0.75rem;
+    margin-bottom: 1.25rem;
+  }
+  .section-num {
+    background: linear-gradient(135deg, var(--gold-dark), var(--gold));
+    color: var(--navy-dark);
+    width: 28px; height: 28px;
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 900; font-size: 0.85rem; flex-shrink: 0;
+  }
+  .section-title {
+    font-size: 1.05rem; font-weight: 700; color: var(--text-primary);
+  }
+  .section-sub {
+    font-size: 0.75rem; color: var(--text-secondary); margin-left: auto;
+  }
+
+  /* ===== KPI CARDS ===== */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+  }
+  .kpi-card {
+    background: var(--navy-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    position: relative; overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: default;
+  }
+  .kpi-card::before {
+    content: ''; position: absolute;
+    top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--gold-dark), var(--gold-light));
+  }
+  .kpi-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+  }
+  .kpi-label {
+    font-size: 0.75rem; color: var(--text-secondary);
+    font-weight: 600; letter-spacing: 0.5px;
+    text-transform: uppercase; margin-bottom: 0.5rem;
+  }
+  .kpi-value {
+    font-size: 1.6rem; font-weight: 800;
+    color: var(--text-primary); line-height: 1.2;
+    margin-bottom: 0.35rem;
+  }
+  .kpi-unit {
+    font-size: 0.75rem; color: var(--text-secondary);
+    font-weight: 400;
+  }
+  .kpi-change {
+    font-size: 0.8rem; font-weight: 700;
+    display: inline-flex; align-items: center; gap: 2px;
+  }
+  .kpi-change.up { color: var(--red); }
+  .kpi-change.down { color: var(--green); }
+  .kpi-change.neutral { color: var(--text-secondary); }
+  .kpi-icon {
+    position: absolute; right: 1.25rem; top: 1.25rem;
+    font-size: 1.8rem; opacity: 0.15;
+  }
+  .signal-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 0.35rem 0.9rem; border-radius: 20px;
+    font-weight: 800; font-size: 1.1rem;
+    letter-spacing: 1px;
+  }
+  .signal-badge.buy { background: rgba(46,204,113,0.15); color: var(--green); border: 1px solid var(--green); }
+  .signal-badge.wait { background: rgba(241,196,15,0.15); color: var(--yellow); border: 1px solid var(--yellow); }
+  .signal-badge.avoid { background: rgba(231,76,60,0.15); color: var(--red); border: 1px solid var(--red); }
+
+  /* ===== CHART CARDS ===== */
+  .chart-card {
+    background: var(--navy-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+  }
+  .chart-toolbar {
+    display: flex; align-items: center; gap: 0.5rem;
+    margin-bottom: 1rem; flex-wrap: wrap;
+  }
+  .chart-btn {
+    padding: 0.3rem 0.8rem;
+    font-size: 0.75rem; font-weight: 600;
+    border: 1px solid var(--border-light);
+    background: transparent; color: var(--text-secondary);
+    border-radius: 6px; cursor: pointer;
+    transition: all 0.2s;
+  }
+  .chart-btn:hover { border-color: var(--gold); color: var(--gold); }
+  .chart-btn.active { background: var(--gold); color: var(--navy-dark); border-color: var(--gold); }
+  .chart-legend {
+    display: flex; align-items: center; gap: 1rem;
+    flex-wrap: wrap; font-size: 0.72rem;
+    color: var(--text-secondary); margin-left: auto;
+  }
+  .legend-item {
+    display: flex; align-items: center; gap: 4px;
+  }
+  .legend-dot {
+    width: 20px; height: 3px; border-radius: 2px;
+  }
+  .legend-dot.dashed {
+    background: repeating-linear-gradient(90deg, currentColor 0, currentColor 4px, transparent 4px, transparent 8px);
+    height: 2px;
+  }
+  canvas { max-height: 300px; }
+
+  /* ===== SIGNAL PANEL ===== */
+  .signal-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+  .signal-card {
+    background: var(--navy-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+  }
+  .signal-card-title {
+    font-size: 0.75rem; font-weight: 700;
+    color: var(--text-secondary); margin-bottom: 1rem;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .signal-big {
+    text-align: center; padding: 1rem 0;
+    margin-bottom: 1rem;
+  }
+  .signal-big-badge {
+    display: inline-flex; flex-direction: column;
+    align-items: center; gap: 4px;
+    padding: 1rem 2.5rem; border-radius: 16px;
+    font-weight: 900; font-size: 2rem;
+    letter-spacing: 2px;
+  }
+  .signal-big-badge.buy { background: rgba(46,204,113,0.12); color: var(--green); border: 2px solid var(--green); }
+  .signal-big-badge.wait { background: rgba(241,196,15,0.12); color: var(--yellow); border: 2px solid var(--yellow); }
+  .signal-big-badge.avoid { background: rgba(231,76,60,0.12); color: var(--red); border: 2px solid var(--red); }
+  .signal-big-badge small { font-size: 0.7rem; font-weight: 400; opacity: 0.7; letter-spacing: 0; }
+  .signal-factors { list-style: none; }
+  .signal-factors li {
+    font-size: 0.78rem; color: var(--text-secondary);
+    padding: 0.3rem 0; border-bottom: 1px solid rgba(255,255,255,0.04);
+    display: flex; align-items: flex-start; gap: 6px;
+  }
+  .signal-factors li::before {
+    content: '▸'; color: var(--gold); flex-shrink: 0; margin-top: 1px;
+  }
+  .rpci-bar-section {
+    margin-top: 1rem; padding-top: 1rem;
+    border-top: 1px solid var(--border);
+  }
+  .rpci-bar-label {
+    font-size: 0.72rem; color: var(--text-secondary);
+    display: flex; justify-content: space-between; margin-bottom: 6px;
+  }
+  .rpci-bar-track {
+    height: 10px; background: var(--border);
+    border-radius: 5px; position: relative; overflow: visible;
+  }
+  .rpci-bar-fill {
+    height: 100%; border-radius: 5px;
+    transition: width 0.6s ease;
+  }
+  .rpci-bar-marker {
+    position: absolute; top: -3px;
+    width: 16px; height: 16px;
+    background: var(--gold); border-radius: 50%;
+    transform: translateX(-50%);
+    border: 2px solid var(--navy-dark);
+    transition: left 0.6s ease;
+  }
+
+  /* ===== SUPPLIER TABLE ===== */
+  .supplier-layout {
+    display: grid; grid-template-columns: 1fr 340px;
+    gap: 1rem; align-items: start;
+  }
+  .table-card {
+    background: var(--navy-card);
+    border: 1px solid var(--border);
+    border-radius: 12px; overflow: hidden;
+  }
+  .data-table {
+    width: 100%; border-collapse: collapse;
+    font-size: 0.8rem;
+  }
+  .data-table thead th {
+    background: var(--navy-dark);
+    padding: 0.7rem 0.9rem;
+    color: var(--text-secondary);
+    font-weight: 600; text-align: left;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  .data-table tbody tr {
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    transition: background 0.15s; cursor: pointer;
+  }
+  .data-table tbody tr:hover { background: rgba(201,168,76,0.06); }
+  .data-table tbody tr.selected { background: rgba(201,168,76,0.1); }
+  .data-table tbody td {
+    padding: 0.7rem 0.9rem; color: var(--text-primary);
+    vertical-align: middle;
+  }
+  .rank-num {
+    font-weight: 900; color: var(--gold); font-size: 0.9rem;
+  }
+  .tier-badge {
+    display: inline-block; padding: 0.15rem 0.55rem;
+    border-radius: 4px; font-size: 0.68rem; font-weight: 700;
+  }
+  .tier-1 { background: rgba(201,168,76,0.2); color: var(--gold); border: 1px solid var(--gold-dark); }
+  .tier-2 { background: rgba(160,160,160,0.15); color: #b0b8cc; border: 1px solid #666; }
+  .score-bar-cell { min-width: 80px; }
+  .score-mini {
+    display: flex; align-items: center; gap: 6px;
+  }
+  .score-mini-bar {
+    flex: 1; height: 4px; background: var(--border);
+    border-radius: 2px; overflow: hidden;
+  }
+  .score-mini-fill {
+    height: 100%; border-radius: 2px;
+    background: linear-gradient(90deg, var(--gold-dark), var(--gold-light));
+  }
+  .score-num { font-size: 0.75rem; font-weight: 700; color: var(--gold); min-width: 28px; }
+  .detail-btn {
+    padding: 0.2rem 0.6rem;
+    font-size: 0.7rem; border: 1px solid var(--border-light);
+    background: transparent; color: var(--text-secondary);
+    border-radius: 4px; cursor: pointer; transition: all 0.2s;
+  }
+  .detail-btn:hover { border-color: var(--gold); color: var(--gold); }
+  .radar-card {
+    background: var(--navy-card);
+    border: 1px solid var(--border);
+    border-radius: 12px; padding: 1.25rem;
+  }
+  .radar-title {
+    font-size: 0.8rem; font-weight: 700; color: var(--text-secondary);
+    text-align: center; margin-bottom: 0.75rem;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .radar-company {
+    font-size: 1rem; font-weight: 800; color: var(--gold);
+    text-align: center; margin-bottom: 1rem;
+  }
+
+  /* ===== SIMULATOR ===== */
+  .simulator-layout {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+  .sim-card {
+    background: var(--navy-card);
+    border: 1px solid var(--border);
+    border-radius: 12px; padding: 1.5rem;
+  }
+  .sim-card-title {
+    font-size: 0.78rem; font-weight: 700; color: var(--text-secondary);
+    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 1.25rem;
+  }
+  .form-group { margin-bottom: 1rem; }
+  .form-label {
+    display: block; font-size: 0.75rem; font-weight: 600;
+    color: var(--text-secondary); margin-bottom: 0.35rem;
+  }
+  .form-control {
+    width: 100%; padding: 0.55rem 0.9rem;
+    background: var(--navy-dark); border: 1px solid var(--border);
+    color: var(--text-primary); border-radius: 8px;
+    font-size: 0.88rem; font-family: inherit;
+    transition: border-color 0.2s;
+  }
+  .form-control:focus {
+    outline: none; border-color: var(--gold);
+    box-shadow: 0 0 0 2px rgba(201,168,76,0.15);
+  }
+  .form-row {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;
+  }
+  .calc-btn {
+    width: 100%; padding: 0.75rem;
+    background: linear-gradient(135deg, var(--gold-dark), var(--gold-light));
+    color: var(--navy-dark); border: none;
+    border-radius: 8px; font-size: 0.9rem; font-weight: 800;
+    cursor: pointer; transition: all 0.2s;
+    margin-top: 0.5rem; font-family: inherit;
+  }
+  .calc-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(201,168,76,0.35);
+  }
+  .result-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 0.75rem; margin-bottom: 1.25rem;
+  }
+  .result-item {
+    background: var(--navy-dark);
+    border: 1px solid var(--border);
+    border-radius: 8px; padding: 0.85rem 1rem;
+  }
+  .result-label {
+    font-size: 0.68rem; color: var(--text-muted);
+    font-weight: 600; margin-bottom: 0.3rem;
+    text-transform: uppercase; letter-spacing: 0.3px;
+  }
+  .result-value {
+    font-size: 1.05rem; font-weight: 800; color: var(--gold);
+  }
+  .result-sub {
+    font-size: 0.68rem; color: var(--text-secondary); margin-top: 2px;
+  }
+  .comparison-row {
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--navy-dark); border: 1px solid var(--border);
+    border-radius: 8px; padding: 0.75rem 1rem; margin-bottom: 0.75rem;
+  }
+  .comparison-label { font-size: 0.78rem; color: var(--text-secondary); }
+  .comparison-value { font-size: 0.9rem; font-weight: 700; }
+  .comparison-value.positive { color: var(--red); }
+  .comparison-value.negative { color: var(--green); }
+  .gauge-section { margin-top: 1rem; }
+  .gauge-title { font-size: 0.72rem; color: var(--text-secondary); margin-bottom: 0.75rem; font-weight: 600; }
+  .gauge-wrapper {
+    position: relative; height: 120px; overflow: hidden;
+  }
+  .gauge-track {
+    width: 200px; height: 200px;
+    border-radius: 50%;
+    background: conic-gradient(
+      var(--green) 0deg 60deg,
+      var(--yellow) 60deg 120deg,
+      var(--red) 120deg 180deg,
+      transparent 180deg 360deg
+    );
+    position: absolute; left: 50%; top: 0;
+    transform: translateX(-50%);
+  }
+  .gauge-mask {
+    width: 160px; height: 160px; border-radius: 50%;
+    background: var(--navy-card);
+    position: absolute; left: 50%; top: 20px;
+    transform: translateX(-50%);
+  }
+  .gauge-needle {
+    width: 2px; height: 80px;
+    background: var(--gold);
+    position: absolute; bottom: 0; left: 50%;
+    transform-origin: bottom center;
+    transform: translateX(-50%) rotate(-90deg);
+    transition: transform 0.8s cubic-bezier(.34,1.56,.64,1);
+    border-radius: 2px;
+  }
+  .gauge-labels {
+    position: absolute; bottom: 8px; left: 0; right: 0;
+    display: flex; justify-content: space-between;
+    padding: 0 1rem; font-size: 0.62rem; color: var(--text-muted);
+  }
+
+  /* ===== FOOTER ===== */
+  #footer {
+    background: var(--navy);
+    border-top: 1px solid var(--border);
+    padding: 1.25rem 1.5rem; margin-top: 2rem;
+    text-align: center;
+  }
+  .footer-inner {
+    max-width: 1440px; margin: 0 auto;
+  }
+  .footer-credits {
+    font-size: 0.72rem; color: var(--text-muted); margin-bottom: 0.4rem;
+  }
+  .footer-credits span { color: var(--text-secondary); }
+  .footer-disclaimer {
+    font-size: 0.65rem; color: var(--text-muted);
+    max-width: 700px; margin: 0 auto;
+  }
+
+  /* ===== DIVIDER ===== */
+  .section-divider {
+    border: none; border-top: 1px solid var(--border);
+    margin: 0.5rem 0 2rem 0;
+  }
+
+  /* ===== SCROLLBAR ===== */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--navy-dark); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--border-light); }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 1100px) {
+    .supplier-layout { grid-template-columns: 1fr; }
+    .radar-card canvas { max-height: 260px; }
+  }
+  @media (max-width: 900px) {
+    .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    .signal-grid { grid-template-columns: 1fr; }
+    .simulator-layout { grid-template-columns: 1fr; }
+    .form-row { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 600px) {
+    .kpi-grid { grid-template-columns: 1fr; }
+    .main-content { padding: 1rem; }
+    .header-inner { padding: 0 1rem; }
+    .kpi-value { font-size: 1.35rem; }
+    .data-table { font-size: 0.72rem; }
+    .data-table thead th, .data-table tbody td { padding: 0.55rem 0.5rem; }
+    .result-grid { grid-template-columns: 1fr; }
+  }
+
+  /* ===== PRINT ===== */
+  @media print {
+    #loading-overlay, #main-header, #nav-tabs { display: none !important; }
+    body { background: white; color: black; }
+    .kpi-card, .chart-card, .signal-card, .table-card, .sim-card, .radar-card {
+      border: 1px solid #ccc; background: white;
+      break-inside: avoid; margin-bottom: 1rem;
+    }
+    .section { break-inside: avoid; }
+    :root {
+      --text-primary: #111; --text-secondary: #444;
+      --navy-dark: #f5f5f5; --navy-card: white;
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- Loading Overlay -->
+<div id="loading-overlay">
+  <div class="loading-logo">ACIS</div>
+  <div class="loading-sub">알루미늄 코일 수입 인텔리전스 시스템 초기화 중...</div>
+  <div class="loading-bar"><div class="loading-progress"></div></div>
+</div>
+
+<!-- Header -->
+<header id="main-header">
+  <div class="header-inner">
+    <div class="header-logo">
+      <div class="logo-badge">ACIS</div>
+      <div>
+        <div class="logo-text">알루미늄 코일 수입 인텔리전스 시스템</div>
+        <span class="logo-sub">Aluminum Coil Import Intelligence System · PCB 기판용 알루미늄 코일 최적 구매 의사결정 지원</span>
+      </div>
+    </div>
+    <div class="header-meta">
+      <div class="header-time">
+        <div><span class="live-dot"></span>실시간 데이터</div>
+        <div>최종 갱신: <span id="last-updated">--</span></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- Nav Tabs -->
+<nav id="nav-tabs">
+  <div class="nav-tabs-inner">
+    <button class="nav-tab active" onclick="scrollToSection('sec-kpi', this)">① KPI 현황</button>
+    <button class="nav-tab" onclick="scrollToSection('sec-price', this)">② 가격 추세</button>
+    <button class="nav-tab" onclick="scrollToSection('sec-fx', this)">③ 환율 추세</button>
+    <button class="nav-tab" onclick="scrollToSection('sec-signal', this)">④ 구매 신호</button>
+    <button class="nav-tab" onclick="scrollToSection('sec-supplier', this)">⑤ 공급업체 평가</button>
+    <button class="nav-tab" onclick="scrollToSection('sec-sim', this)">⑥ 구매 시뮬레이터</button>
+  </div>
+</nav>
+
+<!-- Main Content -->
+<main class="main-content">
+
+  <!-- ① KPI Cards -->
+  <section class="section" id="sec-kpi">
+    <div class="section-header">
+      <div class="section-num">①</div>
+      <div class="section-title">상단 KPI 현황</div>
+      <div class="section-sub" id="kpi-date-label">기준일: --</div>
+    </div>
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-icon">🏷</div>
+        <div class="kpi-label">LME 알루미늄 현물가</div>
+        <div class="kpi-value" id="kpi-lme">$2,487</div>
+        <div class="kpi-unit">USD/MT</div>
+        <div class="kpi-change up" id="kpi-lme-chg">▲ +0.82%</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon">💱</div>
+        <div class="kpi-label">CNY/KRW 환율</div>
+        <div class="kpi-value" id="kpi-cny">190.3</div>
+        <div class="kpi-unit">원/위안</div>
+        <div class="kpi-change down" id="kpi-cny-chg">▼ -0.15%</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon">📊</div>
+        <div class="kpi-label">RPCI 실질구매비용지수</div>
+        <div class="kpi-value" id="kpi-rpci">--</div>
+        <div class="kpi-unit">원/MT</div>
+        <div class="kpi-change neutral" id="kpi-rpci-chg">MA60 대비 산출중</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon">🚦</div>
+        <div class="kpi-label">오늘의 구매 신호</div>
+        <div style="padding: 0.5rem 0 0.3rem;">
+          <span class="signal-badge buy" id="kpi-signal-badge">매수</span>
+        </div>
+        <div style="font-size: 0.72rem; color: var(--text-secondary);" id="kpi-signal-desc">RPCI가 60일 이평 대비 유리</div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="section-divider">
+
+  <!-- ② Price Trend Chart -->
+  <section class="section" id="sec-price">
+    <div class="section-header">
+      <div class="section-num">②</div>
+      <div class="section-title">LME 알루미늄 가격 추세</div>
+      <div class="section-sub">최근 90일 실적 + 향후 30일 예측</div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-toolbar">
+        <button class="chart-btn active" id="price-btn-all" onclick="setPriceView('all', this)">전체</button>
+        <button class="chart-btn" id="price-btn-hist" onclick="setPriceView('hist', this)">실적</button>
+        <button class="chart-btn" id="price-btn-pred" onclick="setPriceView('pred', this)">예측</button>
+        <div class="chart-legend">
+          <div class="legend-item"><div class="legend-dot" style="background:#4e9af1;"></div>실제가격</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#f1a74e;"></div>MA20</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#e0bf70;"></div>MA60</div>
+          <div class="legend-item"><div class="legend-dot" style="background:rgba(78,154,241,0.25);width:24px;height:8px;border-radius:3px;"></div>볼린저밴드</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#a855f7;"></div><span style="border-bottom:1px dashed #a855f7;">예측</span></div>
+        </div>
+      </div>
+      <canvas id="priceChart"></canvas>
+    </div>
+  </section>
+
+  <hr class="section-divider">
+
+  <!-- ③ Exchange Rate Chart -->
+  <section class="section" id="sec-fx">
+    <div class="section-header">
+      <div class="section-num">③</div>
+      <div class="section-title">환율 추세 차트</div>
+      <div class="section-sub">CNY/KRW 및 USD/KRW 90일 실적 + 30일 예측</div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-toolbar">
+        <button class="chart-btn active" id="fx-btn-cny" onclick="setFxView('cny', this)">CNY/KRW</button>
+        <button class="chart-btn" id="fx-btn-usd" onclick="setFxView('usd', this)">USD/KRW</button>
+        <button class="chart-btn" id="fx-btn-both" onclick="setFxView('both', this)">동시 표시</button>
+        <div class="chart-legend">
+          <div class="legend-item"><div class="legend-dot" style="background:#4ec9b0;"></div>CNY/KRW</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#ff9d4e;"></div>USD/KRW</div>
+          <div class="legend-item"><div class="legend-dot" style="background:rgba(231,76,60,0.3);width:24px;height:8px;border-radius:3px;"></div>위험구간</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#a855f7;"></div><span style="border-bottom:1px dashed #a855f7;">예측</span></div>
+        </div>
+      </div>
+      <canvas id="fxChart"></canvas>
+    </div>
+  </section>
+
+  <hr class="section-divider">
+
+  <!-- ④ Purchase Signal Panel -->
+  <section class="section" id="sec-signal">
+    <div class="section-header">
+      <div class="section-num">④</div>
+      <div class="section-title">구매 신호 패널</div>
+      <div class="section-sub">RPCI 기반 단기/중장기 구매 권고 신호</div>
+    </div>
+    <div class="signal-grid">
+      <div class="signal-card">
+        <div class="signal-card-title">단기 신호 (1~2주)</div>
+        <div class="signal-big">
+          <div class="signal-big-badge buy" id="signal-short-badge">
+            매수<small id="signal-short-en">BUY</small>
+          </div>
+        </div>
+        <ul class="signal-factors" id="signal-short-factors">
+          <li>RPCI가 60일 이동평균 대비 2.8% 하회 — 단기 저점 진입</li>
+          <li>LME 현물가 최근 5일 연속 하락 — 매수 기회</li>
+          <li>CNY/KRW 환율 안정세 유지 — 환리스크 낮음</li>
+          <li>기술적 지지선(MA20) 상회 유지 중</li>
+        </ul>
+        <div class="rpci-bar-section">
+          <div class="rpci-bar-label">
+            <span>RPCI 위치 (60일 MA 기준)</span>
+            <span id="rpci-pct-label-short">--</span>
+          </div>
+          <div class="rpci-bar-track">
+            <div class="rpci-bar-fill" id="rpci-bar-fill-short" style="width:30%;background:linear-gradient(90deg,#2ecc71,#27ae60);"></div>
+            <div class="rpci-bar-marker" id="rpci-bar-marker-short" style="left:30%;"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:0.62rem;color:var(--text-muted);margin-top:4px;">
+            <span>자제구간</span><span>적정구간</span><span>매수구간</span>
+          </div>
+        </div>
+      </div>
+      <div class="signal-card">
+        <div class="signal-card-title">중장기 신호 (1~3개월)</div>
+        <div class="signal-big">
+          <div class="signal-big-badge wait" id="signal-long-badge">
+            대기<small id="signal-long-en">WAIT</small>
+          </div>
+        </div>
+        <ul class="signal-factors" id="signal-long-factors">
+          <li>중장기(90일) 이동평균 대비 RPCI +0.8% — 중립 구간</li>
+          <li>중국 알루미늄 생산량 증가 추세 — 공급 압력 완화 예상</li>
+          <li>글로벌 경기 불확실성 — 수요 변동 리스크 존재</li>
+          <li>환율 30일 예측 소폭 상승 전망 — 비용 증가 가능성</li>
+        </ul>
+        <div class="rpci-bar-section">
+          <div class="rpci-bar-label">
+            <span>RPCI 위치 (90일 MA 기준)</span>
+            <span id="rpci-pct-label-long">--</span>
+          </div>
+          <div class="rpci-bar-track">
+            <div class="rpci-bar-fill" id="rpci-bar-fill-long" style="width:50%;background:linear-gradient(90deg,#f1c40f,#d4ac0d);"></div>
+            <div class="rpci-bar-marker" id="rpci-bar-marker-long" style="left:50%;"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:0.62rem;color:var(--text-muted);margin-top:4px;">
+            <span>자제구간</span><span>적정구간</span><span>매수구간</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="section-divider">
+
+  <!-- ⑤ Supplier Evaluation -->
+  <section class="section" id="sec-supplier">
+    <div class="section-header">
+      <div class="section-num">⑤</div>
+      <div class="section-title">공급업체 종합 평가</div>
+      <div class="section-sub">중국 알루미늄 코일 주요 공급업체 TOP 5 — 클릭하여 상세 레이더 확인</div>
+    </div>
+    <div class="supplier-layout">
+      <div class="table-card">
+        <table class="data-table" id="supplier-table">
+          <thead>
+            <tr>
+              <th>순위</th>
+              <th>업체명</th>
+              <th>종합점수</th>
+              <th>등급</th>
+              <th>생산능력</th>
+              <th>제품품질</th>
+              <th>신용재무</th>
+              <th>납기물류</th>
+              <th>가격경쟁력</th>
+              <th>상세</th>
+            </tr>
+          </thead>
+          <tbody id="supplier-tbody"></tbody>
+        </table>
+      </div>
+      <div class="radar-card">
+        <div class="radar-title">공급업체 역량 레이더 분석</div>
+        <div class="radar-company" id="radar-company-name">中铝集团 (CHALCO)</div>
+        <canvas id="radarChart" style="max-height:280px;"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <hr class="section-divider">
+
+  <!-- ⑥ Purchase Simulator -->
+  <section class="section" id="sec-sim">
+    <div class="section-header">
+      <div class="section-num">⑥</div>
+      <div class="section-title">구매 시뮬레이터</div>
+      <div class="section-sub">입력값 조정 후 예상 수입 원가를 즉시 계산</div>
+    </div>
+    <div class="simulator-layout">
+      <div class="sim-card">
+        <div class="sim-card-title">입력 파라미터</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">발주 수량 (MT)</label>
+            <input class="form-control" type="number" id="sim-qty" value="100" min="1" max="10000">
+          </div>
+          <div class="form-group">
+            <label class="form-label">알루미늄 현물가 (USD/MT)</label>
+            <input class="form-control" type="number" id="sim-lme" value="2487" min="1000" max="5000" step="1">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">CNY/KRW 환율 (원/위안)</label>
+            <input class="form-control" type="number" id="sim-cny" value="190.3" min="150" max="250" step="0.1">
+          </div>
+          <div class="form-group">
+            <label class="form-label">USD/KRW 환율 (원/달러)</label>
+            <input class="form-control" type="number" id="sim-usd" value="1370" min="1000" max="2000" step="1">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">관세율 (%)</label>
+            <input class="form-control" type="number" id="sim-tariff" value="5" min="0" max="30" step="0.1">
+          </div>
+          <div class="form-group">
+            <label class="form-label">부대비용율 (%)</label>
+            <input class="form-control" type="number" id="sim-misc" value="3" min="0" max="20" step="0.1">
+          </div>
+        </div>
+        <button class="calc-btn" onclick="calculateSimulator()">계산하기 →</button>
+      </div>
+
+      <div class="sim-card">
+        <div class="sim-card-title">시뮬레이션 결과</div>
+        <div class="result-grid">
+          <div class="result-item">
+            <div class="result-label">예상 수입 원가 (단가)</div>
+            <div class="result-value" id="res-unit-krw">--</div>
+            <div class="result-sub">원/MT</div>
+          </div>
+          <div class="result-item">
+            <div class="result-label">총 수입 원가</div>
+            <div class="result-value" id="res-total-krw">--</div>
+            <div class="result-sub">원 (전체 물량)</div>
+          </div>
+          <div class="result-item">
+            <div class="result-label">USD 환산 단가</div>
+            <div class="result-value" id="res-unit-usd">--</div>
+            <div class="result-sub">USD/MT</div>
+          </div>
+          <div class="result-item">
+            <div class="result-label">RPCI 지수</div>
+            <div class="result-value" id="res-rpci">--</div>
+            <div class="result-sub">원/MT (실질구매비용)</div>
+          </div>
+        </div>
+        <div class="comparison-row">
+          <span class="comparison-label">60일 평균 RPCI 대비</span>
+          <span class="comparison-value positive" id="res-vs-ma60">계산 후 표시</span>
+        </div>
+        <div class="comparison-row">
+          <span class="comparison-label">절감/추가 비용 (총 물량)</span>
+          <span class="comparison-value positive" id="res-saving">계산 후 표시</span>
+        </div>
+        <div class="gauge-section">
+          <div class="gauge-title">RPCI 수준 게이지 (60일 MA 기준)</div>
+          <div class="gauge-wrapper">
+            <div class="gauge-track"></div>
+            <div class="gauge-mask"></div>
+            <div class="gauge-needle" id="gauge-needle"></div>
+            <div class="gauge-labels">
+              <span style="color:var(--red)">자제구간</span>
+              <span style="color:var(--yellow)">대기구간</span>
+              <span style="color:var(--green)">매수구간</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- Footer -->
+<footer id="footer">
+  <div class="footer-inner">
+    <div class="footer-credits">
+      데이터 출처: <span>LME (London Metal Exchange)</span> · <span>SHFE (상해 선물거래소)</span> ·
+      <span>한국은행 외환통계</span> · <span>관세청 수입 통계</span>
+    </div>
+    <div class="footer-disclaimer">
+      ※ 본 시스템의 가격 데이터 및 예측치는 교육·참고 목적의 모의 데이터이며, 실제 투자 또는 구매 의사결정에 직접 활용 시 발생하는 손실에 대해 당사는 책임을 지지 않습니다.
+      최신 시장 데이터는 반드시 공신력 있는 기관을 통해 확인하시기 바랍니다.
+    </div>
+    <div style="margin-top:0.5rem;font-size:0.62rem;color:var(--text-muted);">
+      ACIS v2.0 · &copy; 2026 · Aluminum Coil Import Intelligence System
+    </div>
+  </div>
+</footer>
+
+<script>
+// ===================== DATA GENERATION =====================
+const TODAY = new Date('2026-03-20');
+
+function formatDate(d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const dd = String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${dd}`;
+}
+function formatDateKo(d) {
+  return `${d.getFullYear()}년 ${String(d.getMonth()+1).padStart(2,'0')}월 ${String(d.getDate()).padStart(2,'0')}일`;
+}
+function fmtNum(n, dec=0) {
+  return Number(n).toLocaleString('ko-KR', {minimumFractionDigits: dec, maximumFractionDigits: dec});
+}
+
+// Random walk generator with seed-like determinism
+function randomWalk(start, n, step, min, max, seed=42) {
+  let v = start, arr = [];
+  let s = seed;
+  function rng() {
+    s = (s * 1664525 + 1013904223) & 0xffffffff;
+    return ((s >>> 0) / 0xffffffff);
+  }
+  for (let i = 0; i < n; i++) {
+    const r = rng() - 0.5;
+    v += r * step * 2;
+    v = Math.max(min, Math.min(max, v));
+    arr.push(parseFloat(v.toFixed(2)));
+  }
+  return arr;
+}
+
+function movingAvg(arr, n) {
+  return arr.map((_, i) => {
+    if (i < n-1) return null;
+    const slice = arr.slice(i-n+1, i+1);
+    return parseFloat((slice.reduce((a,b)=>a+b,0)/n).toFixed(2));
+  });
+}
+
+function bollingerBands(arr, n=20, k=2) {
+  const upper = [], lower = [];
+  for (let i = 0; i < arr.length; i++) {
+    if (i < n-1) { upper.push(null); lower.push(null); continue; }
+    const slice = arr.slice(i-n+1, i+1);
+    const mean = slice.reduce((a,b)=>a+b,0)/n;
+    const std = Math.sqrt(slice.reduce((a,b)=>a+(b-mean)**2,0)/n);
+    upper.push(parseFloat((mean + k*std).toFixed(2)));
+    lower.push(parseFloat((mean - k*std).toFixed(2)));
+  }
+  return { upper, lower };
+}
+
+// Date arrays
+const histDates = [], predDates = [];
+for (let i = 89; i >= 0; i--) {
+  const d = new Date(TODAY); d.setDate(d.getDate()-i);
+  histDates.push(formatDate(d));
+}
+for (let i = 1; i <= 30; i++) {
+  const d = new Date(TODAY); d.setDate(d.getDate()+i);
+  predDates.push(formatDate(d));
+}
+
+// LME prices
+const lmeHist = randomWalk(2487, 90, 18, 2300, 2700, 101);
+const lastLme = lmeHist[lmeHist.length-1];
+const lmePred = (function() {
+  let arr = [], v = lastLme, s = 77;
+  function rng() { s=(s*1664525+1013904223)&0xffffffff; return((s>>>0)/0xffffffff); }
+  for (let i=0;i<30;i++) { v += (rng()-0.48)*20; v=Math.max(2350,Math.min(2750,v)); arr.push(parseFloat(v.toFixed(2))); }
+  return arr;
+})();
+
+// CNY/KRW rates
+const cnyHist = randomWalk(190.3, 90, 0.6, 186, 196, 202);
+const lastCny = cnyHist[cnyHist.length-1];
+const cnyPred = (function() {
+  let arr=[], v=lastCny, s=88;
+  function rng(){s=(s*1664525+1013904223)&0xffffffff;return((s>>>0)/0xffffffff);}
+  for(let i=0;i<30;i++){v+=(rng()-0.47)*0.7;v=Math.max(186,Math.min(196,v));arr.push(parseFloat(v.toFixed(2)));}
+  return arr;
+})();
+
+// USD/KRW rates
+const usdHist = randomWalk(1370, 90, 5, 1330, 1410, 303);
+const lastUsd = usdHist[usdHist.length-1];
+const usdPred = (function() {
+  let arr=[], v=lastUsd, s=55;
+  function rng(){s=(s*1664525+1013904223)&0xffffffff;return((s>>>0)/0xffffffff);}
+  for(let i=0;i<30;i++){v+=(rng()-0.47)*6;v=Math.max(1330,Math.min(1420,v));arr.push(parseFloat(v.toFixed(2)));}
+  return arr;
+})();
+
+// USD/CNY derived
+const usdCny = 7.2;
+
+// RPCI calculation
+function calcRPCI(lme, cny, usd, tariff=0.05, misc=0.03) {
+  const shfe = lme * usdCny * 1.05; // CNY/MT
+  const shipping = 55000; // KRW/MT
+  return parseFloat(((shfe * cny + shipping) * (1 + tariff + misc)).toFixed(0));
+}
+
+// Historical RPCI
+const rpciHist = lmeHist.map((l,i) => calcRPCI(l, cnyHist[i], usdHist[i]));
+const rpciMa60 = movingAvg(rpciHist, 60);
+const rpciMa90 = movingAvg(rpciHist, 90);
+
+const currentRPCI = rpciHist[rpciHist.length-1];
+const currentMA60 = rpciMa60[rpciMa60.length-1];
+const currentMA90 = rpciMa90[rpciMa90.length-1];
+
+// Signal logic
+function getSignal(rpci, ma60) {
+  if (rpci < ma60 * 0.97) return 'buy';
+  if (rpci > ma60 * 1.03) return 'avoid';
+  return 'wait';
+}
+const shortSignal = getSignal(currentRPCI, currentMA60);
+const longSignal = getSignal(currentRPCI, currentMA90 || currentMA60);
+
+// LME change
+const lmePrev = lmeHist[lmeHist.length-2];
+const lmeChange = ((lastLme - lmePrev)/lmePrev*100).toFixed(2);
+const cnyPrev = cnyHist[cnyHist.length-2];
+const cnyChange = ((lastCny - cnyPrev)/cnyPrev*100).toFixed(2);
+
+// MA lines
+const lmeMa20 = movingAvg(lmeHist, 20);
+const lmeMa60 = movingAvg(lmeHist, 60);
+const lmeBB = bollingerBands(lmeHist, 20, 2);
+
+// Danger zone for fx: top 15% of CNY values
+const cnySorted = [...cnyHist].sort((a,b)=>b-a);
+const cnyDanger = cnySorted[Math.floor(cnySorted.length*0.15)];
+
+// ===================== SUPPLIERS =====================
+const suppliers = [
+  { rank:1, name:'中铝集团 (CHALCO)', nameShort:'中铝集团', score:88.5, tier:1,
+    cap:95, qual:92, fin:90, logi:88, price:72,
+    desc:'세계 최대 알루미늄 생산기업. 국영기업 신뢰도 최상, 생산설비 최신화. PCB용 고정밀 알루미늄 코일 대량 공급 가능.' },
+  { rank:2, name:'南山铝业 (Nanshan)', nameShort:'南山铝业', score:85.5, tier:1,
+    cap:88, qual:90, fin:82, logi:85, price:80,
+    desc:'일체형 알루미늄 생산 체계 보유. 판재·코일 품질 안정성 우수, 민간기업 가격 경쟁력 겸비.' },
+  { rank:3, name:'魏桥铝电 (Weiqiao)', nameShort:'魏桥铝电', score:82.0, tier:1,
+    cap:92, qual:78, fin:75, logi:82, price:88,
+    desc:'중국 최대 민영 알루미늄 기업. 생산량 세계 Top3 수준, 가격 경쟁력 탁월. 품질 관리 체계 지속 개선중.' },
+  { rank:4, name:'东阳光铝 (DYLAL)', nameShort:'东阳光铝', score:78.0, tier:2,
+    cap:75, qual:85, fin:70, logi:78, price:82,
+    desc:'PCB 기판용 고순도 알루미늄 코일 특화 생산업체. 기술 인증 多. 생산 규모 확대 투자 진행중.' },
+  { rank:5, name:'云铝股份 (Yunnan Al)', nameShort:'云铝股份', score:75.5, tier:2,
+    cap:80, qual:72, fin:78, logi:70, price:90,
+    desc:'운남성 수력발전 기반 친환경 그린 알루미늄 생산. 가격 경쟁력 최강, 녹색 공급망 요건 충족.' },
+];
+
+// ===================== DOM INIT =====================
+document.addEventListener('DOMContentLoaded', () => {
+  // Remove loading
+  setTimeout(() => {
+    const overlay = document.getElementById('loading-overlay');
+    overlay.classList.add('fade-out');
+    setTimeout(() => overlay.style.display='none', 500);
+  }, 1800);
+
+  // Set dates
+  document.getElementById('last-updated').textContent = formatDateKo(TODAY) + ' 16:30 기준';
+  document.getElementById('kpi-date-label').textContent = '기준일: ' + formatDateKo(TODAY);
+
+  // KPI values
+  document.getElementById('kpi-lme').textContent = '$' + fmtNum(lastLme, 0);
+  const lmeChgEl = document.getElementById('kpi-lme-chg');
+  const lmeUp = lmeChange > 0;
+  lmeChgEl.textContent = (lmeUp ? '▲ +' : '▼ ') + lmeChange + '%';
+  lmeChgEl.className = 'kpi-change ' + (lmeUp ? 'up' : 'down');
+
+  document.getElementById('kpi-cny').textContent = fmtNum(lastCny, 1);
+  const cnyChgEl = document.getElementById('kpi-cny-chg');
+  const cnyUp = cnyChange > 0;
+  cnyChgEl.textContent = (cnyUp ? '▲ +' : '▼ ') + cnyChange + '%';
+  cnyChgEl.className = 'kpi-change ' + (cnyUp ? 'up' : 'down');
+
+  document.getElementById('kpi-rpci').textContent = fmtNum(currentRPCI);
+  const rpciVsMa = ((currentRPCI - currentMA60)/currentMA60*100).toFixed(1);
+  const rpciChgEl = document.getElementById('kpi-rpci-chg');
+  rpciChgEl.textContent = 'MA60 대비 ' + (rpciVsMa > 0 ? '+' : '') + rpciVsMa + '%';
+  rpciChgEl.className = 'kpi-change ' + (rpciVsMa < 0 ? 'down' : rpciVsMa > 0 ? 'up' : 'neutral');
+
+  // Signal badge
+  const sigBadge = document.getElementById('kpi-signal-badge');
+  const sigDesc = document.getElementById('kpi-signal-desc');
+  if (shortSignal === 'buy') {
+    sigBadge.textContent = '매수'; sigBadge.className = 'signal-badge buy';
+    sigDesc.textContent = 'RPCI가 60일 이평 대비 ' + Math.abs(rpciVsMa) + '% 하회 — 유리한 구매 시점';
+  } else if (shortSignal === 'avoid') {
+    sigBadge.textContent = '자제'; sigBadge.className = 'signal-badge avoid';
+    sigDesc.textContent = 'RPCI가 60일 이평 대비 ' + rpciVsMa + '% 상회 — 구매 자제 권고';
+  } else {
+    sigBadge.textContent = '대기'; sigBadge.className = 'signal-badge wait';
+    sigDesc.textContent = 'RPCI가 60일 이평 적정 범위 내 — 추세 모니터링 권고';
+  }
+
+  renderSignalPanel();
+  initPriceChart();
+  initFxChart();
+  renderSupplierTable();
+  renderRadarChart(0);
+  calculateSimulator();
+});
+
+// ===================== SIGNAL PANEL =====================
+function renderSignalPanel() {
+  const signals = [
+    { id:'short', signal: shortSignal, ma: currentMA60, label:'60일 MA 기준',
+      labelId:'rpci-pct-label-short', fillId:'rpci-bar-fill-short', markerId:'rpci-bar-marker-short',
+      badgeId:'signal-short-badge', enId:'signal-short-en',
+      factors: getSignalFactors(shortSignal, '단기') },
+    { id:'long', signal: longSignal, ma: currentMA90 || currentMA60, label:'90일 MA 기준',
+      labelId:'rpci-pct-label-long', fillId:'rpci-bar-fill-long', markerId:'rpci-bar-marker-long',
+      badgeId:'signal-long-badge', enId:'signal-long-en',
+      factors: getSignalFactors(longSignal, '중장기') },
+  ];
+
+  signals.forEach(s => {
+    // Badge
+    const badge = document.getElementById(s.badgeId);
+    const en = document.getElementById(s.enId);
+    const labels = { buy:'매수', wait:'대기', avoid:'자제' };
+    const enLabels = { buy:'BUY', wait:'WAIT', avoid:'AVOID' };
+    badge.innerHTML = labels[s.signal] + '<small>' + enLabels[s.signal] + '</small>';
+    badge.className = 'signal-big-badge ' + s.signal;
+
+    // Bar
+    const pct = ((currentRPCI - s.ma)/s.ma*100);
+    // Map: -5% → 85%, 0% → 50%, +5% → 15% (inverted)
+    const barPos = Math.max(5, Math.min(95, 50 - pct * 7));
+    document.getElementById(s.labelId).textContent = (pct > 0 ? '+' : '') + pct.toFixed(1) + '% vs MA';
+    document.getElementById(s.fillId).style.width = barPos + '%';
+    document.getElementById(s.fillId).style.background = s.signal === 'buy'
+      ? 'linear-gradient(90deg,#2ecc71,#27ae60)'
+      : s.signal === 'avoid'
+        ? 'linear-gradient(90deg,#e74c3c,#c0392b)'
+        : 'linear-gradient(90deg,#f1c40f,#d4ac0d)';
+    document.getElementById(s.markerId).style.left = barPos + '%';
+  });
+}
+
+function getSignalFactors(signal, type) {
+  const rpciPct = ((currentRPCI - currentMA60)/currentMA60*100).toFixed(1);
+  const base = {
+    buy: [
+      `RPCI가 60일 이동평균 대비 ${Math.abs(rpciPct)}% 하회 — ${type} 저점 진입`,
+      `LME 현물가 최근 하락 국면 — 저점 매수 기회`,
+      `CNY/KRW 환율 안정세 유지 — 환리스크 제한적`,
+      `기술적 지지선(MA20) 대비 유리한 가격 형성`,
+    ],
+    wait: [
+      `RPCI가 60일 이동평균 적정 범위(±3%) 내 위치`,
+      `중국 알루미늄 생산량 증가 추세 — 공급 압력 중립`,
+      `글로벌 경기 불확실성 — 수요 변동 리스크 존재`,
+      `환율 단기 예측 소폭 변동 예상 — 모니터링 권고`,
+    ],
+    avoid: [
+      `RPCI가 60일 이동평균 대비 ${rpciPct}% 상회 — 고비용 구간`,
+      `LME 현물가 상승세 지속 — 추가 비용 증가 우려`,
+      `CNY/KRW 환율 상승 압력 — 수입 원가 악화 가능성`,
+      `기술적 저항선 근접 — 단기 하락 전환 가능성 모니터링 필요`,
+    ]
+  };
+  return base[signal];
+}
+
+// ===================== PRICE CHART =====================
+let priceChart = null;
+let priceMode = 'all';
+
+function buildPriceDatasets(mode) {
+  const allLabels = [...histDates, ...predDates];
+  const histNull = new Array(90).fill(null);
+
+  const histPrice = lmeHist.map(v => v);
+  const predHistNull = new Array(90).fill(null);
+  const predData = [...predHistNull, ...lmePred];
+
+  // Overlap: last hist point + first pred for seamless connection
+  predData[89] = lmeHist[89];
+
+  const ma20Full = [...lmeMa20, ...new Array(30).fill(null)];
+  const ma60Full = [...lmeMa60, ...new Array(30).fill(null)];
+  const bbUpperFull = [...lmeBB.upper, ...new Array(30).fill(null)];
+  const bbLowerFull = [...lmeBB.lower, ...new Array(30).fill(null)];
+
+  const histData = [...histPrice, ...new Array(30).fill(null)];
+
+  let labels, datasets;
+  if (mode === 'hist') {
+    labels = histDates;
+    datasets = [
+      { label: '실제가격', data: lmeHist, borderColor:'#4e9af1', backgroundColor:'rgba(78,154,241,0.08)', borderWidth:2, pointRadius:0, tension:0.3, fill:false },
+      { label: 'MA20', data: lmeMa20, borderColor:'#f1a74e', borderWidth:1.5, pointRadius:0, tension:0.3, fill:false },
+      { label: 'MA60', data: lmeMa60, borderColor:'#e0bf70', borderWidth:1.5, pointRadius:0, tension:0.3, fill:false, borderDash:[6,3] },
+      { label: '볼린저 상단', data: lmeBB.upper, borderColor:'rgba(78,154,241,0.4)', borderWidth:1, pointRadius:0, tension:0.3, fill:'+1', backgroundColor:'rgba(78,154,241,0.07)' },
+      { label: '볼린저 하단', data: lmeBB.lower, borderColor:'rgba(78,154,241,0.4)', borderWidth:1, pointRadius:0, tension:0.3, fill:false },
+    ];
+  } else if (mode === 'pred') {
+    labels = predDates;
+    datasets = [
+      { label: '예측가격', data: lmePred, borderColor:'#a855f7', borderWidth:2, pointRadius:0, tension:0.3, fill:false, borderDash:[6,3] },
+    ];
+  } else {
+    labels = allLabels;
+    datasets = [
+      { label: '실제가격', data: histData, borderColor:'#4e9af1', backgroundColor:'rgba(78,154,241,0.06)', borderWidth:2, pointRadius:0, tension:0.3, fill:false },
+      { label: '예측가격', data: predData, borderColor:'#a855f7', borderWidth:2, pointRadius:0, tension:0.3, fill:false, borderDash:[6,3] },
+      { label: 'MA20', data: ma20Full, borderColor:'#f1a74e', borderWidth:1.5, pointRadius:0, tension:0.3, fill:false },
+      { label: 'MA60', data: ma60Full, borderColor:'#e0bf70', borderWidth:1.5, pointRadius:0, tension:0.3, fill:false, borderDash:[6,3] },
+      { label: '볼린저 상단', data: bbUpperFull, borderColor:'rgba(78,154,241,0.35)', borderWidth:1, pointRadius:0, tension:0.3, fill:'+1', backgroundColor:'rgba(78,154,241,0.07)' },
+      { label: '볼린저 하단', data: bbLowerFull, borderColor:'rgba(78,154,241,0.35)', borderWidth:1, pointRadius:0, tension:0.3, fill:false },
+    ];
+  }
+  return { labels, datasets };
+}
+
+function initPriceChart() {
+  const ctx = document.getElementById('priceChart').getContext('2d');
+  const { labels, datasets } = buildPriceDatasets('all');
+
+  // Predicted zone annotation via plugin
+  const predStartIdx = 90;
+
+  priceChart = new Chart(ctx, {
+    type: 'line',
+    data: { labels, datasets },
+    options: {
+      responsive: true, maintainAspectRatio: true,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: 'rgba(17,29,53,0.95)',
+          titleColor: '#c9a84c', bodyColor: '#e8eaf0',
+          borderColor: '#2a3a6a', borderWidth: 1,
+          callbacks: {
+            title: items => items[0].label,
+            label: item => {
+              if (item.parsed.y === null) return null;
+              return ` ${item.dataset.label}: $${fmtNum(item.parsed.y, 1)} USD/MT`;
+            }
+          }
+        },
+      },
+      scales: {
+        x: {
+          grid: { color: 'rgba(255,255,255,0.05)' },
+          ticks: { color: '#6b7490', maxTicksLimit: 10, font: { size: 10 } },
+        },
+        y: {
+          grid: { color: 'rgba(255,255,255,0.05)' },
+          ticks: {
+            color: '#6b7490', font: { size: 10 },
+            callback: v => '$' + fmtNum(v)
+          },
+          title: { display: true, text: 'USD/MT', color: '#6b7490', font: { size: 10 } }
+        }
+      }
+    }
+  });
+}
+
+function setPriceView(mode, btn) {
+  priceMode = mode;
+  document.querySelectorAll('[id^="price-btn-"]').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const { labels, datasets } = buildPriceDatasets(mode);
+  priceChart.data.labels = labels;
+  priceChart.data.datasets = datasets;
+  priceChart.update();
+}
+
+// ===================== FX CHART =====================
+let fxChart = null;
+let fxMode = 'cny';
+
+function buildFxDatasets(mode) {
+  const allLabels = [...histDates, ...predDates];
+  const histNull30 = new Array(30).fill(null);
+
+  const cnyAll = [...cnyHist, ...histNull30];
+  const cnyPredAll = [...new Array(89).fill(null), cnyHist[89], ...cnyPred];
+  const usdAll = [...usdHist, ...histNull30];
+  const usdPredAll = [...new Array(89).fill(null), usdHist[89], ...usdPred];
+
+  // Danger zone — create a fill above threshold
+  const cnyDangerZone = allLabels.map((_, i) => {
+    const v = i < 90 ? cnyHist[i] : cnyPred[i-90];
+    return v >= cnyDanger ? v : null;
+  });
+
+  if (mode === 'cny') {
+    return {
+      labels: allLabels,
+      yAxisLeft: 'CNY/KRW',
+      datasets: [
+        { label: 'CNY/KRW', data: cnyAll, borderColor:'#4ec9b0', borderWidth:2, pointRadius:0, tension:0.3, fill:false, yAxisID:'y' },
+        { label: 'CNY/KRW 예측', data: cnyPredAll, borderColor:'#4ec9b0', borderWidth:1.5, pointRadius:0, tension:0.3, fill:false, borderDash:[6,3], yAxisID:'y' },
+        { label: '위험구간', data: cnyAll.map(v => v >= cnyDanger ? v : null), borderColor:'rgba(231,76,60,0.5)', borderWidth:0, pointRadius:0, fill: { target: { value: cnyDanger }, above:'rgba(231,76,60,0.15)' }, yAxisID:'y', tension:0.3 },
+      ]
+    };
+  } else if (mode === 'usd') {
+    return {
+      labels: allLabels,
+      yAxisLeft: 'USD/KRW',
+      datasets: [
+        { label: 'USD/KRW', data: usdAll, borderColor:'#ff9d4e', borderWidth:2, pointRadius:0, tension:0.3, fill:false, yAxisID:'y' },
+        { label: 'USD/KRW 예측', data: usdPredAll, borderColor:'#ff9d4e', borderWidth:1.5, pointRadius:0, tension:0.3, fill:false, borderDash:[6,3], yAxisID:'y' },
+      ]
+    };
+  } else {
+    return {
+      labels: allLabels,
+      yAxisLeft: 'CNY/KRW',
+      datasets: [
+        { label: 'CNY/KRW', data: cnyAll, borderColor:'#4ec9b0', borderWidth:2, pointRadius:0, tension:0.3, fill:false, yAxisID:'y' },
+        { label: 'CNY/KRW 예측', data: cnyPredAll, borderColor:'#4ec9b0', borderWidth:1.5, pointRadius:0, tension:0.3, fill:false, borderDash:[6,3], yAxisID:'y' },
+        { label: 'USD/KRW', data: usdAll, borderColor:'#ff9d4e', borderWidth:2, pointRadius:0, tension:0.3, fill:false, yAxisID:'y2' },
+        { label: 'USD/KRW 예측', data: usdPredAll, borderColor:'#ff9d4e', borderWidth:1.5, pointRadius:0, tension:0.3, fill:false, borderDash:[6,3], yAxisID:'y2' },
+      ]
+    };
+  }
+}
+
+function initFxChart() {
+  const ctx = document.getElementById('fxChart').getContext('2d');
+  const { labels, datasets, yAxisLeft } = buildFxDatasets('cny');
+
+  fxChart = new Chart(ctx, {
+    type: 'line',
+    data: { labels, datasets },
+    options: {
+      responsive: true, maintainAspectRatio: true,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: 'rgba(17,29,53,0.95)',
+          titleColor: '#c9a84c', bodyColor: '#e8eaf0',
+          borderColor: '#2a3a6a', borderWidth: 1,
+          callbacks: {
+            title: items => items[0].label,
+            label: item => {
+              if (item.parsed.y === null || item.dataset.label === '위험구간') return null;
+              const u = item.dataset.yAxisID === 'y2' ? '원/USD' : '원/CNY';
+              return ` ${item.dataset.label}: ${fmtNum(item.parsed.y, 1)} ${u}`;
+            }
+          }
+        },
+      },
+      scales: {
+        x: {
+          grid: { color: 'rgba(255,255,255,0.05)' },
+          ticks: { color: '#6b7490', maxTicksLimit: 10, font: { size: 10 } },
+        },
+        y: {
+          grid: { color: 'rgba(255,255,255,0.05)' },
+          ticks: { color: '#6b7490', font: { size: 10 }, callback: v => fmtNum(v, 1) },
+          title: { display: true, text: yAxisLeft || 'CNY/KRW', color: '#6b7490', font: { size: 10 } }
+        },
+        y2: {
+          display: false, position: 'right',
+          grid: { drawOnChartArea: false },
+          ticks: { color: '#ff9d4e', font: { size: 10 }, callback: v => fmtNum(v) },
+        }
+      }
+    }
+  });
+}
+
+function setFxView(mode, btn) {
+  fxMode = mode;
+  document.querySelectorAll('[id^="fx-btn-"]').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const { labels, datasets, yAxisLeft } = buildFxDatasets(mode);
+  fxChart.data.labels = labels;
+  fxChart.data.datasets = datasets;
+  fxChart.options.scales.y.title.text = yAxisLeft || '';
+  fxChart.options.scales.y2.display = (mode === 'both');
+  fxChart.update();
+}
+
+// ===================== SUPPLIER TABLE =====================
+let radarChart = null;
+
+function renderSupplierTable() {
+  const tbody = document.getElementById('supplier-tbody');
+  tbody.innerHTML = '';
+  suppliers.forEach((s, idx) => {
+    const tr = document.createElement('tr');
+    if (idx === 0) tr.classList.add('selected');
+    tr.onclick = () => {
+      document.querySelectorAll('#supplier-tbody tr').forEach(r => r.classList.remove('selected'));
+      tr.classList.add('selected');
+      renderRadarChart(idx);
+    };
+    const scoreBar = (v) => `<div class="score-mini"><div class="score-mini-bar"><div class="score-mini-fill" style="width:${v}%;"></div></div><span class="score-num">${v}</span></div>`;
+    tr.innerHTML = `
+      <td><span class="rank-num">#${s.rank}</span></td>
+      <td><strong>${s.name}</strong></td>
+      <td><strong style="color:var(--gold);font-size:0.9rem;">${s.score}</strong></td>
+      <td><span class="tier-badge tier-${s.tier}">Tier ${s.tier}</span></td>
+      <td>${scoreBar(s.cap)}</td>
+      <td>${scoreBar(s.qual)}</td>
+      <td>${scoreBar(s.fin)}</td>
+      <td>${scoreBar(s.logi)}</td>
+      <td>${scoreBar(s.price)}</td>
+      <td><button class="detail-btn" onclick="event.stopPropagation();renderRadarChart(${idx})">▶ 보기</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function renderRadarChart(idx) {
+  document.getElementById('radar-company-name').textContent = suppliers[idx].name;
+  const s = suppliers[idx];
+  const data = [s.cap, s.qual, s.fin, s.logi, s.price];
+  const labels = ['생산능력', '제품품질', '신용재무', '납기물류', '가격경쟁력'];
+
+  if (radarChart) radarChart.destroy();
+
+  const ctx = document.getElementById('radarChart').getContext('2d');
+  radarChart = new Chart(ctx, {
+    type: 'radar',
+    data: {
+      labels,
+      datasets: [{
+        label: s.nameShort,
+        data,
+        backgroundColor: 'rgba(201,168,76,0.15)',
+        borderColor: 'rgba(201,168,76,0.8)',
+        borderWidth: 2,
+        pointBackgroundColor: '#c9a84c',
+        pointRadius: 4,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: true,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: 'rgba(17,29,53,0.95)',
+          titleColor: '#c9a84c', bodyColor: '#e8eaf0',
+          borderColor: '#2a3a6a', borderWidth: 1,
+          callbacks: {
+            label: item => ` ${item.label}: ${item.raw}점`
+          }
+        }
+      },
+      scales: {
+        r: {
+          min: 0, max: 100,
+          grid: { color: 'rgba(255,255,255,0.08)' },
+          angleLines: { color: 'rgba(255,255,255,0.1)' },
+          pointLabels: { color: '#9aa3ba', font: { size: 11 } },
+          ticks: {
+            display: false,
+            stepSize: 25,
+            backdropColor: 'transparent',
+          }
+        }
+      }
+    }
+  });
+
+  // Highlight selected row
+  document.querySelectorAll('#supplier-tbody tr').forEach((r, i) => {
+    r.classList.toggle('selected', i === idx);
+  });
+}
+
+// ===================== SIMULATOR =====================
+let rpciMA60Avg = (function() {
+  const validMa60 = rpciMa60.filter(v => v !== null);
+  return validMa60.reduce((a,b)=>a+b,0)/validMa60.length;
+})();
+
+function calculateSimulator() {
+  const qty = parseFloat(document.getElementById('sim-qty').value) || 100;
+  const lme = parseFloat(document.getElementById('sim-lme').value) || lastLme;
+  const cny = parseFloat(document.getElementById('sim-cny').value) || lastCny;
+  const usd = parseFloat(document.getElementById('sim-usd').value) || lastUsd;
+  const tariff = parseFloat(document.getElementById('sim-tariff').value) / 100 || 0.05;
+  const misc = parseFloat(document.getElementById('sim-misc').value) / 100 || 0.03;
+
+  const rpci = calcRPCI(lme, cny, usd, tariff, misc);
+  const totalKrw = rpci * qty;
+  const unitUsd = (rpci / usd);
+
+  document.getElementById('res-unit-krw').textContent = fmtNum(rpci) + '원';
+  document.getElementById('res-total-krw').textContent = fmtNum(totalKrw) + '원';
+  document.getElementById('res-unit-usd').textContent = '$' + fmtNum(unitUsd, 1);
+  document.getElementById('res-rpci').textContent = fmtNum(rpci);
+
+  const vsMa60Pct = ((rpci - currentMA60)/currentMA60*100);
+  const vsMa60El = document.getElementById('res-vs-ma60');
+  vsMa60El.textContent = (vsMa60Pct > 0 ? '+' : '') + vsMa60Pct.toFixed(1) + '%';
+  vsMa60El.className = 'comparison-value ' + (vsMa60Pct > 0 ? 'positive' : 'negative');
+
+  const saving = (currentMA60 - rpci) * qty;
+  const savingEl = document.getElementById('res-saving');
+  if (saving > 0) {
+    savingEl.textContent = '▼ ' + fmtNum(Math.abs(saving)) + '원 절감';
+    savingEl.className = 'comparison-value negative';
+  } else {
+    savingEl.textContent = '▲ ' + fmtNum(Math.abs(saving)) + '원 추가 비용';
+    savingEl.className = 'comparison-value positive';
+  }
+
+  // Gauge: -10% → full left (매수), 0% → center, +10% → full right (자제)
+  // Gauge goes from -90deg to +90deg (180 range)
+  // 0% → 0deg (center), -10%→ -90deg, +10% → +90deg
+  const clampedPct = Math.max(-12, Math.min(12, vsMa60Pct));
+  const needleDeg = clampedPct / 12 * 90;
+  document.getElementById('gauge-needle').style.transform =
+    `translateX(-50%) rotate(${needleDeg}deg)`;
+}
+
+// ===================== SCROLL NAV =====================
+function scrollToSection(id, btn) {
+  document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const el = document.getElementById(id);
+  if (el) {
+    const top = el.getBoundingClientRect().top + window.pageYOffset - 120;
+    window.scrollTo({ top, behavior: 'smooth' });
+  }
+}
+
+// Update nav tab on scroll
+window.addEventListener('scroll', () => {
+  const sections = ['sec-kpi','sec-price','sec-fx','sec-signal','sec-supplier','sec-sim'];
+  const tabs = document.querySelectorAll('.nav-tab');
+  let active = 0;
+  sections.forEach((id, i) => {
+    const el = document.getElementById(id);
+    if (el) {
+      const top = el.getBoundingClientRect().top;
+      if (top <= 140) active = i;
+    }
+  });
+  tabs.forEach((t, i) => t.classList.toggle('active', i === active));
+}, { passive: true });
+
+// ===================== SIMULATOR REALTIME =====================
+document.addEventListener('DOMContentLoaded', () => {
+  ['sim-qty','sim-lme','sim-cny','sim-usd','sim-tariff','sim-misc'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', () => calculateSimulator());
+  });
+});
+</script>
+</body>
+</html>

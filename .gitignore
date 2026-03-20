@@ -1,0 +1,11 @@
+# PDF/문서 파일 (대용량)
+*.pdf
+*.docx
+*.xlsx
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
