@@ -666,7 +666,7 @@
   <section class="section" id="sec-price">
     <div class="section-header">
       <div class="section-num">②</div>
-      <div class="section-title">LME 알루미늄 가격 추세</div>
+      <div class="section-title">SHFE 알루미늄 가격 추세 <small id="pred-method-label" style="font-size:0.7rem;color:#c9a84c;margin-left:8px;"></small></div>
       <div class="section-sub">최근 90일 실적 + 향후 30일 예측</div>
     </div>
     <div class="chart-card">
@@ -995,9 +995,9 @@ for (let i = 1; i <= 30; i++) {
 }
 
 // ===================== DATA VARIABLES (실제 API 연동) =====================
-let lmeHist, lmePred, lastLme, lmePrev, lmeChange;
-let cnyHist, cnyPred, lastCny, cnyPrev, cnyChange;
-let usdHist, usdPred, lastUsd;
+let lmeHist, lmePred, lmePredUpper, lmePredLower, lmePredMethod, lastLme, lmePrev, lmeChange;
+let cnyHist, cnyPred, cnyPredUpper, cnyPredLower, lastCny, cnyPrev, cnyChange;
+let usdHist, usdPred, usdPredUpper, usdPredLower, lastUsd;
 let rpciHist, rpciMa60, rpciMa90, currentRPCI, currentMA60, currentMA90;
 let shortSignal, longSignal;
 let lmeMa20, lmeMa60, lmeBB;
@@ -1018,16 +1018,81 @@ function getSignal(rpci, ma) {
   return 'wait';
 }
 
-// 예측값 생성 (단순 추세 연장)
-function makePred(arr, min, max, step, seed) {
-  let result = [], v = arr[arr.length - 1], s = seed;
-  function rng() { s=(s*1664525+1013904223)&0xffffffff; return((s>>>0)/0xffffffff); }
-  for (let i=0; i<30; i++) {
-    v += (rng()-0.48)*step;
-    v = Math.max(min, Math.min(max, v));
-    result.push(parseFloat(v.toFixed(2)));
+// ===================== 통계 기반 가격 예측 (무료, 브라우저 내 계산) =====================
+
+// 1. 선형 회귀 — 최근 windowSize일 추세선 외삽
+function linearRegressionForecast(data, horizon, windowSize = 60) {
+  const d = data.slice(-windowSize);
+  const n = d.length;
+  let sx = 0, sy = 0, sxy = 0, sx2 = 0;
+  for (let i = 0; i < n; i++) { sx += i; sy += d[i]; sxy += i*d[i]; sx2 += i*i; }
+  const slope     = (n*sxy - sx*sy) / (n*sx2 - sx*sx);
+  const intercept = (sy - slope*sx) / n;
+  const fitted    = d.map((_, i) => intercept + slope*i);
+  const residuals = d.map((v, i) => v - fitted[i]);
+  const rmse      = Math.sqrt(residuals.reduce((s,r)=>s+r*r,0)/n);
+  const forecasts = [];
+  for (let h = 1; h <= horizon; h++) forecasts.push(intercept + slope*(n-1+h));
+  return { forecasts, slope, rmse };
+}
+
+// 2. Holt 이중 지수평활법 — 수준(level) + 추세(trend) 두 성분 추적
+function holtRmse(data, alpha, beta) {
+  let lv = data[0], tr = data[1]-data[0], sse = 0;
+  for (let i = 1; i < data.length; i++) {
+    const fitted = lv + tr;
+    sse += (data[i]-fitted)**2;
+    const prev = lv;
+    lv = alpha*data[i] + (1-alpha)*(lv+tr);
+    tr = beta*(lv-prev) + (1-beta)*tr;
   }
-  return result;
+  return Math.sqrt(sse/(data.length-1));
+}
+
+function holtForecast(data, horizon) {
+  // Grid search: 최적 alpha, beta 탐색
+  let bestA = 0.3, bestB = 0.1, bestRmse = Infinity;
+  for (let a = 0.1; a <= 0.9; a = parseFloat((a+0.1).toFixed(1))) {
+    for (let b = 0.05; b <= 0.4; b = parseFloat((b+0.05).toFixed(2))) {
+      const r = holtRmse(data, a, b);
+      if (r < bestRmse) { bestRmse = r; bestA = a; bestB = b; }
+    }
+  }
+  // 최적 파라미터로 예측
+  let lv = data[0], tr = data[1]-data[0];
+  for (let i = 1; i < data.length; i++) {
+    const prev = lv;
+    lv = bestA*data[i] + (1-bestA)*(lv+tr);
+    tr = bestB*(lv-prev) + (1-bestB)*tr;
+  }
+  const forecasts = [];
+  for (let h = 1; h <= horizon; h++) forecasts.push(lv + h*tr);
+  return { forecasts, alpha: bestA, beta: bestB, rmse: bestRmse };
+}
+
+// 3. 앙상블 — 선형회귀 + Holt 가중 평균 (RMSE 역비례 가중)
+// 신뢰구간: ±1.96 × RMSE × √h (시간이 멀수록 불확실성 증가)
+function ensembleForecast(data, horizon) {
+  const lr   = linearRegressionForecast(data, horizon);
+  const holt = holtForecast(data, horizon);
+  const total = lr.rmse + holt.rmse || 1;
+  const wLr   = holt.rmse / total; // LR 가중치
+  const wHolt = lr.rmse  / total; // Holt 가중치
+  const avgRmse = wLr*lr.rmse + wHolt*holt.rmse;
+
+  const forecasts = lr.forecasts.map((v, i) =>
+    Math.round(wLr*v + wHolt*holt.forecasts[i])
+  );
+  // 95% 신뢰구간 (√h 로 점차 확대)
+  const upper = forecasts.map((v, i) =>
+    Math.round(v + 1.96 * avgRmse * Math.sqrt(i+1) * 0.5)
+  );
+  const lower = forecasts.map((v, i) =>
+    Math.round(v - 1.96 * avgRmse * Math.sqrt(i+1) * 0.5)
+  );
+  return { forecasts, upper, lower,
+    method: `선형회귀(${(wLr*100).toFixed(0)}%) + Holt(${(wHolt*100).toFixed(0)}%)`,
+    rmse: avgRmse };
 }
 
 // 모의 데이터 생성 (API 실패 시 폴백)
@@ -1047,9 +1112,20 @@ function padTo90(arr) {
 
 // 파생 변수 일괄 계산 (데이터 로드 후 호출)
 function computeDerived() {
-  lmePred = makePred(lmeHist, 19000, 22000, 150, 77); // SHFE CNY/MT
-  cnyPred  = makePred(cnyHist, 186,  196,  0.7, 88);
-  usdPred  = makePred(usdHist, 1330, 1420, 6,   55);
+  // 앙상블 예측 (선형회귀 + Holt 이중지수평활법)
+  const lmeFc  = ensembleForecast(lmeHist, 30);
+  const cnyFc  = ensembleForecast(cnyHist, 30);
+  const usdFc  = ensembleForecast(usdHist, 30);
+  lmePred      = lmeFc.forecasts;
+  lmePredUpper = lmeFc.upper;
+  lmePredLower = lmeFc.lower;
+  lmePredMethod = lmeFc.method;
+  cnyPred      = cnyFc.forecasts;
+  cnyPredUpper = cnyFc.upper;
+  cnyPredLower = cnyFc.lower;
+  usdPred      = usdFc.forecasts;
+  usdPredUpper = usdFc.upper;
+  usdPredLower = usdFc.lower;
 
   lastLme = lmeHist[lmeHist.length-1];
   lastCny = cnyHist[cnyHist.length-1];
@@ -1162,6 +1238,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Set dates
   document.getElementById('last-updated').textContent = formatDateKo(TODAY) + ' 16:30 기준';
   document.getElementById('kpi-date-label').textContent = '기준일: ' + formatDateKo(TODAY);
+  if (lmePredMethod) {
+    const el = document.getElementById('pred-method-label');
+    if (el) el.textContent = '📊 예측: ' + lmePredMethod;
+  }
 
   // KPI values
   document.getElementById('kpi-lme').textContent = '¥' + fmtNum(lastLme, 0);
@@ -1272,46 +1352,50 @@ let priceMode = 'all';
 
 function buildPriceDatasets(mode) {
   const allLabels = [...histDates, ...predDates];
-  const histNull = new Array(90).fill(null);
+  const null90 = new Array(90).fill(null);
+  const null30 = new Array(30).fill(null);
 
-  const histPrice = lmeHist.map(v => v);
-  const predHistNull = new Array(90).fill(null);
-  const predData = [...predHistNull, ...lmePred];
+  const histData  = [...lmeHist, ...null30];
+  const predData  = [...null90, ...lmePred];
+  const upperData = [...null90, ...lmePredUpper];
+  const lowerData = [...null90, ...lmePredLower];
+  predData[89] = lmeHist[89]; // 연결점
+  upperData[89] = lmeHist[89];
+  lowerData[89] = lmeHist[89];
 
-  // Overlap: last hist point + first pred for seamless connection
-  predData[89] = lmeHist[89];
-
-  const ma20Full = [...lmeMa20, ...new Array(30).fill(null)];
-  const ma60Full = [...lmeMa60, ...new Array(30).fill(null)];
-  const bbUpperFull = [...lmeBB.upper, ...new Array(30).fill(null)];
-  const bbLowerFull = [...lmeBB.lower, ...new Array(30).fill(null)];
-
-  const histData = [...histPrice, ...new Array(30).fill(null)];
+  const ma20Full = [...lmeMa20, ...null30];
+  const ma60Full = [...lmeMa60, ...null30];
+  const bbUpperFull = [...lmeBB.upper, ...null30];
+  const bbLowerFull = [...lmeBB.lower, ...null30];
 
   let labels, datasets;
   if (mode === 'hist') {
     labels = histDates;
     datasets = [
-      { label: '실제가격', data: lmeHist, borderColor:'#4e9af1', backgroundColor:'rgba(78,154,241,0.08)', borderWidth:2, pointRadius:0, tension:0.3, fill:false },
-      { label: 'MA20', data: lmeMa20, borderColor:'#f1a74e', borderWidth:1.5, pointRadius:0, tension:0.3, fill:false },
-      { label: 'MA60', data: lmeMa60, borderColor:'#e0bf70', borderWidth:1.5, pointRadius:0, tension:0.3, fill:false, borderDash:[6,3] },
-      { label: '볼린저 상단', data: lmeBB.upper, borderColor:'rgba(78,154,241,0.4)', borderWidth:1, pointRadius:0, tension:0.3, fill:'+1', backgroundColor:'rgba(78,154,241,0.07)' },
-      { label: '볼린저 하단', data: lmeBB.lower, borderColor:'rgba(78,154,241,0.4)', borderWidth:1, pointRadius:0, tension:0.3, fill:false },
+      { label:'실제가격',   data:lmeHist,    borderColor:'#4e9af1', borderWidth:2, pointRadius:0, tension:0.3, fill:false },
+      { label:'MA20',      data:lmeMa20,    borderColor:'#f1a74e', borderWidth:1.5, pointRadius:0, tension:0.3, fill:false },
+      { label:'MA60',      data:lmeMa60,    borderColor:'#e0bf70', borderWidth:1.5, pointRadius:0, tension:0.3, fill:false, borderDash:[6,3] },
+      { label:'볼린저 상단', data:lmeBB.upper, borderColor:'rgba(78,154,241,0.4)', borderWidth:1, pointRadius:0, tension:0.3, fill:'+1', backgroundColor:'rgba(78,154,241,0.07)' },
+      { label:'볼린저 하단', data:lmeBB.lower, borderColor:'rgba(78,154,241,0.4)', borderWidth:1, pointRadius:0, tension:0.3, fill:false },
     ];
   } else if (mode === 'pred') {
     labels = predDates;
     datasets = [
-      { label: '예측가격', data: lmePred, borderColor:'#a855f7', borderWidth:2, pointRadius:0, tension:0.3, fill:false, borderDash:[6,3] },
+      { label:'95% 신뢰상단', data:lmePredUpper, borderColor:'rgba(168,85,247,0.2)', borderWidth:0, pointRadius:0, fill:'+1', backgroundColor:'rgba(168,85,247,0.1)', tension:0.3 },
+      { label:'95% 신뢰하단', data:lmePredLower, borderColor:'rgba(168,85,247,0.2)', borderWidth:0, pointRadius:0, fill:false, tension:0.3 },
+      { label:'예측가격',    data:lmePred,       borderColor:'#a855f7', borderWidth:2.5, pointRadius:0, tension:0.3, fill:false, borderDash:[6,3] },
     ];
   } else {
     labels = allLabels;
     datasets = [
-      { label: '실제가격', data: histData, borderColor:'#4e9af1', backgroundColor:'rgba(78,154,241,0.06)', borderWidth:2, pointRadius:0, tension:0.3, fill:false },
-      { label: '예측가격', data: predData, borderColor:'#a855f7', borderWidth:2, pointRadius:0, tension:0.3, fill:false, borderDash:[6,3] },
-      { label: 'MA20', data: ma20Full, borderColor:'#f1a74e', borderWidth:1.5, pointRadius:0, tension:0.3, fill:false },
-      { label: 'MA60', data: ma60Full, borderColor:'#e0bf70', borderWidth:1.5, pointRadius:0, tension:0.3, fill:false, borderDash:[6,3] },
-      { label: '볼린저 상단', data: bbUpperFull, borderColor:'rgba(78,154,241,0.35)', borderWidth:1, pointRadius:0, tension:0.3, fill:'+1', backgroundColor:'rgba(78,154,241,0.07)' },
-      { label: '볼린저 하단', data: bbLowerFull, borderColor:'rgba(78,154,241,0.35)', borderWidth:1, pointRadius:0, tension:0.3, fill:false },
+      { label:'실제가격',    data:histData,   borderColor:'#4e9af1', borderWidth:2, pointRadius:0, tension:0.3, fill:false },
+      { label:'95% 신뢰상단', data:upperData, borderColor:'rgba(168,85,247,0.15)', borderWidth:0, pointRadius:0, fill:'+1', backgroundColor:'rgba(168,85,247,0.1)', tension:0.3 },
+      { label:'95% 신뢰하단', data:lowerData, borderColor:'rgba(168,85,247,0.15)', borderWidth:0, pointRadius:0, fill:false, tension:0.3 },
+      { label:'예측가격',    data:predData,   borderColor:'#a855f7', borderWidth:2, pointRadius:0, tension:0.3, fill:false, borderDash:[6,3] },
+      { label:'MA20',       data:ma20Full,   borderColor:'#f1a74e', borderWidth:1.5, pointRadius:0, tension:0.3, fill:false },
+      { label:'MA60',       data:ma60Full,   borderColor:'#e0bf70', borderWidth:1.5, pointRadius:0, tension:0.3, fill:false, borderDash:[6,3] },
+      { label:'볼린저 상단', data:bbUpperFull, borderColor:'rgba(78,154,241,0.35)', borderWidth:1, pointRadius:0, tension:0.3, fill:'+1', backgroundColor:'rgba(78,154,241,0.07)' },
+      { label:'볼린저 하단', data:bbLowerFull, borderColor:'rgba(78,154,241,0.35)', borderWidth:1, pointRadius:0, tension:0.3, fill:false },
     ];
   }
   return { labels, datasets };
@@ -1379,47 +1463,47 @@ let fxMode = 'cny';
 
 function buildFxDatasets(mode) {
   const allLabels = [...histDates, ...predDates];
-  const histNull30 = new Array(30).fill(null);
+  const null30 = new Array(30).fill(null);
+  const null89 = new Array(89).fill(null);
 
-  const cnyAll = [...cnyHist, ...histNull30];
-  const cnyPredAll = [...new Array(89).fill(null), cnyHist[89], ...cnyPred];
-  const usdAll = [...usdHist, ...histNull30];
-  const usdPredAll = [...new Array(89).fill(null), usdHist[89], ...usdPred];
-
-  // Danger zone — create a fill above threshold
-  const cnyDangerZone = allLabels.map((_, i) => {
-    const v = i < 90 ? cnyHist[i] : cnyPred[i-90];
-    return v >= cnyDanger ? v : null;
-  });
+  const cnyAll      = [...cnyHist, ...null30];
+  const cnyPredAll  = [...null89, cnyHist[89], ...cnyPred];
+  const cnyUpAll    = [...null89, cnyHist[89], ...cnyPredUpper];
+  const cnyLowAll   = [...null89, cnyHist[89], ...cnyPredLower];
+  const usdAll      = [...usdHist, ...null30];
+  const usdPredAll  = [...null89, usdHist[89], ...usdPred];
+  const usdUpAll    = [...null89, usdHist[89], ...usdPredUpper];
+  const usdLowAll   = [...null89, usdHist[89], ...usdPredLower];
 
   if (mode === 'cny') {
     return {
-      labels: allLabels,
-      yAxisLeft: 'CNY/KRW',
+      labels: allLabels, yAxisLeft: 'CNY/KRW',
       datasets: [
-        { label: 'CNY/KRW', data: cnyAll, borderColor:'#4ec9b0', borderWidth:2, pointRadius:0, tension:0.3, fill:false, yAxisID:'y' },
-        { label: 'CNY/KRW 예측', data: cnyPredAll, borderColor:'#4ec9b0', borderWidth:1.5, pointRadius:0, tension:0.3, fill:false, borderDash:[6,3], yAxisID:'y' },
-        { label: '위험구간', data: cnyAll.map(v => v >= cnyDanger ? v : null), borderColor:'rgba(231,76,60,0.5)', borderWidth:0, pointRadius:0, fill: { target: { value: cnyDanger }, above:'rgba(231,76,60,0.15)' }, yAxisID:'y', tension:0.3 },
+        { label:'CNY/KRW',     data:cnyAll,    borderColor:'#4ec9b0', borderWidth:2,   pointRadius:0, tension:0.3, fill:false, yAxisID:'y' },
+        { label:'신뢰구간 상단', data:cnyUpAll,  borderColor:'rgba(78,201,176,0.2)', borderWidth:0, pointRadius:0, fill:'+1', backgroundColor:'rgba(78,201,176,0.1)', tension:0.3, yAxisID:'y' },
+        { label:'신뢰구간 하단', data:cnyLowAll, borderColor:'rgba(78,201,176,0.2)', borderWidth:0, pointRadius:0, fill:false, tension:0.3, yAxisID:'y' },
+        { label:'CNY/KRW 예측', data:cnyPredAll, borderColor:'#4ec9b0', borderWidth:1.5, pointRadius:0, tension:0.3, fill:false, borderDash:[6,3], yAxisID:'y' },
+        { label:'위험구간',     data:cnyAll.map(v => v >= cnyDanger ? v : null), borderColor:'rgba(231,76,60,0.5)', borderWidth:0, pointRadius:0, fill:{ target:{ value:cnyDanger }, above:'rgba(231,76,60,0.15)' }, yAxisID:'y', tension:0.3 },
       ]
     };
   } else if (mode === 'usd') {
     return {
-      labels: allLabels,
-      yAxisLeft: 'USD/KRW',
+      labels: allLabels, yAxisLeft: 'USD/KRW',
       datasets: [
-        { label: 'USD/KRW', data: usdAll, borderColor:'#ff9d4e', borderWidth:2, pointRadius:0, tension:0.3, fill:false, yAxisID:'y' },
-        { label: 'USD/KRW 예측', data: usdPredAll, borderColor:'#ff9d4e', borderWidth:1.5, pointRadius:0, tension:0.3, fill:false, borderDash:[6,3], yAxisID:'y' },
+        { label:'USD/KRW',     data:usdAll,    borderColor:'#ff9d4e', borderWidth:2,   pointRadius:0, tension:0.3, fill:false, yAxisID:'y' },
+        { label:'신뢰구간 상단', data:usdUpAll,  borderColor:'rgba(255,157,78,0.2)', borderWidth:0, pointRadius:0, fill:'+1', backgroundColor:'rgba(255,157,78,0.1)', tension:0.3, yAxisID:'y' },
+        { label:'신뢰구간 하단', data:usdLowAll, borderColor:'rgba(255,157,78,0.2)', borderWidth:0, pointRadius:0, fill:false, tension:0.3, yAxisID:'y' },
+        { label:'USD/KRW 예측', data:usdPredAll, borderColor:'#ff9d4e', borderWidth:1.5, pointRadius:0, tension:0.3, fill:false, borderDash:[6,3], yAxisID:'y' },
       ]
     };
   } else {
     return {
-      labels: allLabels,
-      yAxisLeft: 'CNY/KRW',
+      labels: allLabels, yAxisLeft: 'CNY/KRW',
       datasets: [
-        { label: 'CNY/KRW', data: cnyAll, borderColor:'#4ec9b0', borderWidth:2, pointRadius:0, tension:0.3, fill:false, yAxisID:'y' },
-        { label: 'CNY/KRW 예측', data: cnyPredAll, borderColor:'#4ec9b0', borderWidth:1.5, pointRadius:0, tension:0.3, fill:false, borderDash:[6,3], yAxisID:'y' },
-        { label: 'USD/KRW', data: usdAll, borderColor:'#ff9d4e', borderWidth:2, pointRadius:0, tension:0.3, fill:false, yAxisID:'y2' },
-        { label: 'USD/KRW 예측', data: usdPredAll, borderColor:'#ff9d4e', borderWidth:1.5, pointRadius:0, tension:0.3, fill:false, borderDash:[6,3], yAxisID:'y2' },
+        { label:'CNY/KRW',     data:cnyAll,    borderColor:'#4ec9b0', borderWidth:2,   pointRadius:0, tension:0.3, fill:false, yAxisID:'y' },
+        { label:'CNY/KRW 예측', data:cnyPredAll, borderColor:'#4ec9b0', borderWidth:1.5, pointRadius:0, tension:0.3, fill:false, borderDash:[6,3], yAxisID:'y' },
+        { label:'USD/KRW',     data:usdAll,    borderColor:'#ff9d4e', borderWidth:2,   pointRadius:0, tension:0.3, fill:false, yAxisID:'y2' },
+        { label:'USD/KRW 예측', data:usdPredAll, borderColor:'#ff9d4e', borderWidth:1.5, pointRadius:0, tension:0.3, fill:false, borderDash:[6,3], yAxisID:'y2' },
       ]
     };
   }
