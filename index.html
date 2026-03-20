@@ -1129,10 +1129,21 @@
     <div class="kpi-grid">
       <div class="kpi-card">
         <div class="kpi-icon">🏷</div>
-        <div class="kpi-label">SHFE 알루미늄 현물가 <span class="data-badge badge-real" id="shfe-badge">● 실제 데이터</span></div>
-        <div class="kpi-value" id="kpi-lme">20,500</div>
-        <div class="kpi-unit">CNY/MT · 东方财富(Eastmoney)</div>
-        <div class="kpi-change up" id="kpi-lme-chg">▲ +0.82%</div>
+        <div class="kpi-label">알루미늄 현물가 <span class="data-badge badge-real" id="shfe-badge">● 실제 데이터</span></div>
+        <div style="display:flex; gap:1rem; align-items:flex-start; flex-wrap:wrap; margin-top:0.2rem;">
+          <div>
+            <div style="font-size:0.68rem; color:var(--text-secondary); margin-bottom:0.1rem;">SHFE (CNY/MT)</div>
+            <div class="kpi-value" id="kpi-lme" style="font-size:1.6rem;">20,500</div>
+            <div class="kpi-change up" id="kpi-lme-chg" style="font-size:0.72rem;">▲ +0.82%</div>
+          </div>
+          <div style="width:1px; background:rgba(255,255,255,0.12); align-self:stretch; margin:0.1rem 0;"></div>
+          <div>
+            <div style="font-size:0.68rem; color:var(--text-secondary); margin-bottom:0.1rem;">LME (USD/MT) <span class="data-badge badge-real" id="lme-usd-badge" style="font-size:0.6rem; padding:1px 5px;">● 실제 데이터</span></div>
+            <div class="kpi-value" id="kpi-lme-usd" style="font-size:1.6rem;">2,600</div>
+            <div class="kpi-change neutral" id="kpi-lme-usd-chg" style="font-size:0.72rem;">-- %</div>
+          </div>
+        </div>
+        <div class="kpi-unit" style="margin-top:0.4rem;">东方财富(Eastmoney) · Yahoo Finance</div>
       </div>
       <div class="kpi-card">
         <div class="kpi-icon">💱</div>
@@ -1914,6 +1925,7 @@ for (let i = 1; i <= 30; i++) {
 
 // ===================== DATA VARIABLES (실제 API 연동) =====================
 let lmeHist, lmePred, lmePredUpper, lmePredLower, lmePredMethod, lastLme, lmePrev, lmeChange;
+let lmeUsdHist, lastLmeUsd, lmeUsdPrev, lmeUsdChange;
 let cnyHist, cnyPred, cnyPredUpper, cnyPredLower, lastCny, cnyPrev, cnyChange;
 let usdHist, usdPred, usdPredUpper, usdPredLower, lastUsd, usdPrev, usdChange;
 let rpciHist, rpciMa60, rpciMa90, currentRPCI, currentMA60, currentMA90;
@@ -2016,9 +2028,10 @@ function ensembleForecast(data, horizon) {
 // 모의 데이터 생성 (API 실패 시 폴백)
 // lmeHist = SHFE 알루미늄 가격 (CNY/MT) — 실제 API 연동 후 SHFE 데이터로 교체됨
 function generateMockData() {
-  lmeHist = randomWalk(20500, 90, 150, 19000, 22000, 101); // SHFE CNY/MT
-  cnyHist = randomWalk(190.3, 90, 0.6, 186, 196, 202);
-  usdHist = randomWalk(1370, 90, 5, 1330, 1410, 303);
+  lmeHist    = randomWalk(20500, 90, 150, 19000, 22000, 101); // SHFE CNY/MT
+  lmeUsdHist = randomWalk(2600,  90,  20,  2400,  2800, 707); // LME USD/MT
+  cnyHist    = randomWalk(190.3, 90, 0.6, 186, 196, 202);
+  usdHist    = randomWalk(1370,  90,   5, 1330, 1410, 303);
 }
 
 // 배열을 90개로 맞춤 (주말·공휴일로 거래일이 부족한 경우 앞 값으로 채움)
@@ -2045,15 +2058,18 @@ function computeDerived() {
   usdPredUpper = usdFc.upper;
   usdPredLower = usdFc.lower;
 
-  lastLme = lmeHist[lmeHist.length-1];
-  lastCny = cnyHist[cnyHist.length-1];
-  lastUsd = usdHist[usdHist.length-1];
-  lmePrev = lmeHist[lmeHist.length-2];
-  cnyPrev = cnyHist[cnyHist.length-2];
-  usdPrev = usdHist[usdHist.length-2];
-  lmeChange = ((lastLme - lmePrev)/lmePrev*100).toFixed(2);
-  cnyChange = ((lastCny - cnyPrev)/cnyPrev*100).toFixed(2);
-  usdChange = ((lastUsd - usdPrev)/usdPrev*100).toFixed(2);
+  lastLme    = lmeHist[lmeHist.length-1];
+  lastLmeUsd = (lmeUsdHist || [])[lmeUsdHist.length-1] || null;
+  lastCny    = cnyHist[cnyHist.length-1];
+  lastUsd    = usdHist[usdHist.length-1];
+  lmePrev    = lmeHist[lmeHist.length-2];
+  lmeUsdPrev = (lmeUsdHist || [])[lmeUsdHist.length-2] || null;
+  cnyPrev    = cnyHist[cnyHist.length-2];
+  usdPrev    = usdHist[usdHist.length-2];
+  lmeChange    = ((lastLme - lmePrev)/lmePrev*100).toFixed(2);
+  lmeUsdChange = (lastLmeUsd && lmeUsdPrev) ? ((lastLmeUsd - lmeUsdPrev)/lmeUsdPrev*100).toFixed(2) : null;
+  cnyChange    = ((lastCny - cnyPrev)/cnyPrev*100).toFixed(2);
+  usdChange    = ((lastUsd - usdPrev)/usdPrev*100).toFixed(2);
 
   rpciHist   = lmeHist.map((l,i) => calcRPCI(l, cnyHist[i])); // SHFE CNY/MT × CNY/KRW
   rpciMa60   = movingAvg(rpciHist, 60);
@@ -2079,18 +2095,27 @@ function computeDerived() {
 async function loadRealData() {
   const badge = document.getElementById('data-source-badge');
   try {
-    const [ratesRes, alRes] = await Promise.all([
+    const [ratesRes, alRes, lmeRes] = await Promise.all([
       fetch('/api/rates'),
       fetch('/api/aluminum'),
+      fetch('/api/lme'),
     ]);
 
     if (!ratesRes.ok || !alRes.ok) throw new Error(`서버 오류 ${ratesRes.status}/${alRes.status}`);
 
-    const rates = await ratesRes.json();
+    const rates  = await ratesRes.json();
     const alJson = await alRes.json();
+    const lmeJson = lmeRes.ok ? await lmeRes.json() : null;
 
     if (rates.error) throw new Error('환율 API: ' + rates.error);
     if (alJson.error) throw new Error('알루미늄 API: ' + alJson.error);
+
+    // LME USD 처리 (실패해도 계속 진행)
+    if (lmeJson && !lmeJson.error && (lmeJson.data || []).length >= 20) {
+      lmeUsdHist = padTo90(lmeJson.data.map(d => d.price));
+      const lmeBadge = document.getElementById('lme-usd-badge');
+      if (lmeBadge) { lmeBadge.textContent = '● 실제 데이터'; lmeBadge.className = 'data-badge badge-real'; }
+    }
 
     // 환율 처리: DATA_VALUE가 '-' 또는 빈 값인 행 제거
     const cnyRows = (rates.cny || []).filter(r => r.DATA_VALUE && r.DATA_VALUE !== '-');
@@ -2195,6 +2220,16 @@ document.addEventListener('DOMContentLoaded', async () => {
   const lmeUp = lmeChange > 0;
   lmeChgEl.textContent = (lmeUp ? '▲ +' : '▼ ') + lmeChange + '%';
   lmeChgEl.className = 'kpi-change ' + (lmeUp ? 'up' : 'down');
+
+  if (lastLmeUsd !== null) {
+    document.getElementById('kpi-lme-usd').textContent = '$' + fmtNum(lastLmeUsd, 0);
+    const lmeUsdChgEl = document.getElementById('kpi-lme-usd-chg');
+    if (lmeUsdChange !== null) {
+      const lmeUsdUp = lmeUsdChange > 0;
+      lmeUsdChgEl.textContent = (lmeUsdUp ? '▲ +' : '▼ ') + lmeUsdChange + '%';
+      lmeUsdChgEl.className = 'kpi-change ' + (lmeUsdUp ? 'up' : 'down');
+    }
+  }
 
   document.getElementById('kpi-cny').textContent = fmtNum(lastCny, 1);
   const cnyChgEl = document.getElementById('kpi-cny-chg');
