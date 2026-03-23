@@ -1030,24 +1030,102 @@
   ::-webkit-scrollbar-thumb:hover { background: var(--border-light); }
 
   /* ===== RESPONSIVE ===== */
+
+  /* 소형 데스크탑 / 태블릿 가로 */
   @media (max-width: 1100px) {
     .supplier-layout { grid-template-columns: 1fr; }
     .radar-card canvas { max-height: 260px; }
   }
+
+  /* 태블릿 세로 */
   @media (max-width: 900px) {
     .kpi-grid { grid-template-columns: repeat(2, 1fr); }
     .signal-grid { grid-template-columns: 1fr; }
     .simulator-layout { grid-template-columns: 1fr; }
     .form-row { grid-template-columns: 1fr; }
+    canvas { max-height: 260px; }
+    .sdp-header { flex-direction: column; align-items: flex-start; gap: 0.2rem; }
+    .chart-card { padding: 1.1rem; }
   }
+
+  /* 소형 태블릿 / 대형 폰 */
+  @media (max-width: 768px) {
+    /* 테이블 가로 스크롤 */
+    .table-card { overflow-x: auto; }
+    .data-table { min-width: 560px; }
+    .customs-panel { overflow-x: auto; }
+    .customs-table { min-width: 480px; }
+    .shipping-detail-panel { overflow-x: auto; }
+    .sdp-table { min-width: 360px; }
+    .ref-panel { overflow-x: auto; }
+    .spec-table { min-width: 380px; }
+
+    .ref-panels-grid { grid-template-columns: 1fr; }
+    .email-cols { grid-template-columns: 1fr; }
+    .cost-comp-grid { grid-template-columns: repeat(2, 1fr); }
+    .sim-card { padding: 1.1rem; }
+    .kpi-card { padding: 1rem 1.1rem; }
+    .signal-big-badge { font-size: 1.6rem; padding: 0.75rem 2rem; }
+  }
+
+  /* 모바일 */
   @media (max-width: 600px) {
     .kpi-grid { grid-template-columns: 1fr; }
-    .main-content { padding: 1rem; }
-    .header-inner { padding: 0 1rem; }
-    .kpi-value { font-size: 1.35rem; }
-    .data-table { font-size: 0.72rem; }
-    .data-table thead th, .data-table tbody td { padding: 0.55rem 0.5rem; }
     .result-grid { grid-template-columns: 1fr; }
+    .main-content { padding: 0.75rem; }
+
+    /* 헤더 */
+    .header-inner { padding: 0 0.75rem; height: 52px; }
+    .logo-sub { display: none; }
+    .logo-text { font-size: 0.82rem; }
+    .logo-badge { font-size: 0.95rem; padding: 0.2rem 0.5rem; }
+    .header-time .live-dot { display: none; }
+    #last-updated { display: none; }
+
+    /* 네비 탭 */
+    .nav-tab { padding: 0.5rem 0.75rem; font-size: 0.74rem; }
+
+    /* KPI 카드 */
+    .kpi-card { padding: 0.9rem 1rem; }
+    .kpi-value { font-size: 1.25rem; }
+    .kpi-icon { font-size: 1.4rem; }
+
+    /* 섹션 */
+    .section { margin-bottom: 1.5rem; }
+    .section-header { flex-wrap: wrap; }
+    .section-sub { margin-left: 0; }
+
+    /* 차트 */
+    .chart-card { padding: 0.85rem; }
+    canvas { max-height: 220px; }
+
+    /* 신호 카드 */
+    .signal-big-badge { font-size: 1.3rem; padding: 0.65rem 1.5rem; }
+    .signal-card { padding: 1.1rem; }
+
+    /* 시뮬레이터 */
+    .sim-card { padding: 0.9rem; }
+    .comparison-row { flex-direction: column; align-items: flex-start; gap: 0.2rem; }
+
+    /* 테이블 */
+    .data-table { font-size: 0.72rem; }
+    .data-table thead th, .data-table tbody td { padding: 0.5rem 0.5rem; }
+
+    /* 데이터 범례 */
+    .data-legend-box { gap: 0.35rem; }
+    .data-legend-item { font-size: 0.7rem; }
+  }
+
+  /* 소형 모바일 (≤ 420px) */
+  @media (max-width: 420px) {
+    .logo-text { display: none; }
+    .nav-tab { padding: 0.45rem 0.55rem; font-size: 0.7rem; }
+    .kpi-value { font-size: 1.15rem; }
+    .cost-comp-grid { grid-template-columns: 1fr; }
+    .mkt-ref-grid { grid-template-columns: 1fr; }
+    canvas { max-height: 190px; }
+    .data-legend-box { display: none; }
+    .main-content { padding: 0.6rem; }
   }
 
   /* ===== PRINT ===== */
