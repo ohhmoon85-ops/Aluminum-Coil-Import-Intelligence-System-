@@ -1937,7 +1937,7 @@ Best regards,
 
 <script>
 // ===================== DATA GENERATION =====================
-const TODAY = new Date('2026-03-20');
+const TODAY = new Date();
 
 function formatDate(d) {
   const y = d.getFullYear();
@@ -2285,7 +2285,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   setTimeout(() => overlay.style.display='none', 500);
 
   // Set dates
-  document.getElementById('last-updated').textContent = formatDateKo(TODAY) + ' 16:30 기준';
+  const nowH = String(TODAY.getHours()).padStart(2,'0');
+  const nowM = String(TODAY.getMinutes()).padStart(2,'0');
+  document.getElementById('last-updated').textContent = formatDateKo(TODAY) + ' ' + nowH + ':' + nowM + ' 기준';
   document.getElementById('kpi-date-label').textContent = '기준일: ' + formatDateKo(TODAY);
   if (lmePredMethod) {
     const el = document.getElementById('pred-method-label');
