@@ -2203,6 +2203,10 @@ async function loadRealData() {
     cnyHist = padTo90(cnyRows.map(r => parseFloat(r.DATA_VALUE)));
     usdHist = padTo90(usdRows.map(r => parseFloat(r.DATA_VALUE)));
 
+    // Yahoo Finance 실시간 환율로 최신값 보정 (ECOS 1~2일 지연 보정)
+    if (rates.currentUsd && rates.currentUsd > 0) usdHist[usdHist.length - 1] = rates.currentUsd;
+    if (rates.currentCny && rates.currentCny > 0) cnyHist[cnyHist.length - 1] = rates.currentCny;
+
     // 알루미늄 가격 처리
     const alData = (alJson.data || []).filter(d => d.price && d.price > 0);
     if (alData.length < 20) throw new Error('알루미늄 가격 데이터 부족');

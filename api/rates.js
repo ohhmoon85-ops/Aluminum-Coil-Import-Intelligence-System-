@@ -1,5 +1,6 @@
 // Vercel Serverless Function — 한국은행 ECOS API 환율 수집
 // USD/KRW, CNY/KRW 최근 120일치 가져오기
+// + Yahoo Finance 실시간 보완 (ECOS 1~2일 지연 보정)
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -56,9 +57,59 @@ export default async function handler(req, res) {
       throw new Error('데이터가 없습니다. API 키를 확인하세요.');
     }
 
+    // Yahoo Finance 실시간 환율 보완 (ECOS 1~2일 지연 보정)
+    // USDKRW=X, CNYKRW=X 현재가 조회
+    let currentUsd = null;
+    let currentCny = null;
+
+    const yahooUrls = [
+      'https://query1.finance.yahoo.com/v8/finance/chart/USDKRW=X?interval=1d&range=5d',
+      'https://query2.finance.yahoo.com/v8/finance/chart/USDKRW=X?interval=1d&range=5d',
+    ];
+    const yahooCnyUrls = [
+      'https://query1.finance.yahoo.com/v8/finance/chart/CNYKRW=X?interval=1d&range=5d',
+      'https://query2.finance.yahoo.com/v8/finance/chart/CNYKRW=X?interval=1d&range=5d',
+    ];
+
+    try {
+      for (const yUrl of yahooUrls) {
+        const yRes = await fetch(yUrl, {
+          headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)', 'Accept': 'application/json' },
+        });
+        if (!yRes.ok) continue;
+        const yJson = await yRes.json();
+        const meta = yJson?.chart?.result?.[0]?.meta;
+        if (meta?.regularMarketPrice) {
+          currentUsd = parseFloat(meta.regularMarketPrice.toFixed(2));
+          break;
+        }
+      }
+    } catch (e) {
+      console.warn('[rates/Yahoo/USD] 실시간 조회 실패:', e.message);
+    }
+
+    try {
+      for (const yUrl of yahooCnyUrls) {
+        const yRes = await fetch(yUrl, {
+          headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)', 'Accept': 'application/json' },
+        });
+        if (!yRes.ok) continue;
+        const yJson = await yRes.json();
+        const meta = yJson?.chart?.result?.[0]?.meta;
+        if (meta?.regularMarketPrice) {
+          currentCny = parseFloat(meta.regularMarketPrice.toFixed(2));
+          break;
+        }
+      }
+    } catch (e) {
+      console.warn('[rates/Yahoo/CNY] 실시간 조회 실패:', e.message);
+    }
+
     return res.status(200).json({
       usd: usdRows,  // [{ TIME: '20260320', DATA_VALUE: '1374.5' }, ...]
       cny: cnyRows,
+      currentUsd,   // Yahoo Finance 실시간 USD/KRW (null이면 ECOS 최신값 사용)
+      currentCny,   // Yahoo Finance 실시간 CNY/KRW (null이면 ECOS 최신값 사용)
       fetchedAt: new Date().toISOString(),
     });
   } catch (err) {
