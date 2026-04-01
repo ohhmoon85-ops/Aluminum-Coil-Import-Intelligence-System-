@@ -975,6 +975,14 @@
   .sdp-table td:last-child { font-weight: 700; text-align: right; }
   .sdp-total-row td { background: rgba(201,168,76,0.06); color: var(--gold) !important; font-weight: 800 !important; font-size: 0.82rem; border-top: 1px solid var(--border-light); }
   .sdp-sqm-row td { color: var(--gold) !important; font-size: 0.78rem; }
+  .sdp-input {
+    background: rgba(255,255,255,0.07); border: 1px solid var(--border-light);
+    color: var(--text-primary); border-radius: 4px; padding: 2px 6px;
+    font-size: 0.82rem; width: 100px; text-align: right; font-family: inherit;
+  }
+  .sdp-input:focus { outline: none; border-color: var(--gold); background: rgba(201,168,76,0.08); }
+  .sdp-input-wrap { display: flex; align-items: center; gap: 4px; justify-content: flex-end; color: var(--text-secondary); font-size: 0.78rem; }
+  .sdp-fx-info { font-size: 0.68rem; color: var(--text-muted); padding: 0.35rem 1.1rem; border-bottom: 1px solid rgba(255,255,255,0.04); display: flex; gap: 1rem; }
 
   /* ===== CUSTOMS TABLE ===== */
   .customs-panel {
@@ -1239,7 +1247,7 @@
             <div class="kpi-change neutral" id="kpi-usd-chg" style="font-size:0.72rem;">-- %</div>
           </div>
         </div>
-        <div class="kpi-unit" style="margin-top:0.4rem;">원 · 한국은행 ECOS</div>
+        <div class="kpi-unit" style="margin-top:0.4rem;">원 · 송금환율 (최대할인) · ECOS 기준</div>
       </div>
       <div class="kpi-card">
         <div class="kpi-icon">📊</div>
@@ -1295,7 +1303,7 @@
       <div class="section-title">환율 추세 차트</div>
       <div class="section-sub">CNY/KRW 및 USD/KRW 90일 실적 + 30일 예측</div>
     </div>
-    <div class="data-source-bar source-bar-real"><span class="data-badge badge-real">● 실제 데이터</span> 90일 실적 — 한국은행 ECOS API (매매기준율 731Y001, 오전 11시 기준) &nbsp;|&nbsp; <span class="data-badge badge-pred">● 통계 예측</span> 30일 예측선 + 95% 신뢰구간 — 선형회귀 + Holt 앙상블</div>
+    <div class="data-source-bar source-bar-real"><span class="data-badge badge-real">● 실제 데이터</span> 90일 실적 — 한국은행 ECOS API (매매기준율 731Y001, 오전 11시 기준) &nbsp;|&nbsp; <span class="data-badge badge-pred">● 통계 예측</span> 30일 예측선 + 95% 신뢰구간 — 선형회귀 + Holt 앙상블 &nbsp;|&nbsp; <span style="font-size:0.68rem;color:#f1c40f;">※ KPI · 계산기 표시 환율은 전신환 매도율(송금) 기준, 최대 할인율 적용값</span></div>
     <div class="chart-card">
       <div class="chart-toolbar">
         <button class="chart-btn active" id="fx-btn-cny" onclick="setFxView('cny', this)">CNY/KRW</button>
@@ -1760,8 +1768,8 @@ Best regards,
         </div>
         <!-- 기준일 환율 -->
         <div class="cost-comp-item">
-          <div class="cci-label">기준일 환율</div>
-          <div class="cci-value">212 <span>원/위안</span></div>
+          <div class="cci-label">적용 환율 <small style="color:var(--text-muted);font-size:0.65rem;">(송금 최대할인)</small></div>
+          <div class="cci-value" id="cci-fx-rate">-- <span>원/위안</span></div>
         </div>
       </div>
       <div class="cost-comp-note" id="cost-comp-note">※ 지용성 코팅 = Oil-based coating. HSCODE 7607.20.9000 (합금+코팅). 비교 기준: 홍지 견적서 2026.03.04 (지용성 0.17mm / ㎡당 2,536원, 부가세 별도)</div>
@@ -1784,9 +1792,9 @@ Best regards,
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label class="form-label">CNY/KRW 환율 (원/위안)</label>
+            <label class="form-label">CNY/KRW 환율 (원/위안) <span class="auto-tag">송금 최대할인</span></label>
             <input class="form-control" type="number" id="sim-cny" value="212" min="150" max="280" step="0.1">
-            <div style="font-size:0.66rem;color:var(--text-muted);margin-top:3px;">기준일(2026.03.04) 실거래 환율</div>
+            <div style="font-size:0.66rem;color:var(--text-muted);margin-top:3px;">전신환 매도율 · 최대 할인 적용 (스프레드 4%×25%)</div>
           </div>
           <div class="form-group">
             <label class="form-label">해상운임+통관비 (원/㎡)</label>
@@ -1874,27 +1882,35 @@ Best regards,
     </div>
 
     <!-- 운송비 상세 -->
-    <button class="shipping-toggle-btn" onclick="toggleShipping()">▼ 운송비 상세 내역 펼치기 (40'HQ · 일조→평택, 기준: 2026.02.11)</button>
+    <button class="shipping-toggle-btn" onclick="toggleShipping()">▼ 운송비 상세 내역 펼치기 (40'HQ · 일조→평택) — 직접 수정 가능</button>
     <div class="shipping-detail-panel" id="shipping-detail-panel">
       <div class="sdp-header">
         <span>40'HQ 컨테이너 운송비 상세 — 일조(日照, 중국) → 평택 → 파주시 오도동</span>
-        <span>총 3,431,852원 (부가세 별도)</span>
+        <span>총 <span id="sdp-total-header">--</span>원 (부가세 별도)</span>
+      </div>
+      <div class="sdp-fx-info">
+        <span>적용 환율 (USD/KRW): <strong id="sdp-fx-rate" style="color:var(--text-primary);">--</strong> &nbsp;·&nbsp; 송금환율 최대할인 기준</span>
+        <span style="color:var(--gold);font-size:0.67rem;">✎ 금액 셀을 직접 수정하면 합계가 자동으로 다시 계산됩니다.</span>
       </div>
       <table class="sdp-table">
-        <tr><td>Ocean Freight</td><td>USD</td><td>$600</td></tr>
-        <tr><td>FCA Charges</td><td>USD</td><td>$550</td></tr>
-        <tr><td>BAF (연료할증료)</td><td>USD</td><td>$380</td></tr>
-        <tr><td>CAF (통화할증료)</td><td>USD</td><td>$80</td></tr>
-        <tr><td>CIC (컨테이너불균형할증)</td><td>USD</td><td>$80</td></tr>
-        <tr><td>Handling Charge</td><td>USD</td><td>$50</td></tr>
-        <tr><td>THC (터미널화물처리비)</td><td>KRW</td><td>210,000원</td></tr>
-        <tr><td>Cleaning Fee</td><td>KRW</td><td>50,000원</td></tr>
-        <tr><td>Wharfage (부두사용료)</td><td>KRW</td><td>5,062원</td></tr>
-        <tr><td>Document Fee</td><td>KRW</td><td>40,000원</td></tr>
-        <tr><td>적하보험료</td><td>KRW</td><td>14,000원</td></tr>
-        <tr><td>Trucking Charge (착지: 파주시 오도동)</td><td>KRW</td><td>579,350원</td></tr>
-        <tr class="sdp-total-row"><td colspan="2">합계 (USD $1,740 + KRW 포함)</td><td>3,431,852원</td></tr>
-        <tr class="sdp-sqm-row"><td colspan="2">㎡당 운임 (18톤 / 2,800장 기준)</td><td style="color:var(--gold);font-weight:800;">68원/㎡</td></tr>
+        <tr><td>Ocean Freight</td><td>USD</td><td><div class="sdp-input-wrap">$<input class="sdp-input" type="number" id="sdp-ocean" value="600" min="0" step="10" oninput="recalcShipping()"></div></td></tr>
+        <tr><td>FCA Charges</td><td>USD</td><td><div class="sdp-input-wrap">$<input class="sdp-input" type="number" id="sdp-fca" value="550" min="0" step="10" oninput="recalcShipping()"></div></td></tr>
+        <tr><td>BAF (연료할증료)</td><td>USD</td><td><div class="sdp-input-wrap">$<input class="sdp-input" type="number" id="sdp-baf" value="380" min="0" step="10" oninput="recalcShipping()"></div></td></tr>
+        <tr><td>CAF (통화할증료)</td><td>USD</td><td><div class="sdp-input-wrap">$<input class="sdp-input" type="number" id="sdp-caf" value="80" min="0" step="10" oninput="recalcShipping()"></div></td></tr>
+        <tr><td>CIC (컨테이너불균형할증)</td><td>USD</td><td><div class="sdp-input-wrap">$<input class="sdp-input" type="number" id="sdp-cic" value="80" min="0" step="10" oninput="recalcShipping()"></div></td></tr>
+        <tr><td>Handling Charge</td><td>USD</td><td><div class="sdp-input-wrap">$<input class="sdp-input" type="number" id="sdp-handling" value="50" min="0" step="10" oninput="recalcShipping()"></div></td></tr>
+        <tr><td>THC (터미널화물처리비)</td><td>KRW</td><td><div class="sdp-input-wrap"><input class="sdp-input" type="number" id="sdp-thc" value="210000" min="0" step="1000" oninput="recalcShipping()">원</div></td></tr>
+        <tr><td>Cleaning Fee</td><td>KRW</td><td><div class="sdp-input-wrap"><input class="sdp-input" type="number" id="sdp-cleaning" value="50000" min="0" step="1000" oninput="recalcShipping()">원</div></td></tr>
+        <tr><td>Wharfage (부두사용료)</td><td>KRW</td><td><div class="sdp-input-wrap"><input class="sdp-input" type="number" id="sdp-wharfage" value="5062" min="0" step="100" oninput="recalcShipping()">원</div></td></tr>
+        <tr><td>Document Fee</td><td>KRW</td><td><div class="sdp-input-wrap"><input class="sdp-input" type="number" id="sdp-docfee" value="40000" min="0" step="1000" oninput="recalcShipping()">원</div></td></tr>
+        <tr><td>적하보험료</td><td>KRW</td><td><div class="sdp-input-wrap"><input class="sdp-input" type="number" id="sdp-insurance" value="14000" min="0" step="1000" oninput="recalcShipping()">원</div></td></tr>
+        <tr><td>Trucking Charge (착지: 파주시 오도동)</td><td>KRW</td><td><div class="sdp-input-wrap"><input class="sdp-input" type="number" id="sdp-trucking" value="579350" min="0" step="1000" oninput="recalcShipping()">원</div></td></tr>
+        <tr class="sdp-total-row"><td colspan="2">합계 (USD 환산 + KRW)</td><td><span id="sdp-total">--원</span></td></tr>
+        <tr class="sdp-sqm-row">
+          <td>㎡당 운임</td>
+          <td style="color:var(--text-muted);font-size:0.72rem;">기준 <input class="sdp-input" type="number" id="sdp-qty" value="2800" min="1" max="99999" step="100" oninput="recalcShipping()" style="width:70px;display:inline-block;"> ㎡</td>
+          <td style="color:var(--gold);font-weight:800;" id="sdp-sqm-rate">-- 원/㎡</td>
+        </tr>
       </table>
       <div style="font-size:0.68rem;color:var(--text-muted);padding:0.5rem 1.1rem;">※ 수입통관비용(관세·부가세·통관수수료) 별도. 세관검사 시 검사비용 별도.</div>
     </div>
@@ -2011,6 +2027,11 @@ let shortSignal, longSignal;
 let lmeMa20, lmeMa60, lmeBB;
 let cnySorted, cnyDanger;
 let rpciMA60Avg;
+
+// 송금환율 (전신환 매도율, 최대 할인율 적용)
+// USD: 스프레드 1.75% × (1 - 80% 할인) = 실질 스프레드 0.35%
+// CNY: 스프레드 4.00% × (1 - 75% 할인) = 실질 스프레드 1.00%
+let remitUsd, remitCny;
 
 // RPCI 산출 공식 (기획서 4.3)
 // RPCI = (SHFE가격 CNY/MT × CNY/KRW + 해상운임) × (1 + 관세율 + 부대비용율)
@@ -2148,6 +2169,10 @@ function computeDerived() {
   lmeUsdChange = (lastLmeUsd && lmeUsdPrev) ? ((lastLmeUsd - lmeUsdPrev)/lmeUsdPrev*100).toFixed(2) : null;
   cnyChange    = ((lastCny - cnyPrev)/cnyPrev*100).toFixed(2);
   usdChange    = ((lastUsd - usdPrev)/usdPrev*100).toFixed(2);
+
+  // 송금환율 (전신환 매도율, 최대 할인율 적용)
+  remitUsd = parseFloat((lastUsd * (1 + 0.0175 * 0.20)).toFixed(2)); // 1.75% × 20% = 0.35% 가산
+  remitCny = parseFloat((lastCny * (1 + 0.040  * 0.25)).toFixed(2)); // 4.00% × 25% = 1.00% 가산
 
   rpciHist   = lmeHist.map((l,i) => calcRPCI(l, cnyHist[i])); // SHFE CNY/MT × CNY/KRW
   rpciMa60   = movingAvg(rpciHist, 60);
@@ -2315,13 +2340,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  document.getElementById('kpi-cny').textContent = fmtNum(lastCny, 1);
+  document.getElementById('kpi-cny').textContent = fmtNum(remitCny, 1);
   const cnyChgEl = document.getElementById('kpi-cny-chg');
   const cnyUp = cnyChange > 0;
   cnyChgEl.textContent = (cnyUp ? '▲ +' : '▼ ') + cnyChange + '%';
   cnyChgEl.className = 'kpi-change ' + (cnyUp ? 'up' : 'down');
 
-  document.getElementById('kpi-usd').textContent = fmtNum(lastUsd, 0);
+  document.getElementById('kpi-usd').textContent = fmtNum(remitUsd, 0);
   const usdChgEl = document.getElementById('kpi-usd-chg');
   const usdUp = usdChange > 0;
   usdChgEl.textContent = (usdUp ? '▲ +' : '▼ ') + usdChange + '%';
@@ -2353,6 +2378,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   renderSupplierTable();
   renderRadarChart(0);
   updateSupplierDetailCard(0);
+
+  // 송금환율 자동 적용 — 시뮬레이터 및 환율 표시 업데이트
+  document.getElementById('sim-cny').value = remitCny.toFixed(1);
+  const cciFxEl = document.getElementById('cci-fx-rate');
+  if (cciFxEl) cciFxEl.innerHTML = remitCny.toFixed(1) + ' <span>원/위안</span>';
+  const sdpFxEl = document.getElementById('sdp-fx-rate');
+  if (sdpFxEl) sdpFxEl.textContent = fmtNum(remitUsd, 0) + '원';
+
+  recalcShipping();
   calculateSimulator();
 
   // SHFE 참고 패널 초기값
@@ -2900,11 +2934,51 @@ function selectProduct(id) {
   else if (p.hscode === '7607.20.9000') document.getElementById('hs-7607c').classList.add('hs-active');
 }
 
+function recalcShipping() {
+  const usdRate = (typeof remitUsd !== 'undefined' && remitUsd > 0) ? remitUsd : 1512;
+
+  const usdSum = (parseFloat(document.getElementById('sdp-ocean').value)    || 0)
+               + (parseFloat(document.getElementById('sdp-fca').value)      || 0)
+               + (parseFloat(document.getElementById('sdp-baf').value)      || 0)
+               + (parseFloat(document.getElementById('sdp-caf').value)      || 0)
+               + (parseFloat(document.getElementById('sdp-cic').value)      || 0)
+               + (parseFloat(document.getElementById('sdp-handling').value) || 0);
+
+  const krwSum = (parseFloat(document.getElementById('sdp-thc').value)      || 0)
+               + (parseFloat(document.getElementById('sdp-cleaning').value)  || 0)
+               + (parseFloat(document.getElementById('sdp-wharfage').value)  || 0)
+               + (parseFloat(document.getElementById('sdp-docfee').value)    || 0)
+               + (parseFloat(document.getElementById('sdp-insurance').value) || 0)
+               + (parseFloat(document.getElementById('sdp-trucking').value)  || 0);
+
+  const total   = Math.round(usdSum * usdRate + krwSum);
+  const qty     = parseFloat(document.getElementById('sdp-qty').value) || 2800;
+  const sqmRate = Math.round(total / qty);
+
+  document.getElementById('sdp-total').textContent        = fmtNum(total) + '원';
+  document.getElementById('sdp-total-header').textContent = fmtNum(total);
+  document.getElementById('sdp-sqm-rate').textContent     = fmtNum(sqmRate) + '원/㎡';
+
+  // 시뮬레이터 운임 자동 반영
+  const simShip = document.getElementById('sim-shipping');
+  if (simShip) {
+    simShip.value = sqmRate;
+    const note = simShip.closest('.form-group')?.querySelector('div');
+    if (note) note.textContent = `40'HQ ${fmtNum(total)}원 ÷ ${fmtNum(qty)}㎡`;
+    calculateSimulator();
+  }
+}
+
 function toggleShipping() {
   const panel = document.getElementById('shipping-detail-panel');
   const btn   = panel.previousElementSibling;
   const open  = panel.classList.toggle('open');
-  btn.textContent = (open ? '▲ 운송비 상세 내역 접기' : '▼ 운송비 상세 내역 펼치기') + ' (40\'HQ · 일조→평택, 기준: 2026.02.11)';
+  btn.textContent = (open ? '▲ 운송비 상세 내역 접기' : '▼ 운송비 상세 내역 펼치기') + ' (40\'HQ · 일조→평택) — 직접 수정 가능';
+  if (open) {
+    const fxEl = document.getElementById('sdp-fx-rate');
+    if (fxEl && typeof remitUsd !== 'undefined') fxEl.textContent = fmtNum(remitUsd, 0) + '원';
+    recalcShipping();
+  }
 }
 
 function calculateSimulator() {
