@@ -123,6 +123,14 @@
   }
   .login-btn:hover { opacity: 0.9; transform: translateY(-1px); }
   .login-btn:active { transform: translateY(0); }
+  .login-remember {
+    display: flex; align-items: center; gap: 0.5rem;
+    margin-bottom: 1.2rem; cursor: pointer;
+    font-size: 0.82rem; color: var(--text-secondary);
+  }
+  .login-remember input[type="checkbox"] {
+    accent-color: var(--gold); width: 15px; height: 15px; cursor: pointer;
+  }
   .login-error {
     color: var(--red); font-size: 0.82rem;
     margin-top: 0.6rem; min-height: 1.2em; text-align: center;
@@ -1236,6 +1244,9 @@
       <label for="login-pw">비밀번호</label>
       <input type="password" id="login-pw" class="login-input" placeholder="비밀번호를 입력하세요" autocomplete="current-password">
     </div>
+    <label class="login-remember">
+      <input type="checkbox" id="remember-id"> 아이디 저장
+    </label>
     <button class="login-btn" onclick="doLogin()">로그인</button>
     <div class="login-error" id="login-error"></div>
   </div>
@@ -2421,6 +2432,11 @@ function doLogin() {
     document.getElementById('login-pw').focus();
     return;
   }
+  if (document.getElementById('remember-id').checked) {
+    localStorage.setItem('acis_saved_id', id);
+  } else {
+    localStorage.removeItem('acis_saved_id');
+  }
   sessionStorage.setItem('acis_user', id);
   const ls = document.getElementById('login-screen');
   ls.classList.add('hidden');
@@ -2436,6 +2452,14 @@ function doLogout() {
 
 // ===================== APP INIT =====================
 document.addEventListener('DOMContentLoaded', async () => {
+  // 저장된 아이디 복원
+  const savedId = localStorage.getItem('acis_saved_id');
+  if (savedId) {
+    document.getElementById('login-id').value = savedId;
+    document.getElementById('remember-id').checked = true;
+    document.getElementById('login-pw').focus();
+  }
+
   const savedUser = sessionStorage.getItem('acis_user');
   if (!savedUser) return; // 로그인 화면이 대기 중
   document.getElementById('header-user-name').textContent = savedUser;
