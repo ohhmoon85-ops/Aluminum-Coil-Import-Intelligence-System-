@@ -75,6 +75,75 @@
   .source-bar-ref   { border-color: #e74c3c; }
   .source-bar-calc  { border-color: #f1c40f; }
 
+  /* ===== LOGIN SCREEN ===== */
+  #login-screen {
+    position: fixed; inset: 0;
+    background: var(--navy-dark);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 99999;
+    transition: opacity 0.4s ease;
+  }
+  #login-screen.hidden { opacity: 0; pointer-events: none; }
+
+  .login-card {
+    background: var(--navy-card);
+    border: 1px solid var(--border-light);
+    border-radius: 18px;
+    padding: 3rem 2.5rem;
+    width: 100%; max-width: 420px;
+    box-shadow: 0 8px 48px rgba(0,0,0,0.6);
+    text-align: center;
+  }
+  .login-logo {
+    font-size: 2.8rem; font-weight: 900; letter-spacing: 0.08em;
+    background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 60%, var(--gold) 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    margin-bottom: 0.3rem;
+  }
+  .login-subtitle { color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 2rem; }
+  .login-field {
+    display: flex; flex-direction: column; gap: 0.5rem;
+    margin-bottom: 1.2rem; text-align: left;
+  }
+  .login-field label { font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; }
+  .login-input {
+    background: rgba(255,255,255,0.06); border: 1px solid var(--border-light);
+    border-radius: 8px; padding: 0.75rem 1rem;
+    color: var(--text-primary); font-size: 1rem; font-family: inherit;
+    outline: none; transition: border-color 0.2s;
+  }
+  .login-input:focus { border-color: var(--gold); }
+  .login-btn {
+    width: 100%;
+    background: linear-gradient(135deg, var(--gold-dark), var(--gold));
+    border: none; border-radius: 8px; padding: 0.85rem;
+    color: var(--navy-dark); font-size: 1rem; font-weight: 700;
+    font-family: inherit; cursor: pointer;
+    transition: opacity 0.2s, transform 0.15s; margin-top: 0.4rem;
+  }
+  .login-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+  .login-btn:active { transform: translateY(0); }
+  .login-error {
+    color: var(--red); font-size: 0.82rem;
+    margin-top: 0.6rem; min-height: 1.2em; text-align: center;
+  }
+
+  /* ===== 헤더 사용자 표시 ===== */
+  .header-user {
+    display: flex; align-items: center; gap: 0.6rem;
+  }
+  .header-user-name {
+    font-size: 0.78rem; color: var(--gold);
+    font-weight: 600; white-space: nowrap;
+  }
+  .header-logout-btn {
+    background: rgba(231,76,60,0.15); border: 1px solid rgba(231,76,60,0.35);
+    color: #e74c3c; padding: 0.3rem 0.75rem; border-radius: 6px;
+    font-size: 0.78rem; font-family: inherit; cursor: pointer;
+    transition: all 0.2s; white-space: nowrap;
+  }
+  .header-logout-btn:hover { background: rgba(231,76,60,0.25); }
+
   /* ===== LOADING ===== */
   #loading-overlay {
     position: fixed; inset: 0; background: var(--navy-dark);
@@ -1154,8 +1223,26 @@
 </head>
 <body>
 
+<!-- Login Screen -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">ACIS</div>
+    <div class="login-subtitle">알루미늄 코일 수입 인텔리전스 시스템</div>
+    <div class="login-field">
+      <label for="login-id">아이디</label>
+      <input type="text" id="login-id" class="login-input" placeholder="아이디를 입력하세요" autocomplete="username">
+    </div>
+    <div class="login-field">
+      <label for="login-pw">비밀번호</label>
+      <input type="password" id="login-pw" class="login-input" placeholder="비밀번호를 입력하세요" autocomplete="current-password">
+    </div>
+    <button class="login-btn" onclick="doLogin()">로그인</button>
+    <div class="login-error" id="login-error"></div>
+  </div>
+</div>
+
 <!-- Loading Overlay -->
-<div id="loading-overlay">
+<div id="loading-overlay" style="display:none">
   <div class="loading-logo">ACIS</div>
   <div class="loading-sub">알루미늄 코일 수입 인텔리전스 시스템 초기화 중...</div>
   <div class="loading-bar"><div class="loading-progress"></div></div>
@@ -1175,6 +1262,10 @@
       <div class="header-time">
         <div><span class="live-dot"></span><span id="data-source-badge" style="background:#888;color:#fff;font-size:0.7rem;padding:2px 8px;border-radius:10px;font-weight:600;">데이터 로딩중...</span></div>
         <div>최종 갱신: <span id="last-updated">--</span></div>
+      </div>
+      <div class="header-user">
+        <span class="header-user-name" id="header-user-name"></span>
+        <button class="header-logout-btn" onclick="doLogout()">로그아웃</button>
       </div>
     </div>
   </div>
@@ -2303,13 +2394,65 @@ const suppliers = [
 ];
 
 // ===================== DOM INIT =====================
+// ===================== LOGIN =====================
+const ACIS_USERS = {
+  admin:  'hjmaster',
+  kimks:  'hj3547',
+  byunjs: 'hj8179',
+  choih:  'hj8568',
+  choiys: 'hj5511',
+};
+
+document.getElementById('login-pw').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doLogin();
+});
+document.getElementById('login-id').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('login-pw').focus();
+});
+
+function doLogin() {
+  const id  = document.getElementById('login-id').value.trim();
+  const pw  = document.getElementById('login-pw').value;
+  const err = document.getElementById('login-error');
+  if (!id || !pw) { err.textContent = '아이디와 비밀번호를 입력하세요.'; return; }
+  if (!ACIS_USERS[id] || ACIS_USERS[id] !== pw) {
+    err.textContent = '아이디 또는 비밀번호가 올바르지 않습니다.';
+    document.getElementById('login-pw').value = '';
+    document.getElementById('login-pw').focus();
+    return;
+  }
+  sessionStorage.setItem('acis_user', id);
+  const ls = document.getElementById('login-screen');
+  ls.classList.add('hidden');
+  setTimeout(() => ls.style.display = 'none', 400);
+  document.getElementById('header-user-name').textContent = id;
+  startApp();
+}
+
+function doLogout() {
+  sessionStorage.removeItem('acis_user');
+  location.reload();
+}
+
+// ===================== APP INIT =====================
 document.addEventListener('DOMContentLoaded', async () => {
+  const savedUser = sessionStorage.getItem('acis_user');
+  if (!savedUser) return; // 로그인 화면이 대기 중
+  document.getElementById('header-user-name').textContent = savedUser;
+  startApp();
+});
+
+async function startApp() {
+  // 로딩 오버레이 표시
+  const overlay = document.getElementById('loading-overlay');
+  overlay.style.display = 'flex';
+  overlay.classList.remove('fade-out');
+
   // 실제 데이터 로드 → 파생값 계산 → 렌더링
   await loadRealData();
   computeDerived();
 
   // Remove loading
-  const overlay = document.getElementById('loading-overlay');
   overlay.classList.add('fade-out');
   setTimeout(() => overlay.style.display='none', 500);
 
@@ -2392,7 +2535,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // SHFE 참고 패널 초기값
   const shfeEl = document.getElementById('mkt-shfe-val');
   if (shfeEl) shfeEl.textContent = lastLme ? fmtNum(lastLme, 0) : '--';
-});
+}
 
 // ===================== SIGNAL PANEL =====================
 function renderSignalPanel() {
