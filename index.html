@@ -1884,8 +1884,11 @@ Best regards,
         <div class="form-row">
           <div class="form-group">
             <label class="form-label">발주 수량 (㎡)</label>
-            <input class="form-control" type="number" id="sim-qty" value="2800" min="1" max="100000" step="100">
-            <div style="font-size:0.66rem;color:var(--text-muted);margin-top:3px;">※ 1×40'HQ = 2,800㎡ (18톤 기준)</div>
+            <input class="form-control" type="number" id="sim-qty" value="55350" min="1" max="200000" step="100">
+            <div style="font-size:0.66rem;color:var(--text-muted);margin-top:3px;">
+              ※ 1×40'HQ ≈ <span id="sim-qty-hint">55,350</span>㎡
+              (18톤 ÷ <span id="sim-weight-hint">0.3252</span>kg/㎡ · 두께에 따라 자동 변경)
+            </div>
           </div>
           <div class="form-group">
             <label class="form-label">중국 단가 (CNY/㎡) <span class="auto-tag">제품선택 자동</span></label>
@@ -2010,7 +2013,12 @@ Best regards,
         <tr class="sdp-total-row"><td colspan="2">합계 (USD 환산 + KRW)</td><td><span id="sdp-total">--원</span></td></tr>
         <tr class="sdp-sqm-row">
           <td>㎡당 운임</td>
-          <td style="color:var(--text-muted);font-size:0.72rem;">기준 <input class="sdp-input" type="number" id="sdp-qty" value="2800" min="1" max="99999" step="100" oninput="recalcShipping()" style="width:70px;display:inline-block;"> ㎡</td>
+          <td style="color:var(--text-muted);font-size:0.72rem;">
+            기준 <input class="sdp-input" type="number" id="sdp-qty" value="55350" min="1" max="200000" step="100" oninput="recalcShipping()" style="width:80px;display:inline-block;"> ㎡
+            <span style="color:var(--text-muted);font-size:0.62rem;display:block;margin-top:2px;">
+              18톤 ÷ <span id="sdp-weight-hint">0.3252</span>kg/㎡ (자동 산출)
+            </span>
+          </td>
           <td style="color:var(--gold);font-weight:800;" id="sdp-sqm-rate">-- 원/㎡</td>
         </tr>
       </table>
@@ -2366,7 +2374,8 @@ async function loadRealData() {
 }
 
 // ===================== SUPPLIERS =====================
-const suppliers = [
+// admin.html이 localStorage('acis_suppliers')에 저장한 값이 있으면 startApp()에서 덮어씀
+let suppliers = [
   { rank:1, name:'Chalco (中国铝业公司)', nameShort:'Chalco', score:88.0, tier:1,
     cap:95, qual:88, fin:95, logi:80, price:68,
     location:'베이징 / 전국',
@@ -2472,6 +2481,37 @@ async function startApp() {
   overlay.style.display = 'flex';
   overlay.classList.remove('fade-out');
 
+  // admin.html이 저장한 공급업체 데이터를 우선 사용
+  try {
+    const stored = localStorage.getItem('acis_suppliers');
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        suppliers = parsed
+          .map(s => {
+            const score = typeof s.score === 'number' ? s.score
+              : parseFloat(((s.cap*25 + s.qual*30 + s.fin*20 + s.logi*15 + s.price*10) / 100).toFixed(1));
+            return {
+              ...s,
+              score,
+              tier:     s.tier     || (score >= 80 ? 1 : score >= 60 ? 2 : 0),
+              location: s.location || '-',
+              desc:     s.desc     || '-',
+              tips:     s.tips     || '-',
+              moq:      s.moq      || '-',
+              contact:  s.contact  || '-',
+            };
+          })
+          .sort((a, b) => b.score - a.score)
+          .map((s, i) => ({ ...s, rank: i + 1 }))
+          .slice(0, 5);
+        console.info('[ACIS] admin 저장 공급업체 데이터 사용 (' + suppliers.length + '건)');
+      }
+    }
+  } catch (e) {
+    console.warn('[ACIS] localStorage 공급업체 파싱 실패, 기본 데이터 사용:', e.message);
+  }
+
   // 실제 데이터 로드 → 파생값 계산 → 렌더링
   await loadRealData();
   computeDerived();
@@ -2553,6 +2593,9 @@ async function startApp() {
   const sdpFxEl = document.getElementById('sdp-fx-rate');
   if (sdpFxEl) sdpFxEl.textContent = fmtNum(remitUsd, 0) + '원';
 
+  // 컨테이너 ㎡ 환산값 초기 동기화 (현재 두께 기준)
+  syncContainerSqm();
+
   recalcShipping();
   calculateSimulator();
 
@@ -2582,6 +2625,13 @@ function renderSignalPanel() {
     const enLabels = { buy:'BUY', wait:'WAIT', avoid:'AVOID' };
     badge.innerHTML = labels[s.signal] + '<small>' + enLabels[s.signal] + '</small>';
     badge.className = 'signal-big-badge ' + s.signal;
+
+    // Factor list (bullet) DOM 갱신
+    const ulId = (s.id === 'short') ? 'signal-short-factors' : 'signal-long-factors';
+    const ul = document.getElementById(ulId);
+    if (ul && Array.isArray(s.factors)) {
+      ul.innerHTML = s.factors.map(t => `<li>${t}</li>`).join('');
+    }
 
     // Bar
     const pct = ((currentRPCI - s.ma)/s.ma*100);
@@ -3036,6 +3086,33 @@ function updateMktGap() {
     : 'SMM < SHFE: 실물 공급 여유. 가격 인하 협상 가능.';
 }
 
+// ===================== 컨테이너 ㎡ 자동 환산 =====================
+const CONTAINER_TONS = 18; // 40'HQ 적재 기준 톤수
+
+// 현재 선택된 두께(kg/㎡)를 기준으로 40'HQ 한 컨테이너 부피의 ㎡ 환산값 반환
+function getContainerSqm() {
+  const weight = parseFloat(document.getElementById('cci-weight').value) || 0.3252;
+  if (weight <= 0) return 55350;
+  return Math.floor(CONTAINER_TONS * 1000 / weight);
+}
+
+// 컨테이너 ㎡ 환산값을 sdp-qty 및 안내 문구에 반영
+function syncContainerSqm() {
+  const containerSqm = getContainerSqm();
+  const weight = parseFloat(document.getElementById('cci-weight').value) || 0.3252;
+  const fmt = (n) => n.toLocaleString('ko-KR');
+
+  const sdpQtyEl = document.getElementById('sdp-qty');
+  if (sdpQtyEl) sdpQtyEl.value = containerSqm;
+
+  const simHint    = document.getElementById('sim-qty-hint');
+  const simWeight  = document.getElementById('sim-weight-hint');
+  const sdpWeight  = document.getElementById('sdp-weight-hint');
+  if (simHint)    simHint.textContent   = fmt(containerSqm);
+  if (simWeight)  simWeight.textContent = weight;
+  if (sdpWeight)  sdpWeight.textContent = weight;
+}
+
 // 단가 구성 재계산 — 입력값 변경 시 호출
 function recalcCostComp() {
   const alPrice  = parseFloat(document.getElementById('cci-al-price').value)  || 0;
@@ -3053,6 +3130,10 @@ function recalcCostComp() {
 
   // 계산기 중국단가 필드 자동 연동
   document.getElementById('sim-cny-sqm').value = unitPrice;
+
+  // 두께(kg/㎡) 변경 시 컨테이너 ㎡ 자동 갱신 → 운임 재계산
+  syncContainerSqm();
+  if (typeof recalcShipping === 'function') recalcShipping();
 }
 
 // 국내 비교가 동기화
@@ -3099,6 +3180,9 @@ function selectProduct(id) {
   else if (p.hscode === '7607.11.9000') document.getElementById('hs-7607a').classList.add('hs-active');
   else if (p.hscode === '7607.20.1000') document.getElementById('hs-7607b').classList.add('hs-active');
   else if (p.hscode === '7607.20.9000') document.getElementById('hs-7607c').classList.add('hs-active');
+
+  // 시뮬레이터 발주수량을 새 컨테이너 기준으로 초기화
+  document.getElementById('sim-qty').value = getContainerSqm();
 }
 
 function recalcShipping() {
@@ -3258,7 +3342,7 @@ window.addEventListener('scroll', () => {
 
 // ===================== SIMULATOR REALTIME =====================
 document.addEventListener('DOMContentLoaded', () => {
-  ['sim-qty','sim-lme','sim-cny','sim-usd','sim-tariff','sim-misc'].forEach(id => {
+  ['sim-qty','sim-cny-sqm','sim-cny','sim-shipping','sim-tariff','sim-domestic'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.addEventListener('input', () => calculateSimulator());
   });
