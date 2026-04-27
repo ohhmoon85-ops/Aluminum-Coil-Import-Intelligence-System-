@@ -4592,6 +4592,11 @@ function calculateSimulator() {
     currentBEPPrice = null;
   }
   if (typeof priceChart !== 'undefined' && priceChart) priceChart.update('none');
+
+  // 확인 3: PCB 계산기 상단 "적용 환율" 표시도 sim-cny와 동기화
+  // (P3-A 슬라이더로 sim-cny 변경 시, 수동 입력 시 모두 일관성 유지)
+  const cciFxEl = document.getElementById('cci-fx-rate');
+  if (cciFxEl) cciFxEl.innerHTML = rate.toFixed(1) + ' <span>원/위안</span>';
 }
 
 // ===================== SCROLL NAV =====================
