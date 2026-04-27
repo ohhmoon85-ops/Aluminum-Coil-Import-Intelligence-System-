@@ -144,6 +144,49 @@
   .chart-accuracy.acc-poor { color: var(--yellow); }
   .chart-accuracy strong { color: var(--text-primary); font-weight: 600; }
 
+  /* ===== P2-A 시나리오 토글 ===== */
+  .scenario-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 0.8rem; flex-wrap: wrap;
+    padding: 0.5rem 0.7rem; margin: 0.4rem 0 0.6rem;
+    background: rgba(255,255,255,0.025); border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+  .scenario-toggle-group { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; }
+  .scenario-label { font-size: 0.75rem; color: var(--text-secondary); margin-right: 0.2rem; font-weight: 600; }
+  .scenario-btn {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.10);
+    color: var(--text-secondary);
+    padding: 0.3rem 0.7rem;
+    border-radius: 6px;
+    font-size: 0.78rem; font-family: inherit; cursor: pointer;
+    transition: all 0.18s;
+    white-space: nowrap;
+  }
+  .scenario-btn:hover { background: rgba(255,255,255,0.08); color: var(--text-primary); }
+  .scenario-btn.active[data-scenario="bull"] { background: rgba(34,197,94,0.18); border-color: rgba(34,197,94,0.55); color: #4ade80; font-weight: 700; }
+  .scenario-btn.active[data-scenario="base"] { background: rgba(168,85,247,0.18); border-color: rgba(168,85,247,0.55); color: #c084fc; font-weight: 700; }
+  .scenario-btn.active[data-scenario="bear"] { background: rgba(239,68,68,0.18); border-color: rgba(239,68,68,0.55); color: #f87171; font-weight: 700; }
+  .scenario-mini-cards { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+  .scenario-mini {
+    font-size: 0.7rem; padding: 0.2rem 0.55rem;
+    border-radius: 5px; border: 1px solid rgba(255,255,255,0.10);
+    background: rgba(255,255,255,0.025);
+    color: var(--text-secondary);
+    white-space: nowrap;
+  }
+  .scenario-mini strong { color: var(--text-primary); font-weight: 700; margin-left: 4px; }
+  .scenario-mini.is-active { border-color: currentColor; }
+  .scenario-mini.s-bull.is-active { color: #4ade80; }
+  .scenario-mini.s-base.is-active { color: #c084fc; }
+  .scenario-mini.s-bear.is-active { color: #f87171; }
+  @media (max-width: 640px) {
+    .scenario-bar { padding: 0.4rem 0.5rem; }
+    .scenario-btn { padding: 0.25rem 0.55rem; font-size: 0.72rem; }
+    .scenario-mini { font-size: 0.65rem; padding: 0.18rem 0.45rem; }
+  }
+
   /* 섹션 데이터 출처 바 */
   .data-source-bar {
     font-size: 0.7rem; color: var(--text-secondary);
@@ -1486,6 +1529,20 @@
           <div class="legend-item"><div class="legend-dot" style="background:#a855f7;"></div><span style="border-bottom:1px dashed #a855f7;">예측</span></div>
         </div>
       </div>
+
+      <!-- P2-A: 시나리오 토글 -->
+      <div class="scenario-bar">
+        <div class="scenario-toggle-group">
+          <span class="scenario-label">시나리오:</span>
+          <button class="scenario-btn" data-scenario="bull"  onclick="setScenario('bull')"  title="원자재 가격 상승 가속 + 원화 강세">🐂 낙관</button>
+          <button class="scenario-btn active" data-scenario="base" onclick="setScenario('base')" title="현재 모델 추세 그대로 진행">📊 기준</button>
+          <button class="scenario-btn" data-scenario="bear"  onclick="setScenario('bear')"  title="수요 둔화 + 원화 약세 위험">🐻 비관</button>
+        </div>
+        <div class="scenario-mini-cards" id="scenario-mini-cards">
+          <!-- JS로 채워짐 -->
+        </div>
+      </div>
+
       <canvas id="priceChart"></canvas>
     </div>
   </section>
@@ -2328,6 +2385,159 @@ function ensembleForecast(data, horizon) {
     rmse: avgRmse };
 }
 
+// ===================== 시나리오 (P2-A) =====================
+// Base = 모델 그대로. Bull/Bear는 SHFE 추세에 multiplier 적용 + 환율 fxDelta 가산.
+// 기존 lmePred/cnyPred 등은 변경하지 않고 별도 변수에 결과 저장 → 차트만 영향.
+
+let currentScenario = 'base';
+let scenarioLmePred = null, scenarioLmeUpper = null, scenarioLmeLower = null;
+let scenarioCnyPred = null, scenarioCnyUpper = null, scenarioCnyLower = null;
+let scenarioOverlaySignal = null; // P1-B 음영 오버레이용 시나리오 기반 신호
+
+// 14일 모멘텀(일별 평균 변화율) 산출
+function calcMomentum(arr, window) {
+  if (!Array.isArray(arr) || arr.length < window + 1) return 0;
+  const tail = arr.slice(-window - 1);
+  let sum = 0;
+  for (let i = 1; i < tail.length; i++) sum += (tail[i] - tail[i-1]);
+  return sum / window;
+}
+
+// SHFE 시나리오 변형: 기준 예측 + (모멘텀 × multiplier × 일수)
+// Bear는 평균회귀 강화 (장기 평균으로 수렴)
+// Base (multiplier=1.0, meanReversion=undefined)는 원본 그대로 반환
+function applyShfeScenario(basePred, baseUpper, baseLower, history, scenarioCfg) {
+  if (scenarioCfg.shfeMultiplier === 1.0 && !scenarioCfg.meanReversion && scenarioCfg.ciMultiplier === 1.0) {
+    return { pred: [...basePred], upper: [...baseUpper], lower: [...baseLower] };
+  }
+  const horizon = basePred.length;
+  const lastReal = history[history.length - 1];
+  const histMean = history.reduce((a,b)=>a+b,0) / history.length;
+  const momentum = calcMomentum(history, 14);
+
+  const adjustedBase = momentum * scenarioCfg.shfeMultiplier;
+  const newPred = basePred.map((v, i) => {
+    let drift = adjustedBase * (i + 1);
+    let target = lastReal + drift;
+    if (scenarioCfg.meanReversion) {
+      // bear: 14일 후부터 평균회귀 가중 (50% blend)
+      const blend = Math.min(1, (i + 1) / 14) * 0.5;
+      target = target * (1 - blend) + histMean * blend;
+    }
+    return Math.round(target);
+  });
+  // 신뢰구간은 base 폭 × ciMultiplier로 재계산
+  const newUpper = baseUpper.map((u, i) => {
+    const halfWidth = (u - basePred[i]) * scenarioCfg.ciMultiplier;
+    return Math.round(newPred[i] + halfWidth);
+  });
+  const newLower = baseLower.map((l, i) => {
+    const halfWidth = (basePred[i] - l) * scenarioCfg.ciMultiplier;
+    return Math.round(newPred[i] - halfWidth);
+  });
+  return { pred: newPred, upper: newUpper, lower: newLower };
+}
+
+// CNY/KRW 시나리오 변형: 기준 예측의 마지막 값에 fxDelta 가산 (선형 보간)
+// Base (fxDelta=0, ciMultiplier=1.0)는 원본 그대로 반환
+function applyCnyScenario(basePred, baseUpper, baseLower, history, scenarioCfg) {
+  if (scenarioCfg.fxDelta === 0 && scenarioCfg.ciMultiplier === 1.0) {
+    return { pred: [...basePred], upper: [...baseUpper], lower: [...baseLower] };
+  }
+  const horizon = basePred.length;
+  const lastReal = history[history.length - 1];
+  const finalDelta = lastReal * scenarioCfg.fxDelta; // ±2~3%
+  // 일별 선형 보간 (1일째 0 → horizon일째 finalDelta)
+  const newPred = basePred.map((v, i) => {
+    const frac = (i + 1) / horizon;
+    return parseFloat((v + finalDelta * frac).toFixed(2));
+  });
+  const newUpper = baseUpper.map((u, i) => {
+    const halfWidth = (u - basePred[i]) * scenarioCfg.ciMultiplier;
+    return parseFloat((newPred[i] + halfWidth).toFixed(2));
+  });
+  const newLower = baseLower.map((l, i) => {
+    const halfWidth = (basePred[i] - l) * scenarioCfg.ciMultiplier;
+    return parseFloat((newPred[i] - halfWidth).toFixed(2));
+  });
+  return { pred: newPred, upper: newUpper, lower: newLower };
+}
+
+// 모든 시나리오 결과 사전 계산 (캐시)
+const scenarioResultsCache = {};
+function computeScenarioResults() {
+  const scenarios = (window.ACIS_CONFIG && window.ACIS_CONFIG.scenarios) || {};
+  for (const key of ['bull','base','bear']) {
+    const cfg = scenarios[key];
+    if (!cfg) continue;
+    const shfe = applyShfeScenario(lmePred, lmePredUpper, lmePredLower, lmeHist, cfg);
+    const cny  = applyCnyScenario(cnyPred, cnyPredUpper, cnyPredLower, cnyHist, cfg);
+    // 시나리오별 RPCI 평균으로 신호 계산 (P1-B 음영 오버레이 색상 결정)
+    const futureRPCI = shfe.pred.map((s, i) => calcRPCI(s, cny.pred[i]));
+    const meanRPCI = futureRPCI.reduce((a,b)=>a+b,0) / futureRPCI.length;
+    const ma60 = currentMA60 || meanRPCI;
+    const diff = (meanRPCI - ma60) / ma60 * 100;
+    const sigCfg = (window.ACIS_CONFIG && window.ACIS_CONFIG.signal) || { waitBand: 3 };
+    let sig = 'wait';
+    if (diff < -sigCfg.waitBand) sig = 'buy';
+    else if (diff > sigCfg.waitBand) sig = 'avoid';
+    scenarioResultsCache[key] = { ...shfe, cny, futureMeanShfe: shfe.pred[shfe.pred.length-1], futureMeanCny: cny.pred[cny.pred.length-1], signal: sig, diffMA: diff };
+  }
+}
+
+function setScenario(key) {
+  if (!scenarioResultsCache[key]) return;
+  currentScenario = key;
+  const r = scenarioResultsCache[key];
+
+  // 시나리오 결과를 활성 변수에 반영
+  scenarioLmePred  = r.pred;
+  scenarioLmeUpper = r.upper;
+  scenarioLmeLower = r.lower;
+  scenarioCnyPred  = r.cny.pred;
+  scenarioCnyUpper = r.cny.upper;
+  scenarioCnyLower = r.cny.lower;
+  scenarioOverlaySignal = r.signal;
+
+  // 토글 UI
+  document.querySelectorAll('.scenario-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.scenario === key);
+  });
+  document.querySelectorAll('.scenario-mini').forEach(el => {
+    el.classList.toggle('is-active', el.dataset.scenario === key);
+  });
+
+  // 차트 다시 그리기 (현재 모드 유지)
+  if (typeof priceChart !== 'undefined' && priceChart) {
+    const { labels, datasets } = buildPriceDatasets(priceMode);
+    priceChart.data.labels = labels;
+    priceChart.data.datasets = datasets;
+    priceChart.update('none');
+  }
+  if (typeof fxChart !== 'undefined' && fxChart) {
+    const built = buildFxDatasets(fxMode);
+    fxChart.data.labels = built.labels;
+    fxChart.data.datasets = built.datasets;
+    fxChart.options.scales.y.title.text = built.yAxisLeft || '';
+    fxChart.update('none');
+  }
+}
+
+function renderScenarioMiniCards() {
+  const container = document.getElementById('scenario-mini-cards');
+  if (!container) return;
+  const scenarios = (window.ACIS_CONFIG && window.ACIS_CONFIG.scenarios) || {};
+  const order = ['bull','base','bear'];
+  container.innerHTML = order.map(k => {
+    const cfg = scenarios[k];
+    const r = scenarioResultsCache[k];
+    if (!cfg || !r) return '';
+    const isActive = k === currentScenario ? 'is-active' : '';
+    const fmt = Math.round(r.futureMeanShfe).toLocaleString('ko-KR');
+    return `<span class="scenario-mini s-${k} ${isActive}" data-scenario="${k}">${cfg.shortName} <strong>¥${fmt}</strong></span>`;
+  }).join('');
+}
+
 // ===================== 백테스트 (P1-C) =====================
 // historicalData의 마지막 horizon일을 검증 데이터로 사용해 모델 정확도 측정
 // MAPE = mean(|actual - predicted| / actual) × 100
@@ -2768,6 +2978,9 @@ async function startApp() {
   // P1-C 백테스트 정확도 (일자별 캐시)
   renderAccuracyLabel('acc-price', getBacktestCached('lme', lmeHist));
   renderAccuracyLabel('acc-fx',    getBacktestCached('cny', cnyHist));
+  // P2-A 시나리오 결과 사전 계산 + 미니 카드 표시
+  computeScenarioResults();
+  renderScenarioMiniCards();
   initPriceChart();
   initFxChart();
   renderSupplierTable();
@@ -2963,11 +3176,18 @@ function getSignalFactors(signal, type) {
 // ===================== Chart.js 공용 플러그인 (P1-B, P1-D) =====================
 
 // P1-B: 예측 구간(우측 30일)에 RPCI 신호 기반 배경 음영
+// P2-A 연동: 시나리오 활성 시 scenarioOverlaySignal 우선 사용 (시나리오 기반 미래 RPCI)
 const signalOverlayPlugin = {
   id: 'signalOverlay',
   beforeDatasetsDraw(chart) {
     if (!chart.options?.plugins?.signalOverlay?.enabled) return;
-    if (typeof shortSignal === 'undefined' || !shortSignal) return;
+    // base 시나리오: 현재 신호(shortSignal) 사용 → KPI와 일관
+    // bull/bear 시나리오: 미래 RPCI 평균 기반 신호(scenarioOverlaySignal) 사용
+    const inScenario = (typeof currentScenario !== 'undefined' && currentScenario !== 'base');
+    const activeSig = (inScenario && scenarioOverlaySignal)
+      ? scenarioOverlaySignal
+      : (typeof shortSignal !== 'undefined' ? shortSignal : null);
+    if (!activeSig) return;
 
     const cfg = (window.ACIS_CONFIG && window.ACIS_CONFIG.signalOverlay) || {
       buy:   'rgba(34,197,94,0.12)',
@@ -2992,11 +3212,16 @@ const signalOverlayPlugin = {
     const top = yScale.top;
     const bottom = yScale.bottom;
 
-    const fillColor  = cfg[shortSignal] || cfg.wait;
-    const labelColor = (cfg.labelColors && cfg.labelColors[shortSignal]) || '#9aa3ba';
-    const labelText  = shortSignal === 'buy' ? '매수 권고 구간'
-                     : shortSignal === 'avoid' ? '자제 권고 구간'
-                     : '관망 구간';
+    const fillColor  = cfg[activeSig] || cfg.wait;
+    const labelColor = (cfg.labelColors && cfg.labelColors[activeSig]) || '#9aa3ba';
+    const scenarioPrefix = (typeof currentScenario !== 'undefined' && currentScenario && currentScenario !== 'base')
+      ? `[${(window.ACIS_CONFIG?.scenarios?.[currentScenario]?.shortName) || ''}] `
+      : '';
+    const labelText  = scenarioPrefix + (
+        activeSig === 'buy' ? '매수 권고 구간'
+      : activeSig === 'avoid' ? '자제 권고 구간'
+      : '관망 구간'
+    );
 
     const ctx = chart.ctx;
     ctx.save();
@@ -3024,6 +3249,48 @@ const signalOverlayPlugin = {
   },
 };
 
+// 공용 헬퍼: BEP 가로선 + 라벨 박스 그리기 (라벨이 차트 상단 벗어나면 라인 아래쪽으로)
+function drawBepLine(chart, value, label) {
+  const cfg = (window.ACIS_CONFIG && window.ACIS_CONFIG.bep) || { lineColor: '#fbbf24', lineWidth: 1.5, lineDash: [6, 4] };
+  const yScale = chart.scales.y;
+  const xScale = chart.scales.x;
+  if (!yScale || !xScale) return;
+
+  const y = yScale.getPixelForValue(value);
+  if (y < yScale.top || y > yScale.bottom) return;
+
+  const ctx = chart.ctx;
+  ctx.save();
+  ctx.strokeStyle = cfg.lineColor;
+  ctx.lineWidth = cfg.lineWidth;
+  ctx.setLineDash(cfg.lineDash);
+  ctx.beginPath();
+  ctx.moveTo(xScale.left, y);
+  ctx.lineTo(xScale.right, y);
+  ctx.stroke();
+
+  // 라벨 박스
+  ctx.font = 'bold 11px "Malgun Gothic", sans-serif';
+  const textWidth = ctx.measureText(label).width;
+  const padX = 6, padY = 3;
+  const boxX = xScale.left + 6;
+  const boxH = 16;
+  // 라인 위쪽이 기본, 위쪽 공간 부족하면 아래쪽으로
+  let boxY = y - padY - boxH;
+  if (boxY < yScale.top + 2) boxY = y + 4;
+
+  ctx.setLineDash([]);
+  ctx.fillStyle = 'rgba(17,29,53,0.9)';
+  ctx.fillRect(boxX, boxY, textWidth + padX * 2, boxH);
+  ctx.strokeStyle = cfg.lineColor;
+  ctx.lineWidth = 1;
+  ctx.strokeRect(boxX, boxY, textWidth + padX * 2, boxH);
+  ctx.fillStyle = cfg.lineColor;
+  ctx.textBaseline = 'top';
+  ctx.fillText(label, boxX + padX, boxY + 2);
+  ctx.restore();
+}
+
 // P1-D: 손익분기 환율(BEP) 가로선 — 환율 차트의 CNY/KRW 축에만 그림
 let currentBEP = null; // calculateSimulator()에서 갱신
 const bepLinePlugin = {
@@ -3031,46 +3298,25 @@ const bepLinePlugin = {
   afterDatasetsDraw(chart) {
     if (!chart.options?.plugins?.bepLine?.enabled) return;
     if (currentBEP == null || !isFinite(currentBEP)) return;
+    // CNY/KRW 축만 (USD 단독 모드 + 가격 차트 모두 제외)
+    const yTitle = chart.scales.y?.options?.title?.text || '';
+    if (yTitle.indexOf('CNY/KRW') === -1) return;
+    drawBepLine(chart, currentBEP, `BEP ${currentBEP.toFixed(1)}`);
+  },
+};
 
-    const cfg = (window.ACIS_CONFIG && window.ACIS_CONFIG.bep) || { lineColor: '#fbbf24', lineWidth: 1.5, lineDash: [6, 4] };
-    const yScale = chart.scales.y;  // CNY/KRW 축
-    const xScale = chart.scales.x;
-    if (!yScale || !xScale) return;
-
-    // USD 단독 모드(yAxisLeft = 'USD/KRW')에서는 BEP 라인 숨김
-    const yTitle = yScale.options?.title?.text || '';
-    if (yTitle.indexOf('CNY') === -1) return;
-
-    const y = yScale.getPixelForValue(currentBEP);
-    if (y < yScale.top || y > yScale.bottom) return;
-
-    const ctx = chart.ctx;
-    ctx.save();
-    ctx.strokeStyle = cfg.lineColor;
-    ctx.lineWidth = cfg.lineWidth;
-    ctx.setLineDash(cfg.lineDash);
-    ctx.beginPath();
-    ctx.moveTo(xScale.left, y);
-    ctx.lineTo(xScale.right, y);
-    ctx.stroke();
-
-    // 라벨 박스
-    const label = `BEP ${currentBEP.toFixed(1)}`;
-    ctx.font = 'bold 11px "Malgun Gothic", sans-serif';
-    const textWidth = ctx.measureText(label).width;
-    const padX = 6, padY = 3;
-    const boxX = xScale.left + 6;
-    const boxY = y - padY - 12;
-    ctx.setLineDash([]);
-    ctx.fillStyle = 'rgba(17,29,53,0.9)';
-    ctx.fillRect(boxX, boxY, textWidth + padX * 2, 16);
-    ctx.strokeStyle = cfg.lineColor;
-    ctx.lineWidth = 1;
-    ctx.strokeRect(boxX, boxY, textWidth + padX * 2, 16);
-    ctx.fillStyle = cfg.lineColor;
-    ctx.textBaseline = 'top';
-    ctx.fillText(label, boxX + padX, boxY + 2);
-    ctx.restore();
+// 옵션 A: 가격 차트의 SHFE BEP 가격 가로선
+// alPrice/SHFE 비율이 유지된다는 가정 하에 손익분기 SHFE 가격 산출
+let currentBEPPrice = null;
+const bepPriceLinePlugin = {
+  id: 'bepPriceLine',
+  afterDatasetsDraw(chart) {
+    if (!chart.options?.plugins?.bepPriceLine?.enabled) return;
+    if (currentBEPPrice == null || !isFinite(currentBEPPrice)) return;
+    // 가격 차트(CNY/MT)만
+    const yTitle = chart.scales.y?.options?.title?.text || '';
+    if (yTitle.indexOf('CNY/MT') === -1) return;
+    drawBepLine(chart, currentBEPPrice, `BEP ¥${Math.round(currentBEPPrice).toLocaleString('ko-KR')}`);
   },
 };
 
@@ -3083,10 +3329,24 @@ function buildPriceDatasets(mode) {
   const null90 = new Array(90).fill(null);
   const null30 = new Array(30).fill(null);
 
+  // P2-A: 시나리오 활성 시 시나리오 예측값 사용 (base는 원본 그대로)
+  const useScn = (typeof currentScenario !== 'undefined' && currentScenario !== 'base' && scenarioLmePred);
+  const sCfg = (window.ACIS_CONFIG?.scenarios?.[currentScenario]) || {};
+  const predArr  = useScn ? scenarioLmePred  : lmePred;
+  const upperArr = useScn ? scenarioLmeUpper : lmePredUpper;
+  const lowerArr = useScn ? scenarioLmeLower : lmePredLower;
+  const predColor = useScn ? sCfg.color : '#a855f7';
+  const ciRgba = useScn
+    ? (sCfg.color === '#22c55e' ? 'rgba(34,197,94,'
+       : sCfg.color === '#ef4444' ? 'rgba(239,68,68,'
+       : 'rgba(168,85,247,')
+    : 'rgba(168,85,247,';
+  const predLabel = useScn ? `예측가격 (${sCfg.shortName})` : '예측가격';
+
   const histData  = [...lmeHist, ...null30];
-  const predData  = [...null90, ...lmePred];
-  const upperData = [...null90, ...lmePredUpper];
-  const lowerData = [...null90, ...lmePredLower];
+  const predData  = [...null90, ...predArr];
+  const upperData = [...null90, ...upperArr];
+  const lowerData = [...null90, ...lowerArr];
   predData[89] = lmeHist[89]; // 연결점
   upperData[89] = lmeHist[89];
   lowerData[89] = lmeHist[89];
@@ -3109,17 +3369,17 @@ function buildPriceDatasets(mode) {
   } else if (mode === 'pred') {
     labels = predDates;
     datasets = [
-      { label:'95% 신뢰상단', data:lmePredUpper, borderColor:'rgba(168,85,247,0.2)', borderWidth:0, pointRadius:0, fill:'+1', backgroundColor:'rgba(168,85,247,0.1)', tension:0.3 },
-      { label:'95% 신뢰하단', data:lmePredLower, borderColor:'rgba(168,85,247,0.2)', borderWidth:0, pointRadius:0, fill:false, tension:0.3 },
-      { label:'예측가격',    data:lmePred,       borderColor:'#a855f7', borderWidth:2.5, pointRadius:0, tension:0.3, fill:false, borderDash:[6,3] },
+      { label:'95% 신뢰상단', data:upperArr, borderColor:ciRgba+'0.2)', borderWidth:0, pointRadius:0, fill:'+1', backgroundColor:ciRgba+'0.1)', tension:0.3 },
+      { label:'95% 신뢰하단', data:lowerArr, borderColor:ciRgba+'0.2)', borderWidth:0, pointRadius:0, fill:false, tension:0.3 },
+      { label:predLabel,    data:predArr,   borderColor:predColor, borderWidth:2.5, pointRadius:0, tension:0.3, fill:false, borderDash:[6,3] },
     ];
   } else {
     labels = allLabels;
     datasets = [
       { label:'실제가격',    data:histData,   borderColor:'#4e9af1', borderWidth:2, pointRadius:0, tension:0.3, fill:false },
-      { label:'95% 신뢰상단', data:upperData, borderColor:'rgba(168,85,247,0.15)', borderWidth:0, pointRadius:0, fill:'+1', backgroundColor:'rgba(168,85,247,0.1)', tension:0.3 },
-      { label:'95% 신뢰하단', data:lowerData, borderColor:'rgba(168,85,247,0.15)', borderWidth:0, pointRadius:0, fill:false, tension:0.3 },
-      { label:'예측가격',    data:predData,   borderColor:'#a855f7', borderWidth:2, pointRadius:0, tension:0.3, fill:false, borderDash:[6,3] },
+      { label:'95% 신뢰상단', data:upperData, borderColor:ciRgba+'0.15)', borderWidth:0, pointRadius:0, fill:'+1', backgroundColor:ciRgba+'0.1)', tension:0.3 },
+      { label:'95% 신뢰하단', data:lowerData, borderColor:ciRgba+'0.15)', borderWidth:0, pointRadius:0, fill:false, tension:0.3 },
+      { label:predLabel,    data:predData,   borderColor:predColor, borderWidth:2, pointRadius:0, tension:0.3, fill:false, borderDash:[6,3] },
       { label:'MA20',       data:ma20Full,   borderColor:'#f1a74e', borderWidth:1.5, pointRadius:0, tension:0.3, fill:false },
       { label:'MA60',       data:ma60Full,   borderColor:'#e0bf70', borderWidth:1.5, pointRadius:0, tension:0.3, fill:false, borderDash:[6,3] },
       { label:'볼린저 상단', data:bbUpperFull, borderColor:'rgba(78,154,241,0.35)', borderWidth:1, pointRadius:0, tension:0.3, fill:'+1', backgroundColor:'rgba(78,154,241,0.07)' },
@@ -3136,13 +3396,14 @@ function initPriceChart() {
   priceChart = new Chart(ctx, {
     type: 'line',
     data: { labels, datasets },
-    plugins: [signalOverlayPlugin],  // P1-B
+    plugins: [signalOverlayPlugin, bepPriceLinePlugin],  // P1-B + 옵션 A
     options: {
       responsive: true, maintainAspectRatio: true,
       interaction: { mode: 'index', intersect: false },
       plugins: {
         legend: { display: false },
         signalOverlay: { enabled: true },
+        bepPriceLine: { enabled: true },
         tooltip: {
           backgroundColor: 'rgba(17,29,53,0.95)',
           titleColor: '#c9a84c', bodyColor: '#e8eaf0',
@@ -3193,10 +3454,16 @@ function buildFxDatasets(mode) {
   const null30 = new Array(30).fill(null);
   const null89 = new Array(89).fill(null);
 
+  // P2-A: 시나리오 활성 시 시나리오 환율 예측값 사용
+  const useScn = (typeof currentScenario !== 'undefined' && currentScenario !== 'base' && scenarioCnyPred);
+  const cnyPredArr  = useScn ? scenarioCnyPred  : cnyPred;
+  const cnyUpperArr = useScn ? scenarioCnyUpper : cnyPredUpper;
+  const cnyLowerArr = useScn ? scenarioCnyLower : cnyPredLower;
+
   const cnyAll      = [...cnyHist, ...null30];
-  const cnyPredAll  = [...null89, cnyHist[89], ...cnyPred];
-  const cnyUpAll    = [...null89, cnyHist[89], ...cnyPredUpper];
-  const cnyLowAll   = [...null89, cnyHist[89], ...cnyPredLower];
+  const cnyPredAll  = [...null89, cnyHist[89], ...cnyPredArr];
+  const cnyUpAll    = [...null89, cnyHist[89], ...cnyUpperArr];
+  const cnyLowAll   = [...null89, cnyHist[89], ...cnyLowerArr];
   const usdAll      = [...usdHist, ...null30];
   const usdPredAll  = [...null89, usdHist[89], ...usdPred];
   const usdUpAll    = [...null89, usdHist[89], ...usdPredUpper];
@@ -3716,11 +3983,34 @@ function calculateSimulator() {
     beSubEl.style.color = 'var(--yellow)';
   }
 
-  // P1-D: 환율 차트 BEP 가로선 갱신 (사용자 입력 변경 시 즉시 반영)
+  // P1-D: 환율 차트 BEP 가로선 갱신
   if (isFinite(beRate) && beRate > 0) {
     currentBEP = beRate;
     if (typeof fxChart !== 'undefined' && fxChart) fxChart.update('none');
   }
+
+  // 옵션 A: 가격 차트 BEP SHFE 가격 가로선
+  // alPrice/SHFE 비율이 유지된다는 가정 하에 손익분기 SHFE 가격 산출
+  const alPriceCur  = parseFloat(document.getElementById('cci-al-price').value)  || 0;
+  const procCostCur = parseFloat(document.getElementById('cci-proc-cost').value) || 0;
+  const weightCur   = parseFloat(document.getElementById('cci-weight').value)    || 0;
+  if (alPriceCur > 0 && weightCur > 0 && typeof lastLme !== 'undefined' && lastLme > 0 && rate > 0) {
+    const cnyPerSqmBEP = (domestic / (1 + tariff) - shipping) / rate;
+    const alPriceBEP   = (cnyPerSqmBEP - procCostCur) / weightCur;
+    if (alPriceBEP > 0) {
+      const shfeBEP = lastLme * (alPriceBEP / alPriceCur);
+      if (isFinite(shfeBEP) && shfeBEP > 0) {
+        currentBEPPrice = shfeBEP;
+      } else {
+        currentBEPPrice = null;
+      }
+    } else {
+      currentBEPPrice = null;
+    }
+  } else {
+    currentBEPPrice = null;
+  }
+  if (typeof priceChart !== 'undefined' && priceChart) priceChart.update('none');
 }
 
 // ===================== SCROLL NAV =====================
