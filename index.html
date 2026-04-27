@@ -144,6 +144,116 @@
   .chart-accuracy.acc-poor { color: var(--yellow); }
   .chart-accuracy strong { color: var(--text-primary); font-weight: 600; }
 
+  /* ===== P3-A 예측 슬라이더 ===== */
+  .fcsim-card {
+    background: var(--navy-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.2rem 1.4rem;
+    box-shadow: var(--shadow-sm);
+  }
+  .fcsim-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-bottom: 1rem;
+  }
+  @media (max-width: 768px) {
+    .fcsim-row { grid-template-columns: 1fr; gap: 1.4rem; }
+  }
+  .fcsim-slider-block { display: flex; flex-direction: column; gap: 0.45rem; }
+  .fcsim-label {
+    display: flex; justify-content: space-between; align-items: baseline;
+    font-size: 0.78rem; color: var(--text-secondary); font-weight: 600;
+  }
+  .fcsim-value {
+    font-size: 1.15rem; font-weight: 800;
+    color: var(--gold); letter-spacing: 0.02em;
+  }
+  .fcsim-slider-wrap {
+    position: relative;
+    height: 28px;
+    display: flex; align-items: center;
+  }
+  .fcsim-ci-band {
+    position: absolute;
+    top: 50%; transform: translateY(-50%);
+    height: 6px;
+    background: linear-gradient(
+      to right,
+      rgba(239,68,68,0.22) 0%,
+      rgba(239,68,68,0.22) var(--ci-min, 30%),
+      rgba(34,197,94,0.18) var(--ci-min, 30%),
+      rgba(34,197,94,0.18) var(--ci-max, 70%),
+      rgba(239,68,68,0.22) var(--ci-max, 70%),
+      rgba(239,68,68,0.22) 100%
+    );
+    border-radius: 3px;
+    pointer-events: none;
+    width: 100%;
+  }
+  .fcsim-slider {
+    position: relative;
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 6px;
+    background: transparent;
+    cursor: pointer;
+    z-index: 2;
+  }
+  .fcsim-slider::-webkit-slider-runnable-track {
+    height: 6px; background: transparent;
+  }
+  .fcsim-slider::-moz-range-track {
+    height: 6px; background: transparent;
+  }
+  .fcsim-slider::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: var(--gold);
+    border: 2px solid var(--navy-dark);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+    cursor: pointer;
+    margin-top: -6px;
+    transition: transform 0.12s, background 0.12s;
+  }
+  .fcsim-slider::-webkit-slider-thumb:hover,
+  .fcsim-slider::-webkit-slider-thumb:active { transform: scale(1.15); }
+  .fcsim-slider::-moz-range-thumb {
+    width: 18px; height: 18px; border-radius: 50%;
+    background: var(--gold); border: 2px solid var(--navy-dark);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.4); cursor: pointer;
+  }
+  .fcsim-meta {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 0.7rem; color: var(--text-muted);
+  }
+  .fcsim-meta strong { color: var(--text-secondary); font-weight: 600; }
+  .fcsim-warn {
+    color: var(--red); font-weight: 700;
+    display: inline-flex; align-items: center; gap: 0.2rem;
+    opacity: 0; transition: opacity 0.2s;
+  }
+  .fcsim-warn.is-active { opacity: 1; }
+  .fcsim-actions {
+    display: flex; justify-content: space-between; align-items: center;
+    gap: 0.8rem; flex-wrap: wrap;
+    padding-top: 0.8rem;
+    border-top: 1px dashed rgba(255,255,255,0.08);
+  }
+  .fcsim-reset-btn {
+    background: rgba(201,168,76,0.10);
+    border: 1px solid rgba(201,168,76,0.35);
+    color: var(--gold);
+    padding: 0.45rem 0.9rem; border-radius: 7px;
+    font-size: 0.78rem; font-family: inherit; cursor: pointer;
+    transition: all 0.18s;
+  }
+  .fcsim-reset-btn:hover { background: rgba(201,168,76,0.20); }
+  .fcsim-hint { font-size: 0.7rem; color: var(--text-muted); }
+
   /* ===== P2-B 환율 위험구간 배지 ===== */
   .fx-danger-badge {
     display: inline-flex; align-items: center; gap: 0.3rem;
@@ -1424,6 +1534,7 @@
     <button class="nav-tab active" onclick="scrollToSection('sec-kpi', this)">① KPI 현황</button>
     <button class="nav-tab" onclick="scrollToSection('sec-price', this)">② 가격 추세</button>
     <button class="nav-tab" onclick="scrollToSection('sec-fx', this)">③ 환율 추세</button>
+    <button class="nav-tab" onclick="scrollToSection('sec-fcsim', this)">⚙ What-if</button>
     <button class="nav-tab" onclick="scrollToSection('sec-signal', this)">④ 구매 신호</button>
     <button class="nav-tab" onclick="scrollToSection('sec-supplier', this)">⑤ 공급업체 평가</button>
     <button class="nav-tab" onclick="scrollToSection('sec-sim', this)">⑥ 구매 시뮬레이터</button>
@@ -1583,6 +1694,57 @@
         </div>
       </div>
       <canvas id="fxChart"></canvas>
+    </div>
+  </section>
+
+  <hr class="section-divider">
+
+  <!-- P3-A: 30일 후 시나리오 슬라이더 (예측 ↔ PCB 계산기 양방향) -->
+  <section class="section" id="sec-fcsim">
+    <div class="section-header">
+      <div class="section-num">⚙</div>
+      <div class="section-title">예측 시나리오 시뮬레이션 <small style="font-size:0.7rem;color:var(--text-secondary);margin-left:8px;">슬라이더로 30일 후 가격·환율을 직접 설정 → 수입원가 즉시 갱신</small></div>
+      <div class="section-sub">PCB 계산기와 양방향 결합 — BEP 가로선이 차트에서 실시간 이동</div>
+    </div>
+    <div class="data-source-bar source-bar-calc"><span class="data-badge badge-pred">● 통계 예측</span> 슬라이더 기본값 = 모델 예측값 &nbsp;|&nbsp; <span class="data-badge badge-ref">● 참고용</span> 사용자 슬라이더 입력은 What-if 분석 — 실제 시장 검증 필요</div>
+
+    <div class="fcsim-card">
+      <div class="fcsim-row">
+        <div class="fcsim-slider-block">
+          <div class="fcsim-label">
+            <span>30일 후 SHFE (CNY/MT)</span>
+            <span class="fcsim-value" id="fcsim-shfe-display">--</span>
+          </div>
+          <div class="fcsim-slider-wrap">
+            <div class="fcsim-ci-band" id="fcsim-shfe-ci"></div>
+            <input type="range" class="fcsim-slider" id="fcsim-shfe" min="0" max="100" value="50" step="0.1">
+          </div>
+          <div class="fcsim-meta">
+            <span>모델: <strong id="fcsim-shfe-model">--</strong></span>
+            <span class="fcsim-warn" id="fcsim-shfe-warn"></span>
+          </div>
+        </div>
+
+        <div class="fcsim-slider-block">
+          <div class="fcsim-label">
+            <span>30일 후 CNY/KRW (원/위안)</span>
+            <span class="fcsim-value" id="fcsim-cny-display">--</span>
+          </div>
+          <div class="fcsim-slider-wrap">
+            <div class="fcsim-ci-band" id="fcsim-cny-ci"></div>
+            <input type="range" class="fcsim-slider" id="fcsim-cny" min="0" max="100" value="50" step="0.1">
+          </div>
+          <div class="fcsim-meta">
+            <span>모델: <strong id="fcsim-cny-model">--</strong></span>
+            <span class="fcsim-warn" id="fcsim-cny-warn"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="fcsim-actions">
+        <button class="fcsim-reset-btn" onclick="resetFcsimSliders()" title="모델 예측값으로 리셋">↺ 모델 예측값으로 리셋</button>
+        <span class="fcsim-hint" id="fcsim-impact">슬라이더를 조작하면 PCB 계산기와 환율 차트 BEP 라인이 즉시 갱신됩니다.</span>
+      </div>
     </div>
   </section>
 
@@ -2536,6 +2698,128 @@ function setScenario(key) {
   }
 }
 
+// ===================== P3-A 예측 슬라이더 ↔ PCB 계산기 양방향 =====================
+// 슬라이더 → sim-cny-sqm / sim-cny → calculateSimulator → res-* 갱신 + currentBEP/currentBEPPrice 갱신 + 차트 redraw
+// 단일 동기 흐름이라 100ms 훨씬 이내에 완료됨
+
+const FCSIM_RANGE = {
+  shfe: { pct: 0.20 },  // 모델 예측값 ±20%
+  cny:  { pct: 0.10 },  // 모델 예측값 ±10%
+};
+
+let fcsimShfeMin, fcsimShfeMax, fcsimShfeModel, fcsimShfeCiMin, fcsimShfeCiMax;
+let fcsimCnyMin,  fcsimCnyMax,  fcsimCnyModel,  fcsimCnyCiMin,  fcsimCnyCiMax;
+
+function initFcsimSliders() {
+  if (!Array.isArray(lmePred) || lmePred.length === 0) return;
+  // 30일 후 모델 예측값
+  fcsimShfeModel = lmePred[lmePred.length - 1];
+  fcsimCnyModel  = cnyPred[cnyPred.length - 1];
+  // 95% 신뢰구간 (30일째)
+  fcsimShfeCiMin = lmePredLower[lmePredLower.length - 1];
+  fcsimShfeCiMax = lmePredUpper[lmePredUpper.length - 1];
+  fcsimCnyCiMin  = cnyPredLower[cnyPredLower.length - 1];
+  fcsimCnyCiMax  = cnyPredUpper[cnyPredUpper.length - 1];
+  // 슬라이더 범위 (모델값 ±%)
+  fcsimShfeMin = fcsimShfeModel * (1 - FCSIM_RANGE.shfe.pct);
+  fcsimShfeMax = fcsimShfeModel * (1 + FCSIM_RANGE.shfe.pct);
+  fcsimCnyMin  = fcsimCnyModel  * (1 - FCSIM_RANGE.cny.pct);
+  fcsimCnyMax  = fcsimCnyModel  * (1 + FCSIM_RANGE.cny.pct);
+
+  // 모델값 라벨
+  document.getElementById('fcsim-shfe-model').textContent = '¥' + fmtNum(Math.round(fcsimShfeModel));
+  document.getElementById('fcsim-cny-model').textContent  = fmtNum(fcsimCnyModel, 1) + '원';
+
+  // 슬라이더 초기화 (50% = 모델값)
+  const shfeSlider = document.getElementById('fcsim-shfe');
+  const cnySlider  = document.getElementById('fcsim-cny');
+  if (shfeSlider) shfeSlider.value = 50;
+  if (cnySlider)  cnySlider.value  = 50;
+
+  // CI 밴드 위치 계산 (슬라이더 0~100% 기준)
+  const shfeCiMinPct = Math.max(0, Math.min(100, ((fcsimShfeCiMin - fcsimShfeMin) / (fcsimShfeMax - fcsimShfeMin)) * 100));
+  const shfeCiMaxPct = Math.max(0, Math.min(100, ((fcsimShfeCiMax - fcsimShfeMin) / (fcsimShfeMax - fcsimShfeMin)) * 100));
+  const cnyCiMinPct  = Math.max(0, Math.min(100, ((fcsimCnyCiMin  - fcsimCnyMin)  / (fcsimCnyMax  - fcsimCnyMin )) * 100));
+  const cnyCiMaxPct  = Math.max(0, Math.min(100, ((fcsimCnyCiMax  - fcsimCnyMin)  / (fcsimCnyMax  - fcsimCnyMin )) * 100));
+  const shfeCiBand = document.getElementById('fcsim-shfe-ci');
+  const cnyCiBand  = document.getElementById('fcsim-cny-ci');
+  if (shfeCiBand) {
+    shfeCiBand.style.setProperty('--ci-min', shfeCiMinPct + '%');
+    shfeCiBand.style.setProperty('--ci-max', shfeCiMaxPct + '%');
+  }
+  if (cnyCiBand) {
+    cnyCiBand.style.setProperty('--ci-min', cnyCiMinPct + '%');
+    cnyCiBand.style.setProperty('--ci-max', cnyCiMaxPct + '%');
+  }
+
+  // 이벤트 리스너 (이미 attach된 경우 중복 방지)
+  if (shfeSlider && !shfeSlider._fcsimAttached) {
+    shfeSlider.addEventListener('input', applyFcsimSliders);
+    shfeSlider._fcsimAttached = true;
+  }
+  if (cnySlider && !cnySlider._fcsimAttached) {
+    cnySlider.addEventListener('input', applyFcsimSliders);
+    cnySlider._fcsimAttached = true;
+  }
+
+  applyFcsimSliders();
+}
+
+function sliderValToShfe(v)  { return fcsimShfeMin + (fcsimShfeMax - fcsimShfeMin) * (v / 100); }
+function sliderValToCny(v)   { return fcsimCnyMin  + (fcsimCnyMax  - fcsimCnyMin)  * (v / 100); }
+
+function applyFcsimSliders() {
+  const shfeSlider = document.getElementById('fcsim-shfe');
+  const cnySlider  = document.getElementById('fcsim-cny');
+  if (!shfeSlider || !cnySlider) return;
+  const shfeTarget = sliderValToShfe(parseFloat(shfeSlider.value));
+  const cnyTarget  = sliderValToCny(parseFloat(cnySlider.value));
+
+  // 표시값 갱신
+  document.getElementById('fcsim-shfe-display').textContent = '¥' + fmtNum(Math.round(shfeTarget));
+  document.getElementById('fcsim-cny-display').textContent  = fmtNum(cnyTarget, 1) + '원';
+
+  // 신뢰구간 경고
+  const shfeWarnEl = document.getElementById('fcsim-shfe-warn');
+  const cnyWarnEl  = document.getElementById('fcsim-cny-warn');
+  const shfeOOR = (shfeTarget < fcsimShfeCiMin || shfeTarget > fcsimShfeCiMax);
+  const cnyOOR  = (cnyTarget  < fcsimCnyCiMin  || cnyTarget  > fcsimCnyCiMax);
+  if (shfeWarnEl) {
+    shfeWarnEl.classList.toggle('is-active', shfeOOR);
+    shfeWarnEl.textContent = shfeOOR ? '⚠ 95% 신뢰구간 밖 (가능하지만 비현실적)' : '';
+  }
+  if (cnyWarnEl) {
+    cnyWarnEl.classList.toggle('is-active', cnyOOR);
+    cnyWarnEl.textContent = cnyOOR ? '⚠ 95% 신뢰구간 밖 (가능하지만 비현실적)' : '';
+  }
+
+  // PCB 계산기 입력값 갱신
+  // SHFE 변동 → 동일 비율로 alPrice 변동 → cnyPerSqm 재계산
+  const alPriceCur = parseFloat(document.getElementById('cci-al-price').value) || 0;
+  const procPriceCur = parseFloat(document.getElementById('cci-proc-price').value) || 0;
+  const weightCur = parseFloat(document.getElementById('cci-weight').value) || 0;
+  const procCostCur = parseFloat(document.getElementById('cci-proc-cost').value) || 0;
+  if (typeof lastLme !== 'undefined' && lastLme > 0 && alPriceCur > 0 && weightCur > 0) {
+    const alPriceNew = alPriceCur * (shfeTarget / lastLme);
+    const cnyPerSqmNew = parseFloat((alPriceNew * weightCur + procCostCur).toFixed(3));
+    const simSqmEl = document.getElementById('sim-cny-sqm');
+    if (simSqmEl) simSqmEl.value = cnyPerSqmNew;
+  }
+  const simCnyEl = document.getElementById('sim-cny');
+  if (simCnyEl) simCnyEl.value = cnyTarget.toFixed(1);
+
+  // PCB 계산기 재계산 → BEP 갱신 → 차트 redraw (단일 동기 호출)
+  if (typeof calculateSimulator === 'function') calculateSimulator();
+}
+
+function resetFcsimSliders() {
+  const shfeSlider = document.getElementById('fcsim-shfe');
+  const cnySlider  = document.getElementById('fcsim-cny');
+  if (shfeSlider) shfeSlider.value = 50;
+  if (cnySlider)  cnySlider.value = 50;
+  applyFcsimSliders();
+}
+
 function renderScenarioMiniCards() {
   const container = document.getElementById('scenario-mini-cards');
   if (!container) return;
@@ -3015,6 +3299,9 @@ async function startApp() {
 
   recalcShipping();
   calculateSimulator();
+
+  // P3-A 예측 슬라이더 초기화 (lmePred, cnyPred 등 의존)
+  initFcsimSliders();
 
   // SHFE 참고 패널 초기값
   const shfeEl = document.getElementById('mkt-shfe-val');
@@ -4096,7 +4383,7 @@ function scrollToSection(id, btn) {
 
 // Update nav tab on scroll
 window.addEventListener('scroll', () => {
-  const sections = ['sec-kpi','sec-price','sec-fx','sec-signal','sec-supplier','sec-sim'];
+  const sections = ['sec-kpi','sec-price','sec-fx','sec-fcsim','sec-signal','sec-supplier','sec-sim'];
   const tabs = document.querySelectorAll('.nav-tab');
   let active = 0;
   sections.forEach((id, i) => {
