@@ -6,6 +6,7 @@
 <meta name="robots" content="noindex, nofollow">
 <title>ACIS - 알루미늄 코일 수입 인텔리전스 시스템</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="./config/acis-config.js"></script>
 <style>
   :root {
     --navy: #1a2744;
@@ -64,6 +65,84 @@
   }
   .data-legend-box strong { color: var(--text-primary); margin-right: 4px; }
   .data-legend-item { display: flex; align-items: center; gap: 5px; }
+
+  /* ===== 오늘의 결론 카드 (P1-A) ===== */
+  .conclusion-card {
+    border-radius: 12px;
+    padding: 1.1rem 1.4rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.2rem;
+    flex-wrap: wrap;
+    border: 1px solid;
+    box-shadow: var(--shadow-sm);
+    transition: background 0.4s, border-color 0.4s;
+  }
+  .conclusion-left { display: flex; align-items: center; gap: 1rem; min-width: 0; flex: 1; }
+  .conclusion-icon { font-size: 2rem; flex-shrink: 0; }
+  .conclusion-text { display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; }
+  .conclusion-headline {
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    line-height: 1.2;
+  }
+  .conclusion-headline small {
+    font-size: 0.72rem;
+    font-weight: 600;
+    margin-left: 0.5rem;
+    opacity: 0.7;
+    letter-spacing: 0.05em;
+  }
+  .conclusion-detail {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    line-height: 1.45;
+  }
+  .conclusion-meta {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    text-align: right;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  /* 결과별 색상 — STRONG_BUY / BUY / HOLD / AVOID / STRONG_AVOID */
+  .conclusion-card.cc-strong-buy {
+    background: linear-gradient(135deg, rgba(34,197,94,0.18), rgba(34,197,94,0.06));
+    border-color: rgba(34,197,94,0.45);
+  }
+  .conclusion-card.cc-strong-buy .conclusion-headline { color: #4ade80; }
+  .conclusion-card.cc-buy {
+    background: linear-gradient(135deg, rgba(34,197,94,0.10), rgba(34,197,94,0.03));
+    border-color: rgba(34,197,94,0.30);
+  }
+  .conclusion-card.cc-buy .conclusion-headline { color: #4ade80; }
+  .conclusion-card.cc-hold {
+    background: linear-gradient(135deg, rgba(245,158,11,0.10), rgba(245,158,11,0.03));
+    border-color: rgba(245,158,11,0.30);
+  }
+  .conclusion-card.cc-hold .conclusion-headline { color: #fbbf24; }
+  .conclusion-card.cc-avoid {
+    background: linear-gradient(135deg, rgba(239,68,68,0.10), rgba(239,68,68,0.03));
+    border-color: rgba(239,68,68,0.30);
+  }
+  .conclusion-card.cc-avoid .conclusion-headline { color: #f87171; }
+  .conclusion-card.cc-strong-avoid {
+    background: linear-gradient(135deg, rgba(239,68,68,0.20), rgba(239,68,68,0.06));
+    border-color: rgba(239,68,68,0.50);
+  }
+  .conclusion-card.cc-strong-avoid .conclusion-headline { color: #f87171; }
+
+  /* ===== 차트 정확도 라벨 (P1-C) ===== */
+  .chart-accuracy {
+    font-size: 0.7rem; color: var(--text-secondary);
+    margin-left: auto; white-space: nowrap;
+    display: inline-flex; align-items: center; gap: 0.4rem;
+  }
+  .chart-accuracy.acc-poor { color: var(--yellow); }
+  .chart-accuracy strong { color: var(--text-primary); font-weight: 600; }
 
   /* 섹션 데이터 출처 바 */
   .data-source-bar {
@@ -1308,6 +1387,20 @@
     <div class="data-legend-item"><span class="data-badge badge-ref">● 참고용</span> 수동 입력 — 실제 검증 필요</div>
   </div>
 
+  <!-- 오늘의 결론 카드 (P1-A) -->
+  <div class="conclusion-card cc-hold" id="conclusion-card">
+    <div class="conclusion-left">
+      <div class="conclusion-icon" id="conclusion-icon">⏸</div>
+      <div class="conclusion-text">
+        <div class="conclusion-headline" id="conclusion-headline">
+          분석 중<small id="conclusion-headline-en">…</small>
+        </div>
+        <div class="conclusion-detail" id="conclusion-detail">데이터 로딩이 완료되면 단기·중장기 신호를 종합하여 권고를 표시합니다.</div>
+      </div>
+    </div>
+    <div class="conclusion-meta" id="conclusion-meta">갱신 대기</div>
+  </div>
+
   <!-- ① KPI Cards -->
   <section class="section" id="sec-kpi">
     <div class="section-header">
@@ -1377,7 +1470,7 @@
     <div class="section-header">
       <div class="section-num">②</div>
       <div class="section-title">SHFE 알루미늄 가격 추세 <small id="pred-method-label" style="font-size:0.7rem;color:#c9a84c;margin-left:8px;"></small></div>
-      <div class="section-sub">최근 90일 실적 + 향후 30일 예측</div>
+      <div class="section-sub">최근 90일 실적 + 향후 30일 예측<span class="chart-accuracy" id="acc-price">📊 정확도 산출 중…</span></div>
     </div>
     <div class="data-source-bar source-bar-real"><span class="data-badge badge-real">● 실제 데이터</span> 90일 실적 — 上海期货交易所(SHFE) AL9999 주력합약, CNY/MT &nbsp;|&nbsp; <span class="data-badge badge-pred">● 통계 예측</span> 30일 예측선 + 95% 신뢰구간 — 선형회귀 + Holt 이중지수평활 앙상블 &nbsp;|&nbsp; <span class="data-badge badge-calc">● 계산값</span> MA20, MA60, 볼린저밴드</div>
     <div class="chart-card">
@@ -1404,7 +1497,7 @@
     <div class="section-header">
       <div class="section-num">③</div>
       <div class="section-title">환율 추세 차트</div>
-      <div class="section-sub">CNY/KRW 및 USD/KRW 90일 실적 + 30일 예측</div>
+      <div class="section-sub">CNY/KRW 및 USD/KRW 90일 실적 + 30일 예측<span class="chart-accuracy" id="acc-fx">📊 정확도 산출 중…</span></div>
     </div>
     <div class="data-source-bar source-bar-real"><span class="data-badge badge-real">● 실제 데이터</span> 90일 실적 — 한국은행 ECOS API (매매기준율 731Y001, 오전 11시 기준) &nbsp;|&nbsp; <span class="data-badge badge-pred">● 통계 예측</span> 30일 예측선 + 95% 신뢰구간 — 선형회귀 + Holt 앙상블 &nbsp;|&nbsp; <span style="font-size:0.68rem;color:#f1c40f;">※ KPI · 계산기 표시 환율은 전신환 매도율(송금) 기준, 최대 할인율 적용값</span></div>
     <div class="chart-card">
@@ -2235,6 +2328,96 @@ function ensembleForecast(data, horizon) {
     rmse: avgRmse };
 }
 
+// ===================== 백테스트 (P1-C) =====================
+// historicalData의 마지막 horizon일을 검증 데이터로 사용해 모델 정확도 측정
+// MAPE = mean(|actual - predicted| / actual) × 100
+// 방향성 적중률 = (예측이 상승/하락 방향 맞춘 일수) / 평가 일수
+function backtestModel(historicalData) {
+  const cfg = (window.ACIS_CONFIG && window.ACIS_CONFIG.backtest) || { horizonDays: 30, minHistory: 60 };
+  const horizon = cfg.horizonDays;
+  const minHist = cfg.minHistory;
+
+  if (!Array.isArray(historicalData) || historicalData.length < minHist + horizon) {
+    return { mape: null, dirAcc: null, sampleN: historicalData?.length || 0 };
+  }
+
+  const trainEnd     = historicalData.length - horizon;
+  const trainData    = historicalData.slice(0, trainEnd);
+  const actualFuture = historicalData.slice(trainEnd);
+
+  let predicted;
+  try {
+    predicted = ensembleForecast(trainData, horizon).forecasts;
+  } catch (e) {
+    return { mape: null, dirAcc: null, error: e.message };
+  }
+
+  let sumAPE = 0, validN = 0;
+  for (let i = 0; i < horizon; i++) {
+    if (actualFuture[i] > 0) {
+      sumAPE += Math.abs(actualFuture[i] - predicted[i]) / actualFuture[i];
+      validN++;
+    }
+  }
+  const mape = validN > 0 ? +(sumAPE / validN * 100).toFixed(1) : null;
+
+  let correct = 0, dirN = 0;
+  for (let i = 1; i < horizon; i++) {
+    const aDir = Math.sign(actualFuture[i] - actualFuture[i-1]);
+    const pDir = Math.sign(predicted[i]   - predicted[i-1]);
+    if (aDir !== 0 && pDir !== 0) {
+      dirN++;
+      if (aDir === pDir) correct++;
+    }
+  }
+  const dirAcc = dirN > 0 ? Math.round(correct / dirN * 100) : null;
+
+  return { mape, dirAcc, sampleN: horizon };
+}
+
+// 백테스트 결과를 일자별로 localStorage에 캐시 (자정에 자동 무효화)
+function getBacktestCached(key, dataArray) {
+  const cfg = (window.ACIS_CONFIG && window.ACIS_CONFIG.backtest) || { cacheKey: 'acis_backtest_v1' };
+  const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+  const cacheKey = cfg.cacheKey + ':' + key;
+
+  try {
+    const raw = localStorage.getItem(cacheKey);
+    if (raw) {
+      const cached = JSON.parse(raw);
+      if (cached.date === today && cached.dataLen === dataArray.length) {
+        return cached.result;
+      }
+    }
+  } catch (e) { /* ignore */ }
+
+  const result = backtestModel(dataArray);
+  try {
+    localStorage.setItem(cacheKey, JSON.stringify({
+      date: today, dataLen: dataArray.length, result,
+    }));
+  } catch (e) { /* ignore */ }
+  return result;
+}
+
+// 차트 헤더의 정확도 라벨 갱신
+function renderAccuracyLabel(elId, result) {
+  const el = document.getElementById(elId);
+  if (!el) return;
+  const cfg = (window.ACIS_CONFIG && window.ACIS_CONFIG.backtest && window.ACIS_CONFIG.backtest.poorAccuracy) || { mapeThreshold: 5, dirAccThreshold: 55 };
+
+  if (!result || result.mape == null) {
+    el.innerHTML = '📊 정확도 — 데이터 부족';
+    el.classList.remove('acc-poor');
+    return;
+  }
+  const { mape, dirAcc, sampleN } = result;
+  const isPoor = mape > cfg.mapeThreshold || (dirAcc != null && dirAcc < cfg.dirAccThreshold);
+  el.classList.toggle('acc-poor', isPoor);
+  el.innerHTML = `${isPoor ? '⚠️' : '📊'} 백테스트 ${sampleN}일: MAPE <strong>${mape}%</strong> · 방향성 <strong>${dirAcc != null ? dirAcc + '%' : '—'}</strong>`;
+  el.title = `최근 ${sampleN}일을 학습→예측 비교한 결과. MAPE=평균 절대오차율, 방향성=상승/하락 방향 적중률.`;
+}
+
 // 모의 데이터 생성 (API 실패 시 폴백)
 // lmeHist = SHFE 알루미늄 가격 (CNY/MT) — 실제 API 연동 후 SHFE 데이터로 교체됨
 function generateMockData() {
@@ -2581,6 +2764,10 @@ async function startApp() {
   }
 
   renderSignalPanel();
+  renderTodayConclusion();  // P1-A 결론 카드
+  // P1-C 백테스트 정확도 (일자별 캐시)
+  renderAccuracyLabel('acc-price', getBacktestCached('lme', lmeHist));
+  renderAccuracyLabel('acc-fx',    getBacktestCached('cny', cnyHist));
   initPriceChart();
   initFxChart();
   renderSupplierTable();
@@ -2603,6 +2790,105 @@ async function startApp() {
   // SHFE 참고 패널 초기값
   const shfeEl = document.getElementById('mkt-shfe-val');
   if (shfeEl) shfeEl.textContent = lastLme ? fmtNum(lastLme, 0) : '--';
+}
+
+// ===================== 오늘의 결론 (P1-A) =====================
+// 단기(60MA) + 중장기(90MA) RPCI 편차 + 환율 추세를 종합해 5단계 권고 산출
+// STRONG_은 단·중장기 방향이 일치할 때만 발화 (noise 방어)
+function evaluateTodayConclusion() {
+  const cfg = (window.ACIS_CONFIG && window.ACIS_CONFIG.signal) || { waitBand: 3, strongBand: 10, requireDualConfirmForStrong: true };
+  const fxCfg = (window.ACIS_CONFIG && window.ACIS_CONFIG.fxTrend) || { risingThreshold: 0.5, fallingThreshold: -0.5 };
+
+  const ma60 = currentMA60;
+  const ma90 = currentMA90 || currentMA60;
+  if (!ma60 || !currentRPCI) return null;
+
+  const diff60 = (currentRPCI - ma60) / ma60 * 100;
+  const diff90 = (currentRPCI - ma90) / ma90 * 100;
+
+  // 환율 5일 변화율 (CNY/KRW) — fxTrend 보조 판정
+  let cny5dChg = 0;
+  if (cnyHist && cnyHist.length >= 6) {
+    const c5 = cnyHist[cnyHist.length - 6];
+    const cNow = cnyHist[cnyHist.length - 1];
+    if (c5 > 0) cny5dChg = (cNow - c5) / c5 * 100;
+  }
+  const fxRising  = cny5dChg > fxCfg.risingThreshold;
+  const fxFalling = cny5dChg < fxCfg.fallingThreshold;
+
+  // 단기 분류
+  const classify = (diff) => {
+    if (diff >  cfg.strongBand) return 'strongAvoid';
+    if (diff >  cfg.waitBand)   return 'avoid';
+    if (diff < -cfg.strongBand) return 'strongBuy';
+    if (diff < -cfg.waitBand)   return 'buy';
+    return 'hold';
+  };
+  const cat60 = classify(diff60);
+  const cat90 = classify(diff90);
+
+  // STRONG_은 단·중장기 일치할 때만 (지시서 추가 유의사항 1)
+  let verdict = cat60;
+  if (cfg.requireDualConfirmForStrong) {
+    if (cat60 === 'strongBuy'   && cat90 !== 'strongBuy'   && cat90 !== 'buy')   verdict = 'buy';
+    if (cat60 === 'strongAvoid' && cat90 !== 'strongAvoid' && cat90 !== 'avoid') verdict = 'avoid';
+  }
+
+  // 환율 추세로 BUY/AVOID 강화 또는 약화
+  if (verdict === 'buy'   && fxRising)  verdict = 'hold';   // 매수 신호 + 환율 악화 → 보류
+  if (verdict === 'avoid' && fxFalling) verdict = 'hold';   // 자제 신호 + 환율 안정 → 중립
+
+  // 메타데이터
+  const cls = {
+    strongBuy:   { css: 'cc-strong-buy',   label: '적극 매수 권고',  en: 'STRONG BUY',   icon: '🟢' },
+    buy:         { css: 'cc-buy',          label: '매수 검토',       en: 'BUY',          icon: '🟢' },
+    hold:        { css: 'cc-hold',         label: '관망 권고',       en: 'HOLD',         icon: '⏸' },
+    avoid:       { css: 'cc-avoid',        label: '구매 자제',       en: 'AVOID',        icon: '🟡' },
+    strongAvoid: { css: 'cc-strong-avoid', label: '구매 보류 권고',  en: 'STRONG AVOID', icon: '🔴' },
+  }[verdict];
+
+  // 보조 설명 문장
+  const dirText = diff60 > 0 ? `+${diff60.toFixed(1)}%` : `${diff60.toFixed(1)}%`;
+  const fxText  = fxRising ? '환율 상승 추세'
+                : fxFalling ? '환율 안정세'
+                : '환율 보합';
+  let detail;
+  if (verdict === 'strongBuy') {
+    detail = `RPCI가 60일 평균 ${dirText} (90일 평균 ${diff90.toFixed(1)}%) — 단·중장기 모두 저점 구간. ${fxText} 환경에서 적극적 발주 검토 가능.`;
+  } else if (verdict === 'buy') {
+    detail = `RPCI가 60일 평균 ${dirText}로 매수 구간 진입. ${fxText} 감안하여 단계적 발주 검토.`;
+  } else if (verdict === 'hold') {
+    detail = `RPCI 편차 ${dirText}로 적정 범위 — ${fxText}. 추가 신호 발생까지 관망 권고.`;
+  } else if (verdict === 'avoid') {
+    detail = `RPCI가 60일 평균 ${dirText}로 고비용 구간. ${fxText}이므로 신규 발주 자제 권고.`;
+  } else {
+    detail = `RPCI가 60일 평균 ${dirText} (90일 평균 ${diff90.toFixed(1)}%) — 단·중장기 모두 고점. ${fxText} — 신규 발주 보류 권고.`;
+  }
+
+  return { verdict, ...cls, detail, diff60, diff90, cny5dChg };
+}
+
+function renderTodayConclusion() {
+  const r = evaluateTodayConclusion();
+  if (!r) return;
+  const card = document.getElementById('conclusion-card');
+  const head = document.getElementById('conclusion-headline');
+  const detail = document.getElementById('conclusion-detail');
+  const icon = document.getElementById('conclusion-icon');
+  const meta = document.getElementById('conclusion-meta');
+  if (!card || !head) return;
+
+  card.className = 'conclusion-card ' + r.css;
+  // headline 내부를 한번에 재구성 (텍스트 노드 indentation 이슈 회피)
+  head.innerHTML = r.label + '<small id="conclusion-headline-en">' + r.en + '</small>';
+  if (detail) detail.textContent = r.detail;
+  if (icon)   icon.textContent = r.icon;
+  if (meta) {
+    const now = new Date();
+    const hh = String(now.getHours()).padStart(2,'0');
+    const mm = String(now.getMinutes()).padStart(2,'0');
+    meta.textContent = `갱신 ${hh}:${mm} · ±${(window.ACIS_CONFIG?.signal?.waitBand)||3}% / ±${(window.ACIS_CONFIG?.signal?.strongBand)||10}% 임계`;
+  }
 }
 
 // ===================== SIGNAL PANEL =====================
@@ -2674,6 +2960,120 @@ function getSignalFactors(signal, type) {
   return base[signal];
 }
 
+// ===================== Chart.js 공용 플러그인 (P1-B, P1-D) =====================
+
+// P1-B: 예측 구간(우측 30일)에 RPCI 신호 기반 배경 음영
+const signalOverlayPlugin = {
+  id: 'signalOverlay',
+  beforeDatasetsDraw(chart) {
+    if (!chart.options?.plugins?.signalOverlay?.enabled) return;
+    if (typeof shortSignal === 'undefined' || !shortSignal) return;
+
+    const cfg = (window.ACIS_CONFIG && window.ACIS_CONFIG.signalOverlay) || {
+      buy:   'rgba(34,197,94,0.12)',
+      wait:  'rgba(245,158,11,0.10)',
+      avoid: 'rgba(239,68,68,0.12)',
+      labelColors: { buy: '#22c55e', wait: '#f59e0b', avoid: '#ef4444' },
+    };
+
+    const labels = chart.data.labels || [];
+    if (labels.length < 91) return; // 예측 영역이 없는 모드(hist만/pred만)는 스킵
+
+    const xScale = chart.scales.x;
+    const yScale = chart.scales.y;
+    if (!xScale || !yScale) return;
+
+    // 예측 구간 시작/끝 인덱스 (히스토리 90일 + 예측 30일 가정)
+    const predStart = 89;
+    const predEnd = labels.length - 1;
+
+    const x1 = xScale.getPixelForValue(predStart);
+    const x2 = xScale.getPixelForValue(predEnd);
+    const top = yScale.top;
+    const bottom = yScale.bottom;
+
+    const fillColor  = cfg[shortSignal] || cfg.wait;
+    const labelColor = (cfg.labelColors && cfg.labelColors[shortSignal]) || '#9aa3ba';
+    const labelText  = shortSignal === 'buy' ? '매수 권고 구간'
+                     : shortSignal === 'avoid' ? '자제 권고 구간'
+                     : '관망 구간';
+
+    const ctx = chart.ctx;
+    ctx.save();
+    ctx.fillStyle = fillColor;
+    ctx.fillRect(x1, top, x2 - x1, bottom - top);
+
+    // 점선 경계
+    ctx.strokeStyle = labelColor;
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4, 4]);
+    ctx.globalAlpha = 0.5;
+    ctx.beginPath();
+    ctx.moveTo(x1, top);
+    ctx.lineTo(x1, bottom);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.globalAlpha = 1;
+
+    // 좌상단 라벨
+    ctx.fillStyle = labelColor;
+    ctx.font = 'bold 10px "Malgun Gothic", sans-serif';
+    ctx.textBaseline = 'top';
+    ctx.fillText(labelText, x1 + 6, top + 6);
+    ctx.restore();
+  },
+};
+
+// P1-D: 손익분기 환율(BEP) 가로선 — 환율 차트의 CNY/KRW 축에만 그림
+let currentBEP = null; // calculateSimulator()에서 갱신
+const bepLinePlugin = {
+  id: 'bepLine',
+  afterDatasetsDraw(chart) {
+    if (!chart.options?.plugins?.bepLine?.enabled) return;
+    if (currentBEP == null || !isFinite(currentBEP)) return;
+
+    const cfg = (window.ACIS_CONFIG && window.ACIS_CONFIG.bep) || { lineColor: '#fbbf24', lineWidth: 1.5, lineDash: [6, 4] };
+    const yScale = chart.scales.y;  // CNY/KRW 축
+    const xScale = chart.scales.x;
+    if (!yScale || !xScale) return;
+
+    // USD 단독 모드(yAxisLeft = 'USD/KRW')에서는 BEP 라인 숨김
+    const yTitle = yScale.options?.title?.text || '';
+    if (yTitle.indexOf('CNY') === -1) return;
+
+    const y = yScale.getPixelForValue(currentBEP);
+    if (y < yScale.top || y > yScale.bottom) return;
+
+    const ctx = chart.ctx;
+    ctx.save();
+    ctx.strokeStyle = cfg.lineColor;
+    ctx.lineWidth = cfg.lineWidth;
+    ctx.setLineDash(cfg.lineDash);
+    ctx.beginPath();
+    ctx.moveTo(xScale.left, y);
+    ctx.lineTo(xScale.right, y);
+    ctx.stroke();
+
+    // 라벨 박스
+    const label = `BEP ${currentBEP.toFixed(1)}`;
+    ctx.font = 'bold 11px "Malgun Gothic", sans-serif';
+    const textWidth = ctx.measureText(label).width;
+    const padX = 6, padY = 3;
+    const boxX = xScale.left + 6;
+    const boxY = y - padY - 12;
+    ctx.setLineDash([]);
+    ctx.fillStyle = 'rgba(17,29,53,0.9)';
+    ctx.fillRect(boxX, boxY, textWidth + padX * 2, 16);
+    ctx.strokeStyle = cfg.lineColor;
+    ctx.lineWidth = 1;
+    ctx.strokeRect(boxX, boxY, textWidth + padX * 2, 16);
+    ctx.fillStyle = cfg.lineColor;
+    ctx.textBaseline = 'top';
+    ctx.fillText(label, boxX + padX, boxY + 2);
+    ctx.restore();
+  },
+};
+
 // ===================== PRICE CHART =====================
 let priceChart = null;
 let priceMode = 'all';
@@ -2733,17 +3133,16 @@ function initPriceChart() {
   const ctx = document.getElementById('priceChart').getContext('2d');
   const { labels, datasets } = buildPriceDatasets('all');
 
-  // Predicted zone annotation via plugin
-  const predStartIdx = 90;
-
   priceChart = new Chart(ctx, {
     type: 'line',
     data: { labels, datasets },
+    plugins: [signalOverlayPlugin],  // P1-B
     options: {
       responsive: true, maintainAspectRatio: true,
       interaction: { mode: 'index', intersect: false },
       plugins: {
         legend: { display: false },
+        signalOverlay: { enabled: true },
         tooltip: {
           backgroundColor: 'rgba(17,29,53,0.95)',
           titleColor: '#c9a84c', bodyColor: '#e8eaf0',
@@ -2844,11 +3243,14 @@ function initFxChart() {
   fxChart = new Chart(ctx, {
     type: 'line',
     data: { labels, datasets },
+    plugins: [signalOverlayPlugin, bepLinePlugin],  // P1-B + P1-D
     options: {
       responsive: true, maintainAspectRatio: true,
       interaction: { mode: 'index', intersect: false },
       plugins: {
         legend: { display: false },
+        signalOverlay: { enabled: true },
+        bepLine: { enabled: true },
         tooltip: {
           backgroundColor: 'rgba(17,29,53,0.95)',
           titleColor: '#c9a84c', bodyColor: '#e8eaf0',
@@ -3312,6 +3714,12 @@ function calculateSimulator() {
   } else {
     beSubEl.textContent = '현재 환율이 정확히 손익분기점';
     beSubEl.style.color = 'var(--yellow)';
+  }
+
+  // P1-D: 환율 차트 BEP 가로선 갱신 (사용자 입력 변경 시 즉시 반영)
+  if (isFinite(beRate) && beRate > 0) {
+    currentBEP = beRate;
+    if (typeof fxChart !== 'undefined' && fxChart) fxChart.update('none');
   }
 }
 
