@@ -144,6 +144,25 @@
   .chart-accuracy.acc-poor { color: var(--yellow); }
   .chart-accuracy strong { color: var(--text-primary); font-weight: 600; }
 
+  /* ===== BEP 라인 호버 툴팁 (확인 2) ===== */
+  .bep-tooltip {
+    position: fixed;
+    background: rgba(17,29,53,0.96);
+    border: 1px solid #fbbf24;
+    border-radius: 7px;
+    padding: 0.55rem 0.75rem;
+    font-size: 0.72rem;
+    color: var(--text-primary);
+    line-height: 1.4;
+    pointer-events: none;
+    z-index: 10000;
+    max-width: 240px;
+    box-shadow: 0 2px 14px rgba(0,0,0,0.55);
+    display: none;
+  }
+  .bep-tooltip strong { color: #fbbf24; display: block; margin-bottom: 0.2rem; font-size: 0.78rem; }
+  .bep-tooltip em { color: var(--text-secondary); font-style: normal; font-size: 0.66rem; display: block; margin-top: 0.3rem; }
+
   /* ===== P3-A 예측 슬라이더 ===== */
   .fcsim-card {
     background: var(--navy-card);
@@ -3655,15 +3674,22 @@ const signalOverlayPlugin = {
   },
 };
 
-// 공용 헬퍼: BEP 가로선 + 라벨 박스 그리기 (라벨이 차트 상단 벗어나면 라인 아래쪽으로)
-function drawBepLine(chart, value, label) {
+// 공용 헬퍼: BEP 가로선 + 라벨 박스 그리기
+// hitBoxKey가 주어지면 chart에 박스 좌표 저장 → 외부 mousemove 핸들러가 hit-test
+function drawBepLine(chart, value, label, hitBoxKey) {
   const cfg = (window.ACIS_CONFIG && window.ACIS_CONFIG.bep) || { lineColor: '#fbbf24', lineWidth: 1.5, lineDash: [6, 4] };
   const yScale = chart.scales.y;
   const xScale = chart.scales.x;
-  if (!yScale || !xScale) return;
+  if (!yScale || !xScale) {
+    if (hitBoxKey) chart[hitBoxKey] = null;
+    return;
+  }
 
   const y = yScale.getPixelForValue(value);
-  if (y < yScale.top || y > yScale.bottom) return;
+  if (y < yScale.top || y > yScale.bottom) {
+    if (hitBoxKey) chart[hitBoxKey] = null;
+    return;
+  }
 
   const ctx = chart.ctx;
   ctx.save();
@@ -3681,20 +3707,30 @@ function drawBepLine(chart, value, label) {
   const padX = 6, padY = 3;
   const boxX = xScale.left + 6;
   const boxH = 16;
+  const boxW = textWidth + padX * 2;
   // 라인 위쪽이 기본, 위쪽 공간 부족하면 아래쪽으로
   let boxY = y - padY - boxH;
   if (boxY < yScale.top + 2) boxY = y + 4;
 
   ctx.setLineDash([]);
   ctx.fillStyle = 'rgba(17,29,53,0.9)';
-  ctx.fillRect(boxX, boxY, textWidth + padX * 2, boxH);
+  ctx.fillRect(boxX, boxY, boxW, boxH);
   ctx.strokeStyle = cfg.lineColor;
   ctx.lineWidth = 1;
-  ctx.strokeRect(boxX, boxY, textWidth + padX * 2, boxH);
+  ctx.strokeRect(boxX, boxY, boxW, boxH);
   ctx.fillStyle = cfg.lineColor;
   ctx.textBaseline = 'top';
   ctx.fillText(label, boxX + padX, boxY + 2);
   ctx.restore();
+
+  // hit box 저장 (canvas 내부 좌표 + 라인 좌표)
+  if (hitBoxKey) {
+    chart[hitBoxKey] = {
+      box: { x: boxX, y: boxY, w: boxW, h: boxH },
+      lineY: y, lineX1: xScale.left, lineX2: xScale.right,
+      label, value,
+    };
+  }
 }
 
 // P1-D: 손익분기 환율(BEP) 가로선 — 환율 차트의 CNY/KRW 축에만 그림
@@ -3703,11 +3739,17 @@ const bepLinePlugin = {
   id: 'bepLine',
   afterDatasetsDraw(chart) {
     if (!chart.options?.plugins?.bepLine?.enabled) return;
-    if (currentBEP == null || !isFinite(currentBEP)) return;
+    if (currentBEP == null || !isFinite(currentBEP)) {
+      chart._bepFxHit = null;
+      return;
+    }
     // CNY/KRW 축만 (USD 단독 모드 + 가격 차트 모두 제외)
     const yTitle = chart.scales.y?.options?.title?.text || '';
-    if (yTitle.indexOf('CNY/KRW') === -1) return;
-    drawBepLine(chart, currentBEP, `BEP ${currentBEP.toFixed(1)}`);
+    if (yTitle.indexOf('CNY/KRW') === -1) {
+      chart._bepFxHit = null;
+      return;
+    }
+    drawBepLine(chart, currentBEP, `BEP ${currentBEP.toFixed(1)}`, '_bepFxHit');
   },
 };
 
@@ -3771,13 +3813,90 @@ const bepPriceLinePlugin = {
   id: 'bepPriceLine',
   afterDatasetsDraw(chart) {
     if (!chart.options?.plugins?.bepPriceLine?.enabled) return;
-    if (currentBEPPrice == null || !isFinite(currentBEPPrice)) return;
+    if (currentBEPPrice == null || !isFinite(currentBEPPrice)) {
+      chart._bepPriceHit = null;
+      return;
+    }
     // 가격 차트(CNY/MT)만
     const yTitle = chart.scales.y?.options?.title?.text || '';
-    if (yTitle.indexOf('CNY/MT') === -1) return;
-    drawBepLine(chart, currentBEPPrice, `BEP ¥${Math.round(currentBEPPrice).toLocaleString('ko-KR')}`);
+    if (yTitle.indexOf('CNY/MT') === -1) {
+      chart._bepPriceHit = null;
+      return;
+    }
+    drawBepLine(chart, currentBEPPrice, `BEP ¥${Math.round(currentBEPPrice).toLocaleString('ko-KR')}`, '_bepPriceHit');
   },
 };
+
+// ===================== BEP 라인 호버 툴팁 (확인 2) =====================
+// 차트 캔버스의 mousemove로 BEP 라벨 박스 hit-test → 외부 div tooltip 표시
+const BEP_HOVER_INFO = {
+  _bepPriceHit: {
+    title: '손익분기 SHFE 단가',
+    body: '현재 환율·관세·운임·국내가 기준 손익분기 SHFE 단가. 이 선 아래에서 수입 유리.',
+    formula: '공식: cnyPerSqm_BEP=(domestic/(1+tariff)−shipping)/rate → SHFE_BEP=현재SHFE×(alPrice_BEP/현재alPrice)',
+  },
+  _bepFxHit: {
+    title: '손익분기 환율',
+    body: '현재 단가·관세·운임·국내가 기준 손익분기 CNY/KRW 환율. 이 선 아래에서 수입 유리.',
+    formula: '공식: rate_BEP=(domestic/(1+tariff)−shipping)/cnyPerSqm',
+  },
+};
+
+function ensureBepTooltipEl() {
+  let el = document.getElementById('bep-tooltip');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'bep-tooltip';
+    el.className = 'bep-tooltip';
+    document.body.appendChild(el);
+  }
+  return el;
+}
+
+function attachBepHover(chart) {
+  if (!chart || chart._bepHoverAttached) return;
+  chart._bepHoverAttached = true;
+  const tooltip = ensureBepTooltipEl();
+
+  const onMove = (e) => {
+    // canvas 내부 좌표로 변환 (Chart.js getRelativePosition 동등)
+    const rect = chart.canvas.getBoundingClientRect();
+    const x = (e.clientX - rect.left) * chart.canvas.width  / rect.width;
+    const y = (e.clientY - rect.top)  * chart.canvas.height / rect.height;
+
+    const candidates = ['_bepPriceHit', '_bepFxHit'];
+    let activeKey = null, activeHit = null;
+    for (const k of candidates) {
+      const h = chart[k];
+      if (!h || !h.box) continue;
+      const b = h.box;
+      if (x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h) {
+        activeKey = k; activeHit = h; break;
+      }
+    }
+
+    if (activeHit) {
+      const info = BEP_HOVER_INFO[activeKey];
+      tooltip.innerHTML = `<strong>${info.title}: ${activeHit.label}</strong>${info.body}<em>${info.formula}</em>`;
+      tooltip.style.display = 'block';
+      // 화면 우측 끝 가까우면 좌측에 표시
+      const tw = 240, gap = 14;
+      const left = (e.clientX + tw + gap > window.innerWidth) ? (e.clientX - tw - gap) : (e.clientX + gap);
+      tooltip.style.left = left + 'px';
+      tooltip.style.top  = (e.clientY + gap) + 'px';
+      chart.canvas.style.cursor = 'help';
+    } else {
+      tooltip.style.display = 'none';
+      chart.canvas.style.cursor = 'default';
+    }
+  };
+  const onLeave = () => {
+    tooltip.style.display = 'none';
+    chart.canvas.style.cursor = 'default';
+  };
+  chart.canvas.addEventListener('mousemove', onMove);
+  chart.canvas.addEventListener('mouseleave', onLeave);
+}
 
 // ===================== PRICE CHART =====================
 let priceChart = null;
@@ -3892,6 +4011,7 @@ function initPriceChart() {
       }
     }
   });
+  attachBepHover(priceChart);  // BEP 라인 호버 툴팁 (확인 2)
 }
 
 function setPriceView(mode, btn) {
@@ -4010,6 +4130,7 @@ function initFxChart() {
       }
     }
   });
+  attachBepHover(fxChart);  // BEP 라인 호버 툴팁 (확인 2)
 }
 
 function setFxView(mode, btn) {
