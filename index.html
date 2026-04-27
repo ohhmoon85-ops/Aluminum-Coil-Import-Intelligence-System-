@@ -2836,6 +2836,38 @@ function renderScenarioMiniCards() {
 }
 
 // ===================== 백테스트 (P1-C) =====================
+
+// 백테스트 전용 forecast 헬퍼 (ensembleForecast와 분리)
+// — Math.round 없음: 작은 변동(환율 0.1원 단위) 부호 정보 보존
+// — RMSE=0 가드: 두 모델 모두 perfect fit이어도 가중치가 0이 되지 않음
+// ensembleForecast(P1 차트용)는 절대 수정하지 않음
+function forecastForBacktest(data, horizon) {
+  const lr   = linearRegressionForecast(data, horizon);
+  const holt = holtForecast(data, horizon);
+
+  // 명시적 분기: RMSE=0 케이스는 || 연산자로 가리지 않고 처리
+  let wLr, wHolt;
+  if (lr.rmse === 0 && holt.rmse === 0) {
+    // 두 모델 모두 perfect fit (단조 시계열 등) → 균등 가중
+    wLr = 0.5; wHolt = 0.5;
+  } else if (lr.rmse === 0) {
+    // LR만 perfect fit → LR 가중치 1.0
+    wLr = 1.0; wHolt = 0.0;
+  } else if (holt.rmse === 0) {
+    // Holt만 perfect fit → Holt 가중치 1.0
+    wLr = 0.0; wHolt = 1.0;
+  } else {
+    // 일반 케이스: RMSE 역비례 가중
+    const total = lr.rmse + holt.rmse;
+    wLr   = holt.rmse / total;
+    wHolt = lr.rmse  / total;
+  }
+
+  // round 없음 — 부호 정보 손실 방지
+  const forecasts = lr.forecasts.map((v, i) => wLr * v + wHolt * holt.forecasts[i]);
+  return { forecasts, wLr, wHolt };
+}
+
 // historicalData의 마지막 horizon일을 검증 데이터로 사용해 모델 정확도 측정
 // MAPE = mean(|actual - predicted| / actual) × 100
 // 방향성 적중률 = (예측이 상승/하락 방향 맞춘 일수) / 평가 일수
@@ -2854,7 +2886,7 @@ function backtestModel(historicalData) {
 
   let predicted;
   try {
-    predicted = ensembleForecast(trainData, horizon).forecasts;
+    predicted = forecastForBacktest(trainData, horizon).forecasts;  // round 없는 전용 헬퍼
   } catch (e) {
     return { mape: null, dirAcc: null, error: e.message };
   }
@@ -2883,6 +2915,77 @@ function backtestModel(historicalData) {
 }
 
 // 백테스트 결과를 일자별로 localStorage에 캐시 (자정에 자동 무효화)
+// ===== 백테스트 단위 테스트 (디버그 — 콘솔에서 runBacktestTests() 호출) =====
+// 5개 케이스로 backtestModel + forecastForBacktest 정확성 검증
+// 회귀 검증용. 코드 변경 시 이 테스트가 통과해야 함.
+function runBacktestTests() {
+  const results = [];
+  const PASS = '✅ PASS', FAIL = '❌ FAIL';
+
+  // 테스트 1: 단조 증가 → 100% 적중 기대
+  const monoUp = Array.from({length: 90}, (_, i) => i + 1);
+  const r1 = backtestModel(monoUp);
+  results.push({
+    name: '1. 단조 증가 (1~90)',
+    mape: r1.mape, dirAcc: r1.dirAcc,
+    expect: 'dirAcc=100',
+    status: r1.dirAcc === 100 ? PASS : FAIL,
+  });
+
+  // 테스트 2: 단조 감소 → 100% 적중 기대
+  const monoDown = Array.from({length: 90}, (_, i) => 90 - i);
+  const r2 = backtestModel(monoDown);
+  results.push({
+    name: '2. 단조 감소 (90~1)',
+    mape: r2.mape, dirAcc: r2.dirAcc,
+    expect: 'dirAcc=100',
+    status: r2.dirAcc === 100 ? PASS : FAIL,
+  });
+
+  // 테스트 3: 환율 유사 (보합 + 작은 변동) → dirAcc ≥ 50% 기대
+  const fxLike = Array.from({length: 90}, (_, i) =>
+    parseFloat((210 + i*0.1 + (Math.sin(i*2.3)*0.5)).toFixed(1))
+  );
+  const r3 = backtestModel(fxLike);
+  results.push({
+    name: '3. 환율 유사 (210→219, ±0.5 노이즈)',
+    mape: r3.mape, dirAcc: r3.dirAcc,
+    expect: 'dirAcc ≥ 50',
+    status: (r3.dirAcc != null && r3.dirAcc >= 50) ? PASS : FAIL,
+  });
+
+  // 테스트 4: SHFE 유사 (정수, 큰 값, 약상승) → dirAcc ≥ 50% 기대
+  const shfeLike = Array.from({length: 90}, (_, i) =>
+    Math.round(20000 + i*60 + Math.sin(i*1.7)*200)
+  );
+  const r4 = backtestModel(shfeLike);
+  results.push({
+    name: '4. SHFE 유사 (20000~25500)',
+    mape: r4.mape, dirAcc: r4.dirAcc,
+    expect: 'dirAcc ≥ 50',
+    status: (r4.dirAcc != null && r4.dirAcc >= 50) ? PASS : FAIL,
+  });
+
+  // 테스트 5: 데이터 부족 → null 반환
+  const tooShort = Array.from({length: 50}, (_, i) => i);
+  const r5 = backtestModel(tooShort);
+  results.push({
+    name: '5. 데이터 부족 (50개)',
+    mape: r5.mape, dirAcc: r5.dirAcc,
+    expect: 'mape=null, dirAcc=null',
+    status: (r5.mape === null && r5.dirAcc === null) ? PASS : FAIL,
+  });
+
+  console.group('🧪 ACIS 백테스트 단위 테스트');
+  console.table(results);
+  const allPass = results.every(r => r.status === PASS);
+  console.log(allPass ? '✅ 전체 통과' : '❌ 일부 실패 — backtestModel 또는 forecastForBacktest 검토 필요');
+  console.groupEnd();
+  return results;
+}
+// 전역 노출 (콘솔에서 호출 가능)
+window.runBacktestTests = runBacktestTests;
+
 function getBacktestCached(key, dataArray) {
   const cfg = (window.ACIS_CONFIG && window.ACIS_CONFIG.backtest) || { cacheKey: 'acis_backtest_v1' };
   const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
