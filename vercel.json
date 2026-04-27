@@ -2,6 +2,8 @@
   "version": 2,
   "routes": [
     { "src": "/api/(.*)", "dest": "/api/$1" },
+    { "src": "/robots.txt", "dest": "/robots.txt" },
+    { "src": "/admin.html", "dest": "/admin.html" },
     { "src": "/(.*)", "dest": "/index.html" }
   ]
 }
