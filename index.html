@@ -144,6 +144,19 @@
   .chart-accuracy.acc-poor { color: var(--yellow); }
   .chart-accuracy strong { color: var(--text-primary); font-weight: 600; }
 
+  /* ===== P2-B 환율 위험구간 배지 ===== */
+  .fx-danger-badge {
+    display: inline-flex; align-items: center; gap: 0.3rem;
+    background: rgba(239,68,68,0.10);
+    border: 1px solid rgba(239,68,68,0.35);
+    color: #f87171;
+    font-size: 0.7rem; font-weight: 600;
+    padding: 2px 8px; border-radius: 12px;
+    margin-left: 0.6rem; vertical-align: middle;
+    cursor: help;
+  }
+  .fx-danger-badge strong { color: #fca5a5; font-weight: 700; }
+
   /* ===== P2-A 시나리오 토글 ===== */
   .scenario-bar {
     display: flex; align-items: center; justify-content: space-between;
@@ -1553,7 +1566,7 @@
   <section class="section" id="sec-fx">
     <div class="section-header">
       <div class="section-num">③</div>
-      <div class="section-title">환율 추세 차트</div>
+      <div class="section-title">환율 추세 차트 <span class="fx-danger-badge" id="fx-danger-badge" title="과거 90일 중 상위 15% 분위수 — 이 환율 이상 체류 시 수입 원가 부담 급증">⚠ 위험: <strong id="fx-danger-value">--</strong>원 이상</span></div>
       <div class="section-sub">CNY/KRW 및 USD/KRW 90일 실적 + 30일 예측<span class="chart-accuracy" id="acc-fx">📊 정확도 산출 중…</span></div>
     </div>
     <div class="data-source-bar source-bar-real"><span class="data-badge badge-real">● 실제 데이터</span> 90일 실적 — 한국은행 ECOS API (매매기준율 731Y001, 오전 11시 기준) &nbsp;|&nbsp; <span class="data-badge badge-pred">● 통계 예측</span> 30일 예측선 + 95% 신뢰구간 — 선형회귀 + Holt 앙상블 &nbsp;|&nbsp; <span style="font-size:0.68rem;color:#f1c40f;">※ KPI · 계산기 표시 환율은 전신환 매도율(송금) 기준, 최대 할인율 적용값</span></div>
@@ -2981,6 +2994,9 @@ async function startApp() {
   // P2-A 시나리오 결과 사전 계산 + 미니 카드 표시
   computeScenarioResults();
   renderScenarioMiniCards();
+  // P2-B 위험구간 임계값 배지
+  const dEl = document.getElementById('fx-danger-value');
+  if (dEl && typeof cnyDanger !== 'undefined' && cnyDanger > 0) dEl.textContent = cnyDanger.toFixed(1);
   initPriceChart();
   initFxChart();
   renderSupplierTable();
@@ -3305,6 +3321,59 @@ const bepLinePlugin = {
   },
 };
 
+// P2-B: 환율 위험구간 임계 가로선 + 라벨 (cnyDanger 기반)
+const fxDangerLinePlugin = {
+  id: 'fxDangerLine',
+  afterDatasetsDraw(chart) {
+    if (!chart.options?.plugins?.fxDangerLine?.enabled) return;
+    if (typeof cnyDanger === 'undefined' || !isFinite(cnyDanger) || cnyDanger <= 0) return;
+    // CNY/KRW 축만 (USD 단독 모드 제외)
+    const yTitle = chart.scales.y?.options?.title?.text || '';
+    if (yTitle.indexOf('CNY/KRW') === -1) return;
+
+    const cfg = (window.ACIS_CONFIG && window.ACIS_CONFIG.fxDanger) || {
+      lineColor: '#ef4444', lineWidth: 1.2, lineDash: [5, 4], labelText: '위험구간 임계',
+    };
+    const yScale = chart.scales.y;
+    const xScale = chart.scales.x;
+    if (!yScale || !xScale) return;
+
+    const y = yScale.getPixelForValue(cnyDanger);
+    if (y < yScale.top || y > yScale.bottom) return;
+
+    const ctx = chart.ctx;
+    ctx.save();
+    // 가로선
+    ctx.strokeStyle = cfg.lineColor;
+    ctx.lineWidth = cfg.lineWidth;
+    ctx.setLineDash(cfg.lineDash);
+    ctx.beginPath();
+    ctx.moveTo(xScale.left, y);
+    ctx.lineTo(xScale.right, y);
+    ctx.stroke();
+
+    // 라벨 (우측 상단)
+    const label = `${cfg.labelText}: ${cnyDanger.toFixed(1)}원`;
+    ctx.font = 'bold 10px "Malgun Gothic", sans-serif';
+    const textWidth = ctx.measureText(label).width;
+    const padX = 6, padY = 3, boxH = 16;
+    const boxX = xScale.right - textWidth - padX * 2 - 6;
+    let boxY = y - padY - boxH;
+    if (boxY < yScale.top + 2) boxY = y + 4;
+
+    ctx.setLineDash([]);
+    ctx.fillStyle = 'rgba(17,29,53,0.92)';
+    ctx.fillRect(boxX, boxY, textWidth + padX * 2, boxH);
+    ctx.strokeStyle = cfg.lineColor;
+    ctx.lineWidth = 1;
+    ctx.strokeRect(boxX, boxY, textWidth + padX * 2, boxH);
+    ctx.fillStyle = cfg.lineColor;
+    ctx.textBaseline = 'top';
+    ctx.fillText(label, boxX + padX, boxY + 2);
+    ctx.restore();
+  },
+};
+
 // 옵션 A: 가격 차트의 SHFE BEP 가격 가로선
 // alPrice/SHFE 비율이 유지된다는 가정 하에 손익분기 SHFE 가격 산출
 let currentBEPPrice = null;
@@ -3510,7 +3579,7 @@ function initFxChart() {
   fxChart = new Chart(ctx, {
     type: 'line',
     data: { labels, datasets },
-    plugins: [signalOverlayPlugin, bepLinePlugin],  // P1-B + P1-D
+    plugins: [signalOverlayPlugin, bepLinePlugin, fxDangerLinePlugin],  // P1-B + P1-D + P2-B
     options: {
       responsive: true, maintainAspectRatio: true,
       interaction: { mode: 'index', intersect: false },
@@ -3518,6 +3587,7 @@ function initFxChart() {
         legend: { display: false },
         signalOverlay: { enabled: true },
         bepLine: { enabled: true },
+        fxDangerLine: { enabled: true },
         tooltip: {
           backgroundColor: 'rgba(17,29,53,0.95)',
           titleColor: '#c9a84c', bodyColor: '#e8eaf0',

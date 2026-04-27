@@ -82,6 +82,16 @@ window.ACIS_CONFIG = {
     lineDash: [6, 4],
   },
 
+  // ---------------- 환율 위험구간 (P2-B) ----------------
+  // cnyDanger 임계값(상위 15% 분위수)을 시각적으로 강조
+  fxDanger: {
+    lineColor: '#ef4444',           // 빨간 점선
+    lineWidth: 1.2,
+    lineDash: [5, 4],
+    labelText: '위험구간 임계',     // 가로선 라벨
+    fillAbove: 'rgba(239,68,68,0.10)',  // 임계선 위쪽 음영
+  },
+
   // ---------------- 매수/자제 오버레이 색상 ----------------
   signalOverlay: {
     buy:    'rgba(34, 197, 94, 0.12)',   // 녹색 12%
