@@ -2573,7 +2573,7 @@ async function startApp() {
     sigDesc.textContent = 'RPCI가 60일 이평 대비 ' + Math.abs(rpciVsMa) + '% 하회 — 유리한 구매 시점';
   } else if (shortSignal === 'avoid') {
     sigBadge.textContent = '자제'; sigBadge.className = 'signal-badge avoid';
-    sigDesc.textContent = 'RPCI가 60일 이평 대비 ' + rpciVsMa + '% 상회 — 구매 자제 권고';
+    sigDesc.textContent = 'RPCI가 60일 이평 대비 +' + rpciVsMa + '% 상회 — 구매 자제 권고';
   } else {
     sigBadge.textContent = '대기'; sigBadge.className = 'signal-badge wait';
     sigDesc.textContent = 'RPCI가 60일 이평 적정 범위 내 — 추세 모니터링 권고';
@@ -3162,11 +3162,14 @@ function selectProduct(id) {
     document.getElementById('prod-' + k).classList.toggle('active', k === id);
   });
   // 단가 구성 입력값 업데이트 (생알미늄·가공비kg은 공통 유지, 중량·㎡당가공비만 변경)
+  // ※ 순서 중요: cci-weight를 먼저 갱신해야 getContainerSqm()이 새 두께를 읽음.
+  //   sim-qty도 recalcCostComp() 진입 전에 갱신해야 체인 끝의 calculateSimulator()가
+  //   새 수량 기준으로 단 한 번에 정확히 산출됨.
   document.getElementById('cci-weight').value     = p.weight;
   document.getElementById('cci-proc-cost').value  = p.procCost;
-  recalcCostComp(); // 최종단가 자동 재계산 → sim-cny-sqm 연동
-  // 관세율 업데이트
-  document.getElementById('sim-tariff').value = p.ftaRate;
+  document.getElementById('sim-qty').value        = getContainerSqm();
+  document.getElementById('sim-tariff').value     = p.ftaRate;
+  recalcCostComp(); // → syncContainerSqm() → recalcShipping() → calculateSimulator()
   // HSCODE 바 업데이트
   document.getElementById('prod-hscode-display').textContent = p.hscode;
   document.getElementById('prod-fta-display').textContent    = p.ftaRate + '%';
@@ -3180,9 +3183,6 @@ function selectProduct(id) {
   else if (p.hscode === '7607.11.9000') document.getElementById('hs-7607a').classList.add('hs-active');
   else if (p.hscode === '7607.20.1000') document.getElementById('hs-7607b').classList.add('hs-active');
   else if (p.hscode === '7607.20.9000') document.getElementById('hs-7607c').classList.add('hs-active');
-
-  // 시뮬레이터 발주수량을 새 컨테이너 기준으로 초기화
-  document.getElementById('sim-qty').value = getContainerSqm();
 }
 
 function recalcShipping() {
@@ -3203,7 +3203,7 @@ function recalcShipping() {
                + (parseFloat(document.getElementById('sdp-trucking').value)  || 0);
 
   const total   = Math.round(usdSum * usdRate + krwSum);
-  const qty     = parseFloat(document.getElementById('sdp-qty').value) || 2800;
+  const qty     = parseFloat(document.getElementById('sdp-qty').value) || getContainerSqm();
   const sqmRate = Math.round(total / qty);
 
   document.getElementById('sdp-total').textContent        = fmtNum(total) + '원';
@@ -3233,7 +3233,7 @@ function toggleShipping() {
 }
 
 function calculateSimulator() {
-  const qty      = parseFloat(document.getElementById('sim-qty').value)      || 2800;
+  const qty      = parseFloat(document.getElementById('sim-qty').value)      || getContainerSqm();
   const cnyPerSqm= parseFloat(document.getElementById('sim-cny-sqm').value)  || 11.452;
   const rate     = parseFloat(document.getElementById('sim-cny').value)       || 212;
   const shipping = parseFloat(document.getElementById('sim-shipping').value)  || 68;
