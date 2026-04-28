@@ -1322,6 +1322,21 @@
     border: 1px solid rgba(255,255,255,0.06);
   }
   .product-size-row .size-label { font-size: 0.78rem; color: var(--text-secondary); margin-right: 0.2rem; font-weight: 600; }
+  /* v2.3: 사이즈/순도 그룹 + 구분자 */
+  .product-size-row .size-group { display: flex; align-items: center; gap: 0.4rem; }
+  .product-size-row .size-divider { color: var(--border-light); margin: 0 0.2rem; user-select: none; }
+  /* v2.3: 순도 short 코드 (9000/1000) */
+  .product-size-btn .alloy-short {
+    font-size: 0.62rem; opacity: 0.65; margin-left: 0.3rem;
+    font-weight: 500;
+  }
+  .product-size-btn.active .alloy-short { opacity: 0.85; }
+  /* 모바일: 그룹별 줄바꿈 */
+  @media (max-width: 768px) {
+    .product-size-row { flex-direction: column; align-items: flex-start; gap: 0.4rem; }
+    .product-size-row .size-divider { display: none; }
+    .size-current { margin-left: 0 !important; }
+  }
   .product-size-btn {
     background: rgba(255,255,255,0.04);
     border: 1px solid rgba(255,255,255,0.10);
@@ -2355,14 +2370,19 @@ Best regards,
         </button>
       </div>
 
-      <!-- 2단: 사이즈 토글 (v2.2 작업6: 카테고리별 동적 렌더링) -->
+      <!-- 2단: 사이즈 + 순도 토글 (v2.3: 순도 그룹 추가) -->
       <div class="product-size-row" id="size-row">
-        <span class="size-label">사이즈:</span>
-        <div id="size-buttons-container" style="display:flex; gap:0.4rem;">
-          <!-- JS renderSizeButtons()가 카테고리별로 채움 -->
+        <div class="size-group">
+          <span class="size-label">사이즈:</span>
+          <div id="size-buttons-container" style="display:flex; gap:0.4rem;"></div>
+        </div>
+        <span class="size-divider">|</span>
+        <div class="size-group">
+          <span class="size-label">순도:</span>
+          <div id="alloy-buttons-container" style="display:flex; gap:0.4rem;"></div>
         </div>
         <span class="size-current">
-          현재: <strong id="prod-current-label">지용성 코팅 0.17mm</strong>
+          현재: <strong id="prod-current-label">지용성 코팅 0.17mm · 99.3% 합금</strong>
           · <span id="prod-current-unit">11.452</span> CNY/㎡
         </span>
       </div>
@@ -3535,8 +3555,9 @@ async function startApp() {
   // → 이후 applyCurrentPreset/calculateSimulator 등이 새 값을 사용
   applyAdminQuote();
 
-  // v2.2 작업6: 초기 사이즈 버튼 렌더링 (기본 oil 카테고리의 0.13/0.17mm)
+  // v2.2 작업6 + v2.3: 초기 사이즈 + 순도 버튼 렌더링
   renderSizeButtons();
+  renderAlloyButtons();
 
   // admin.html이 저장한 공급업체 데이터를 우선 사용
   try {
@@ -4554,14 +4575,19 @@ const LS_QUOTE   = 'acis_quote_history';
 // v2.2 작업6: pricingMode 제거 (모든 카테고리가 sqm 모드 통일)
 //             SIZE_OPTIONS 상수 제거 (카테고리별 sizes 키에서 동적 추출)
 //             생알미늄에 sizes(0.10/0.12mm) 추가 — 이론값 weight, procCost=0
+// v2.3: alloys 차원 추가 (1000=99.99% 순알 / 9000=99.3% 합금)
+// 변지수님 통화: "1000은 순수 알미늄, 9000은 합금. 3개가 똑같은 걸 쓰는 거예요"
+// 코팅 종류(oil/water)는 HSCODE 분류 기준이 아니므로 alloys 매핑 동일
 const PRODUCT_CATEGORIES = {
   raw: {
     label:        '생알미늄',
-    desc:         '99.3% 합금 호일 (PCB 드릴용 원자재)',
-    hscode:       '7607.11.9000',  // 변지수님 확정 (99.3% 합금)
-    ftaRate:      7.2,
+    desc:         'PCB 드릴용 알루미늄 호일 원자재',
     pricePerKg:   RAW_AL_PRICE,    // 작업 5에서 admin 입력값으로 갱신
     defaultSize:  '0.10mm',
+    alloys: {
+      alloy: { hscode: '7607.11.9000', ftaRate: 7.2, label: '99.3% 합금', short: '9000' },
+      pure:  { hscode: '7607.11.1000', ftaRate: 0,   label: '99.99% 순알', short: '1000' },
+    },
     sizes: {
       '0.10mm': { weight: 0.270, procCost: 0 },  // 이론값 (Al 밀도 2.70 g/cm³)
       '0.12mm': { weight: 0.324, procCost: 0 },
@@ -4570,9 +4596,11 @@ const PRODUCT_CATEGORIES = {
   oil: {
     label:        '지용성 코팅',
     desc:         '유성(Oil-based) 코팅 PCB 엔트리 시트',
-    hscode:       '7607.20.9000',
-    ftaRate:      1.6,
     defaultSize:  '0.17mm',
+    alloys: {
+      alloy: { hscode: '7607.20.9000', ftaRate: 1.6, label: '99.3% 합금', short: '9000' },
+      pure:  { hscode: '7607.20.1000', ftaRate: 0,   label: '99.99% 순알', short: '1000' },
+    },
     sizes: {
       '0.13mm': { weight: 0.271,  procCost: 2.04 },
       '0.17mm': { weight: 0.3252, procCost: 2.22 },
@@ -4581,9 +4609,12 @@ const PRODUCT_CATEGORIES = {
   water: {
     label:        '수용성 코팅',
     desc:         '수성(Water-based) 코팅 PCB 엔트리 시트',
-    hscode:       '7607.20.1000',
-    ftaRate:      0,
     defaultSize:  '0.17mm',
+    alloys: {
+      // 변지수님 통화: "3개가 똑같은 걸 쓰는 거예요" — oil과 동일 매핑
+      alloy: { hscode: '7607.20.9000', ftaRate: 1.6, label: '99.3% 합금', short: '9000' },
+      pure:  { hscode: '7607.20.1000', ftaRate: 0,   label: '99.99% 순알', short: '1000' },
+    },
     sizes: {
       '0.13mm': { weight: 0.271,  procCost: 5.79 },
       '0.17mm': { weight: 0.3252, procCost: 5.80 },
@@ -4591,8 +4622,11 @@ const PRODUCT_CATEGORIES = {
   },
 };
 
+const ALLOY_OPTIONS = ['alloy', 'pure'];
+
 let currentCategory = 'oil';
 let currentSize     = '0.17mm';
+let currentAlloy    = 'alloy';   // 기본값: 9000 (변지수님 실제 사용)
 
 // ===================== v2.2 작업7: 단위 시스템 (㎡/kg/MT) =====================
 // 내부 계산은 항상 ㎡ 기준 유지. 입출력만 currentUnit으로 환산 (호환성 보장).
@@ -4635,21 +4669,26 @@ function toSqmPrice(value, fromUnit, weight) {
   return value;
 }
 
-// v2.2 작업6: 모든 카테고리가 sizes 기반 sqm 모드 — raw도 0.10/0.12mm 사이즈
-// raw는 procCost=0이라 가공비 없이 생알미늄 단가만으로 계산
+// v2.3: alloys 차원 추가 — getCurrentPreset이 카테고리×사이즈×순도 조합 반환
+// HSCODE/FTA는 alloy 단위로 분리됨 (코팅 종류 무관, 순도(1000/9000)로만 결정)
 function getCurrentPreset() {
   const cat = PRODUCT_CATEGORIES[currentCategory];
-  if (!cat || !cat.sizes) return null;
-  const size = cat.sizes[currentSize];
-  if (!size) return null;
+  if (!cat || !cat.sizes || !cat.alloys) return null;
+  const size  = cat.sizes[currentSize];
+  const alloy = cat.alloys[currentAlloy];
+  if (!size || !alloy) return null;
   return {
-    label:     cat.label + ' ' + currentSize,
-    weight:    size.weight,
-    procCost:  size.procCost,
-    ftaRate:   cat.ftaRate,
-    hscode:    cat.hscode,
-    alPrice:   RAW_AL_PRICE,
-    procPrice: (currentCategory === 'raw') ? 0 : PROC_PRICE,  // raw는 가공비 0
+    label:      cat.label + ' ' + currentSize + ' · ' + alloy.label,
+    weight:     size.weight,
+    procCost:   size.procCost,
+    ftaRate:    alloy.ftaRate,    // v2.3: alloy 단위
+    hscode:     alloy.hscode,     // v2.3: alloy 단위
+    alloyShort: alloy.short,      // 9000 | 1000
+    alPrice:    RAW_AL_PRICE,
+    procPrice:  (currentCategory === 'raw') ? 0 : PROC_PRICE,
+    category:   currentCategory,
+    size:       currentSize,
+    alloy:      currentAlloy,
   };
 }
 
@@ -4972,6 +5011,39 @@ function renderSizeButtons() {
   }).join('');
 }
 
+// v2.3: 순도(alloy) 토글 동적 렌더 (renderSizeButtons와 동일 패턴)
+function renderAlloyButtons() {
+  const cat = PRODUCT_CATEGORIES[currentCategory];
+  if (!cat || !cat.alloys) return;
+  const alloys = Object.keys(cat.alloys);
+  const container = document.getElementById('alloy-buttons-container');
+  if (!container) return;
+
+  // 현재 alloy가 카테고리에 없으면 첫 옵션으로 (실제로는 모든 카테고리에 alloy/pure 둘 다 있음)
+  if (!alloys.includes(currentAlloy)) {
+    currentAlloy = alloys[0];
+  }
+
+  container.innerHTML = alloys.map(a => {
+    const ad = cat.alloys[a];
+    const isActive = a === currentAlloy ? ' active' : '';
+    return `<button class="product-size-btn${isActive}" id="alloy-${a}" data-alloy="${a}"
+              onclick="selectAlloy('${a}')">${ad.label}<span class="alloy-short">${ad.short}</span></button>`;
+  }).join('');
+}
+
+// v2.3: 순도 선택 핸들러 (selectSize와 동일 패턴)
+function selectAlloy(alloy) {
+  const cat = PRODUCT_CATEGORIES[currentCategory];
+  if (!cat || !cat.alloys[alloy]) return;
+  currentAlloy = alloy;
+  // 활성 버튼 토글 (data-alloy 속성 비교)
+  document.querySelectorAll('#alloy-buttons-container .product-size-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.alloy === alloy);
+  });
+  applyCurrentPreset();
+}
+
 // v2.1 신규: 코팅 제품(sqm 모드) 적용 — 기존 selectProduct 본문 일반화
 function applyCurrentPreset() {
   const p = getCurrentPreset();
@@ -4999,13 +5071,19 @@ function applyCurrentPreset() {
   document.getElementById('prod-hscode-display').textContent = p.hscode;
   document.getElementById('prod-fta-display').textContent    = p.ftaRate + '%';
   document.getElementById('prod-tariff-applied').textContent = '한중FTA ' + p.ftaRate + '%';
-  ['7606','7607a','7607b','7607c'].forEach(k => {
+  // v2.3: customs 테이블 활성 행 — 7607.11.1000(생알미늄 호일 순) 행 추가
+  ['7606','7607-pure-raw','7607a','7607b','7607c'].forEach(k => {
     document.getElementById('hs-' + k)?.classList.remove('hs-active');
   });
-  if      (p.hscode === '7606.11.1000') document.getElementById('hs-7606')?.classList.add('hs-active');
-  else if (p.hscode === '7607.11.9000') document.getElementById('hs-7607a')?.classList.add('hs-active');
-  else if (p.hscode === '7607.20.1000') document.getElementById('hs-7607b')?.classList.add('hs-active');
-  else if (p.hscode === '7607.20.9000') document.getElementById('hs-7607c')?.classList.add('hs-active');
+  const hsMap = {
+    '7606.11.1000': 'hs-7606',
+    '7607.11.1000': 'hs-7607-pure-raw',  // v2.3 신규
+    '7607.11.9000': 'hs-7607a',
+    '7607.20.1000': 'hs-7607b',
+    '7607.20.9000': 'hs-7607c',
+  };
+  const hsId = hsMap[p.hscode];
+  if (hsId) document.getElementById(hsId)?.classList.add('hs-active');
 
   // cost-comp-note (시뮬레이터 영역) — 카테고리 기준 안내문 갱신
   const note = document.getElementById('cost-comp-note');
@@ -5025,6 +5103,7 @@ function applyCurrentPreset() {
 }
 
 // v2.2 작업6: 카테고리 토글 — pricingMode 분기 제거, 모든 카테고리 동일 경로
+// v2.3 추가: 순도(alloy) 버튼도 카테고리 변경 시 함께 재렌더 (실제로는 매핑 동일하지만 active 상태 동기화 위해)
 function selectCategory(cat) {
   if (!PRODUCT_CATEGORIES[cat]) return;
   currentCategory = cat;
@@ -5032,8 +5111,9 @@ function selectCategory(cat) {
   ['raw','oil','water'].forEach(k => {
     document.getElementById('cat-' + k)?.classList.toggle('active', k === cat);
   });
-  // 사이즈 버튼 동적 렌더링 (카테고리별 사이즈 다름)
+  // 사이즈 + 순도 버튼 동적 렌더링
   renderSizeButtons();
+  renderAlloyButtons();
   // 모든 카테고리가 시뮬레이터 사용 (raw도 0.10/0.12mm으로 시뮬레이션 가능)
   applyCurrentPreset();
 }
