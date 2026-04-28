@@ -1141,6 +1141,25 @@
   }
   .mkt-smm-input:focus { outline: none; border-color: #7ec8e3; }
   .mkt-smm-input::placeholder { color: var(--text-muted); font-weight: 400; font-size: 0.8rem; }
+
+  /* ===== v2.1 SMM 출처 배지 + 외부 링크 ===== */
+  .badge-mini {
+    display: inline-block;
+    padding: 1px 7px;
+    border-radius: 10px;
+    font-size: 0.62rem;
+    font-weight: 700;
+    margin-left: 0.3rem;
+    vertical-align: middle;
+    letter-spacing: 0.03em;
+  }
+  .badge-mini.badge-admin { background: rgba(46,204,113,0.18); color: #2ecc71; border: 1px solid rgba(46,204,113,0.35); }
+  .badge-mini.badge-warn  { background: rgba(231,76,60,0.18);  color: #e74c3c; border: 1px solid rgba(231,76,60,0.35); }
+  .badge-mini.badge-edit  { background: rgba(241,196,15,0.18); color: #f1c40f; border: 1px solid rgba(241,196,15,0.35); }
+  .ext-link-inline {
+    color: var(--gold); text-decoration: none; font-weight: 600;
+  }
+  .ext-link-inline:hover { text-decoration: underline; }
   .mkt-gap-pos { color: var(--red) !important; }
   .mkt-gap-neg { color: var(--green) !important; }
 
@@ -2204,15 +2223,19 @@ Best regards,
           <div class="mkt-ref-unit">CNY/MT (알루미늄 주력합약 AL9999)</div>
           <div class="mkt-ref-hint">미래 계약가 · 실물가와 ±1~3% 괴리 가능</div>
         </div>
-        <!-- SMM 수동 입력 -->
+        <!-- SMM (v2.1: admin 입력 자동 로드 + 외부 링크) -->
         <div class="mkt-ref-card mkt-smm">
           <div class="mkt-ref-card-header">
             <span class="mkt-badge mkt-badge-smm">SMM</span>
-            <span class="mkt-ref-card-sub">상하이 메탈 마켓 · 수동 입력</span>
+            <span class="mkt-ref-card-sub">상하이 메탈 마켓 <span class="badge-mini" id="smm-source-badge">미입력</span></span>
           </div>
-          <input class="mkt-smm-input" type="number" id="mkt-smm-val" placeholder="예: 20,350" min="10000" max="35000" step="10" oninput="updateMktGap()">
-          <div class="mkt-ref-unit">CNY/MT — <em>price.metal.com</em> 또는 <em>smm.cn</em> 확인 후 입력</div>
-          <div class="mkt-ref-hint">실물 유통 현물가 · 공급업체 협상 단가에 더 근접</div>
+          <input class="mkt-smm-input" type="number" id="mkt-smm-val" placeholder="자동 로딩 중..." min="10000" max="35000" step="10" oninput="onSmmManualEdit()">
+          <div class="mkt-ref-unit">CNY/MT · <span id="smm-meta">최종 입력: --</span></div>
+          <div class="mkt-ref-hint">
+            실물 유통 현물가 ·
+            <a href="https://price.metal.com/mobile/spot/201102250311?price_type=metals%20price"
+               target="_blank" rel="noopener noreferrer" class="ext-link-inline">SMM 사이트 →</a>
+          </div>
         </div>
         <!-- SHFE vs SMM 차이 -->
         <div class="mkt-ref-card mkt-gap-card">
@@ -3604,6 +3627,9 @@ async function startApp() {
   // SHFE 참고 패널 초기값
   const shfeEl = document.getElementById('mkt-shfe-val');
   if (shfeEl) shfeEl.textContent = lastLme ? fmtNum(lastLme, 0) : '--';
+
+  // v2.1: admin이 입력한 SMM 가격 자동 로드 (작업 3+4)
+  applyAdminSmm();
 }
 
 // ===================== 오늘의 결론 (P1-A) =====================
@@ -4577,6 +4603,53 @@ function updateMktGap() {
       && typeof applyRawPreset === 'function') {
     applyRawPreset();
   }
+}
+
+// ===================== v2.1 SMM admin 입력 자동 로드 (작업 3+4) =====================
+const LS_SMM = 'acis_smm_history';
+const SMM_EXTERNAL_URL = 'https://price.metal.com/mobile/spot/201102250311?price_type=metals%20price';
+
+function loadLatestSmm() {
+  try {
+    const raw = localStorage.getItem(LS_SMM);
+    if (!raw) return null;
+    const data = JSON.parse(raw);
+    if (!data.history || data.history.length === 0) return null;
+    return data.history[0]; // history는 admin에서 내림차순 정렬됨
+  } catch (e) {
+    console.warn('[SMM] localStorage 파싱 실패:', e);
+    return null;
+  }
+}
+
+function applyAdminSmm() {
+  const latest = loadLatestSmm();
+  const input  = document.getElementById('mkt-smm-val');
+  const meta   = document.getElementById('smm-meta');
+  const badge  = document.getElementById('smm-source-badge');
+  if (!input) return;
+
+  if (latest) {
+    input.value = latest.price;
+    input.dataset.source = 'admin';
+    if (meta)  meta.textContent  = '최종 입력: ' + latest.date + ' · ' + (latest.enteredBy || '-');
+    if (badge) { badge.textContent = '관리자 입력'; badge.className = 'badge-mini badge-admin'; }
+    if (typeof updateMktGap === 'function') updateMktGap();
+  } else {
+    input.value = '';
+    input.dataset.source = 'none';
+    input.placeholder = 'admin에서 SMM 입력 필요';
+    if (meta)  meta.textContent  = '입력 이력 없음 — admin 페이지에서 입력하세요';
+    if (badge) { badge.textContent = '미입력'; badge.className = 'badge-mini badge-warn'; }
+  }
+}
+
+function onSmmManualEdit() {
+  const input = document.getElementById('mkt-smm-val');
+  const badge = document.getElementById('smm-source-badge');
+  if (input) input.dataset.source = 'manual';
+  if (badge) { badge.textContent = '수동 수정'; badge.className = 'badge-mini badge-edit'; }
+  if (typeof updateMktGap === 'function') updateMktGap();
 }
 
 // ===================== 컨테이너 ㎡ 자동 환산 =====================

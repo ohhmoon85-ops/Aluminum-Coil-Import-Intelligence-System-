@@ -768,6 +768,45 @@
   }
   .add-new-btn:hover { background: rgba(201,168,76,0.22); }
 
+  /* ===== v2.1 외부 링크 버튼 + SMM 입력 ===== */
+  .ext-link-btn {
+    display: inline-flex; align-items: center; gap: 0.3rem;
+    padding: 0.35rem 0.8rem;
+    border: 1px solid var(--gold);
+    border-radius: 6px;
+    color: var(--gold);
+    font-size: 0.78rem; font-weight: 600;
+    text-decoration: none;
+    transition: all 0.15s;
+  }
+  .ext-link-btn:hover { background: rgba(201,168,76,0.12); }
+  .smm-input-row .form-field { display: flex; flex-direction: column; gap: 0.3rem; }
+  .smm-input-row .form-input {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border-light);
+    border-radius: 6px;
+    padding: 0.45rem 0.6rem;
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 0.85rem;
+  }
+  .smm-input-row .form-label { font-size: 0.72rem; color: var(--text-secondary); }
+  .smm-history .btn-danger-sm {
+    background: rgba(231,76,60,0.15);
+    border: 1px solid rgba(231,76,60,0.35);
+    color: #e74c3c;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    cursor: pointer;
+  }
+  .smm-history .btn-danger-sm:hover { background: rgba(231,76,60,0.25); }
+  @media (max-width: 768px) {
+    .smm-input-row { grid-template-columns: 1fr 1fr !important; }
+    .smm-input-row > .form-field:nth-child(3) { grid-column: span 2; }
+    .smm-input-row > button { grid-column: span 1; }
+  }
+
   /* ===== STATS ROW ===== */
   .stats-row {
     display: grid;
@@ -1036,6 +1075,45 @@
           <div class="chart-panel-title">레이더 차트 미리보기</div>
           <canvas id="radarChart" width="280" height="280"></canvas>
           <div style="font-size:0.68rem;color:var(--text-muted);text-align:center;margin-top:0.25rem">슬라이더 조절 시 실시간 업데이트</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- v2.1 작업3+4: SMM 알루미늄 현물가 입력 카드 -->
+    <div class="card" style="margin-bottom: 1.5rem;">
+      <div class="section-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
+        <div class="section-title">📊 SMM 알루미늄 현물가 일별 입력</div>
+        <a href="https://price.metal.com/mobile/spot/201102250311?price_type=metals%20price"
+           target="_blank" rel="noopener noreferrer"
+           class="ext-link-btn">🔗 SMM 사이트 확인하기</a>
+      </div>
+      <div class="smm-input-row" style="display:grid; grid-template-columns:auto 1fr 2fr auto auto; gap:0.6rem; align-items:end; margin-bottom:0.8rem;">
+        <div class="form-field">
+          <label class="form-label">기준일</label>
+          <input type="date" id="smm-date" class="form-input">
+        </div>
+        <div class="form-field">
+          <label class="form-label">SMM 가격 (CNY/MT)</label>
+          <input type="number" id="smm-price" class="form-input" placeholder="예: 20350" step="10" min="0">
+        </div>
+        <div class="form-field">
+          <label class="form-label">메모 (선택)</label>
+          <input type="text" id="smm-note" class="form-input" placeholder="예: SHFE 대비 -1.2%">
+        </div>
+        <button class="btn btn-primary" onclick="saveSmmPrice()" style="white-space:nowrap;">💾 저장</button>
+        <button class="btn btn-secondary" onclick="exportSmmHistory()" style="white-space:nowrap;">📥 백업</button>
+      </div>
+      <div class="smm-history" style="margin-top:0.5rem;">
+        <div style="font-size:0.78rem; color:var(--text-secondary); margin-bottom:0.4rem;">
+          최근 입력 이력 (최대 30일)
+        </div>
+        <div style="overflow-x:auto;">
+          <table id="smm-history-table" class="data-table" style="width:100%; font-size:0.82rem;">
+            <thead>
+              <tr><th>날짜</th><th>SMM 가격 (CNY/MT)</th><th>입력자</th><th>메모</th><th>삭제</th></tr>
+            </thead>
+            <tbody id="smm-history-tbody"></tbody>
+          </table>
         </div>
       </div>
     </div>
@@ -1556,6 +1634,105 @@ function doReset() {
 }
 
 // ===== EXPORT / IMPORT =====
+// ===== v2.1 SMM 알루미늄 현물가 일별 입력 (작업 3) =====
+const LS_SMM = 'acis_smm_history';
+
+function loadSmmData() {
+  try {
+    const raw = localStorage.getItem(LS_SMM);
+    if (!raw) return { history: [], lastUpdated: null };
+    return JSON.parse(raw);
+  } catch (e) {
+    console.warn('[SMM] localStorage 파싱 실패:', e);
+    return { history: [], lastUpdated: null };
+  }
+}
+
+function saveSmmData(data) {
+  data.lastUpdated = new Date().toISOString();
+  localStorage.setItem(LS_SMM, JSON.stringify(data));
+}
+
+function saveSmmPrice() {
+  const date  = document.getElementById('smm-date').value;
+  const price = parseFloat(document.getElementById('smm-price').value);
+  const note  = document.getElementById('smm-note').value.trim();
+  const user  = sessionStorage.getItem('acis_user') || 'admin';
+
+  if (!date)                  { showToast('기준일을 선택해 주세요.', 'error'); return; }
+  if (!price || price <= 0)   { showToast('가격을 정확히 입력해 주세요.', 'error'); return; }
+  if (price < 10000 || price > 50000) {
+    if (!confirm('SMM 알루미늄 가격은 통상 15,000~30,000 CNY/MT 범위입니다.\n입력값 ' + price + '로 저장하시겠습니까?')) return;
+  }
+
+  const data = loadSmmData();
+  // 같은 날짜 덮어쓰기
+  data.history = data.history.filter(h => h.date !== date);
+  data.history.push({ date, price, enteredBy: user, note });
+  data.history.sort((a, b) => b.date.localeCompare(a.date));
+  data.history = data.history.slice(0, 60); // 60일 보관
+  saveSmmData(data);
+
+  showToast('SMM ' + date + ' / ' + price.toLocaleString() + ' CNY/MT 저장 완료', 'success');
+  document.getElementById('smm-price').value = '';
+  document.getElementById('smm-note').value  = '';
+  loadSmmHistory();
+}
+
+function loadSmmHistory() {
+  const data = loadSmmData();
+  const tbody = document.getElementById('smm-history-tbody');
+  if (!tbody) return;
+  if (!data.history || data.history.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--text-muted); padding:1rem;">입력 이력 없음</td></tr>';
+    return;
+  }
+  tbody.innerHTML = data.history.slice(0, 30).map(h =>
+    `<tr>
+      <td>${h.date}</td>
+      <td><strong>${Number(h.price).toLocaleString('ko-KR')}</strong></td>
+      <td>${escHtml(h.enteredBy || '-')}</td>
+      <td>${escHtml(h.note || '-')}</td>
+      <td><button class="btn-danger-sm" onclick="deleteSmm('${h.date}')">×</button></td>
+    </tr>`
+  ).join('');
+}
+
+function deleteSmm(date) {
+  if (!confirm(date + ' SMM 가격을 삭제하시겠습니까?')) return;
+  const data = loadSmmData();
+  data.history = data.history.filter(h => h.date !== date);
+  saveSmmData(data);
+  loadSmmHistory();
+  showToast(date + ' SMM 가격 삭제 완료', 'info');
+}
+
+function exportSmmHistory() {
+  const data = loadSmmData();
+  if (!data.history || data.history.length === 0) {
+    showToast('내보낼 SMM 이력이 없습니다.', 'error');
+    return;
+  }
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  const ts   = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+  a.href = url;
+  a.download = 'acis_smm_history_' + ts + '.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('SMM 이력 백업 파일 다운로드 완료', 'success');
+}
+
+// 페이지 로드 시 오늘 날짜 기본값 + 이력 표시
+document.addEventListener('DOMContentLoaded', () => {
+  const dateEl = document.getElementById('smm-date');
+  if (dateEl) dateEl.value = new Date().toISOString().split('T')[0];
+  loadSmmHistory();
+});
+
 function exportJSON() {
   const blob = new Blob([JSON.stringify(suppliers, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
