@@ -2266,7 +2266,12 @@ Best regards,
 
     <!-- 제품 선택 (v2.1: 카테고리 3종 + 사이즈 서브) -->
     <div class="product-sel-wrap">
-      <span class="product-sel-label">📦 제품 선택 — 중국 견적 기준 (생알미늄 24.39 CNY/kg · 가공비 4 CNY/kg)</span>
+      <span class="product-sel-label">
+        📦 제품 선택 — 중국 견적 기준
+        (생알미늄 <span id="hdr-raw-price">24.39</span> CNY/kg ·
+         가공비 <span id="hdr-proc-price">4.00</span> CNY/kg)
+        <span class="badge-mini" id="quote-source-badge">기본값</span>
+      </span>
 
       <!-- 1단: 대분류 카테고리 -->
       <div class="product-cat-row">
@@ -3493,6 +3498,10 @@ async function startApp() {
   overlay.style.display = 'flex';
   overlay.classList.remove('fade-out');
 
+  // v2.2 작업5: admin이 저장한 견적 단가 우선 적용 (RAW_AL_PRICE/PROC_PRICE 갱신)
+  // → 이후 applyCurrentPreset/calculateSimulator 등이 새 값을 사용
+  applyAdminQuote();
+
   // admin.html이 저장한 공급업체 데이터를 우선 사용
   try {
     const stored = localStorage.getItem('acis_suppliers');
@@ -4501,8 +4510,10 @@ function renderRadarChart(idx) {
 
 // v2.1 신규: 카테고리 기반 자료구조 (Bull 1·2 작업 1)
 // 생알미늄(kg 단위, 시장가 참고) / 지용성·수용성 코팅(㎡ 단위, 시뮬레이션)
-const RAW_AL_PRICE = 24.39;   // 생알미늄 가격 (CNY/kg) — 견적 기준값
-const PROC_PRICE   = 4.00;    // 가공비 (CNY/kg)
+// v2.2 작업 5: const → let 변경 (admin 견적 입력값으로 갱신 가능)
+let RAW_AL_PRICE = 24.39;   // 생알미늄 가격 (CNY/kg) — 견적 기준값
+let PROC_PRICE   = 4.00;    // 가공비 (CNY/kg)
+const LS_QUOTE   = 'acis_quote_history';
 
 const PRODUCT_CATEGORIES = {
   raw: {
@@ -4602,6 +4613,55 @@ function updateMktGap() {
   if (typeof currentCategory !== 'undefined' && currentCategory === 'raw'
       && typeof applyRawPreset === 'function') {
     applyRawPreset();
+  }
+}
+
+// ===================== v2.2 작업5: 견적 단가 admin 자동 로드 =====================
+
+// admin이 저장한 최신 견적을 RAW_AL_PRICE / PROC_PRICE에 반영. startApp 초기에 1회 호출.
+function loadLatestQuote() {
+  try {
+    const raw = localStorage.getItem(LS_QUOTE);
+    if (!raw) return null;
+    const data = JSON.parse(raw);
+    if (!data.history || data.history.length === 0) return null;
+    const latest = data.history[0]; // 날짜 내림차순
+    if (typeof latest.rawAlPrice === 'number' && latest.rawAlPrice > 0) {
+      RAW_AL_PRICE = latest.rawAlPrice;
+    }
+    if (typeof latest.procPrice === 'number' && latest.procPrice >= 0) {
+      PROC_PRICE = latest.procPrice;
+    }
+    // PRODUCT_CATEGORIES.raw.pricePerKg도 동기화 (작업 1+2 정보 카드용)
+    if (PRODUCT_CATEGORIES?.raw && typeof RAW_AL_PRICE === 'number') {
+      PRODUCT_CATEGORIES.raw.pricePerKg = RAW_AL_PRICE;
+    }
+    console.info('[QUOTE] admin 견적 적용:', latest.date, '/ 생알미늄', RAW_AL_PRICE, '/ 가공비', PROC_PRICE);
+    return latest;
+  } catch (e) {
+    console.warn('[QUOTE] 파싱 실패, 기본값 사용:', e);
+    return null;
+  }
+}
+
+// 헤더 표시 갱신 (제품 선택 라벨)
+function refreshQuoteHeader() {
+  const r = document.getElementById('hdr-raw-price');
+  const p = document.getElementById('hdr-proc-price');
+  if (r) r.textContent = RAW_AL_PRICE.toFixed(2);
+  if (p) p.textContent = PROC_PRICE.toFixed(2);
+}
+
+function applyAdminQuote() {
+  const latest = loadLatestQuote();
+  refreshQuoteHeader();
+  const badge = document.getElementById('quote-source-badge');
+  if (latest && badge) {
+    badge.textContent = '관리자 입력 (' + latest.date + ')';
+    badge.className = 'badge-mini badge-admin';
+  } else if (badge) {
+    badge.textContent = '기본값 (견적 미입력)';
+    badge.className = 'badge-mini badge-warn';
   }
 }
 

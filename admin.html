@@ -807,6 +807,31 @@
     .smm-input-row > button { grid-column: span 1; }
   }
 
+  /* v2.2 quote-input-row: smm-input-row와 같은 form-field 스타일 재사용 */
+  .quote-input-row .form-field { display: flex; flex-direction: column; gap: 0.3rem; }
+  .quote-input-row .form-input {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border-light);
+    border-radius: 6px;
+    padding: 0.45rem 0.6rem;
+    color: var(--text-primary);
+    font-family: inherit; font-size: 0.85rem;
+  }
+  .quote-input-row .form-label { font-size: 0.72rem; color: var(--text-secondary); }
+  .quote-history .btn-danger-sm {
+    background: rgba(231,76,60,0.15);
+    border: 1px solid rgba(231,76,60,0.35);
+    color: #e74c3c;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    cursor: pointer;
+  }
+  .quote-history .btn-danger-sm:hover { background: rgba(231,76,60,0.25); }
+  @media (max-width: 768px) {
+    .quote-input-row { grid-template-columns: 1fr 1fr !important; }
+  }
+
   /* ===== STATS ROW ===== */
   .stats-row {
     display: grid;
@@ -1075,6 +1100,54 @@
           <div class="chart-panel-title">레이더 차트 미리보기</div>
           <canvas id="radarChart" width="280" height="280"></canvas>
           <div style="font-size:0.68rem;color:var(--text-muted);text-align:center;margin-top:0.25rem">슬라이더 조절 시 실시간 업데이트</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- v2.2 작업5: 중국 견적 단가 입력 카드 -->
+    <div class="card" style="margin-bottom: 1.5rem;">
+      <div class="section-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
+        <div class="section-title">📋 중국 공급업체 견적 단가</div>
+        <span style="font-size:0.74rem; color:var(--text-muted);">재협상 시 갱신 (월 1~2회 권장)</span>
+      </div>
+      <div class="quote-input-row" style="display:grid; grid-template-columns:auto 1fr 1fr 1fr; gap:0.6rem; align-items:end; margin-bottom:0.6rem;">
+        <div class="form-field">
+          <label class="form-label">기준일</label>
+          <input type="date" id="quote-date" class="form-input">
+        </div>
+        <div class="form-field">
+          <label class="form-label">생알미늄 (CNY/kg)</label>
+          <input type="number" id="quote-raw-price" class="form-input" placeholder="예: 24.39" step="0.01" min="0">
+        </div>
+        <div class="form-field">
+          <label class="form-label">가공비 (CNY/kg)</label>
+          <input type="number" id="quote-proc-price" class="form-input" placeholder="예: 4.00" step="0.01" min="0">
+        </div>
+        <div class="form-field">
+          <label class="form-label">공급업체</label>
+          <input type="text" id="quote-supplier" class="form-input" placeholder="예: Chalco">
+        </div>
+      </div>
+      <div style="display:grid; grid-template-columns: 1fr auto auto auto; gap:0.6rem; align-items:end; margin-bottom:0.8rem;">
+        <div class="form-field">
+          <label class="form-label">메모 (선택)</label>
+          <input type="text" id="quote-note" class="form-input" placeholder="예: 재협상 후 -2% 인하">
+        </div>
+        <button class="btn btn-primary" onclick="saveQuotePrice()" style="white-space:nowrap;">💾 저장</button>
+        <button class="btn btn-secondary" onclick="loadQuoteHistory()" style="white-space:nowrap;">↻ 이력 새로고침</button>
+        <button class="btn btn-secondary" onclick="exportQuoteHistory()" style="white-space:nowrap;">📥 백업</button>
+      </div>
+      <div class="quote-history" style="margin-top:0.5rem;">
+        <div style="font-size:0.78rem; color:var(--text-secondary); margin-bottom:0.4rem;">
+          최근 입력 이력 (최대 12건)
+        </div>
+        <div style="overflow-x:auto;">
+          <table id="quote-history-table" class="data-table" style="width:100%; font-size:0.82rem;">
+            <thead>
+              <tr><th>날짜</th><th>생알미늄 (CNY/kg)</th><th>가공비 (CNY/kg)</th><th>공급업체</th><th>메모</th><th>삭제</th></tr>
+            </thead>
+            <tbody id="quote-history-tbody"></tbody>
+          </table>
         </div>
       </div>
     </div>
@@ -1634,6 +1707,120 @@ function doReset() {
 }
 
 // ===== EXPORT / IMPORT =====
+// ===== v2.2 작업5: 중국 견적 단가 일별 입력 =====
+const LS_QUOTE = 'acis_quote_history';
+
+function loadQuoteData() {
+  try {
+    const raw = localStorage.getItem(LS_QUOTE);
+    if (!raw) return { history: [], lastUpdated: null };
+    return JSON.parse(raw);
+  } catch (e) {
+    console.warn('[QUOTE] localStorage 파싱 실패:', e);
+    return { history: [], lastUpdated: null };
+  }
+}
+
+function saveQuoteData(data) {
+  data.lastUpdated = new Date().toISOString();
+  localStorage.setItem(LS_QUOTE, JSON.stringify(data));
+}
+
+function saveQuotePrice() {
+  const date     = document.getElementById('quote-date').value;
+  const rawPrice = parseFloat(document.getElementById('quote-raw-price').value);
+  const proc     = parseFloat(document.getElementById('quote-proc-price').value);
+  const supplier = document.getElementById('quote-supplier').value.trim();
+  const note     = document.getElementById('quote-note').value.trim();
+  const user     = sessionStorage.getItem('acis_user') || 'admin';
+
+  if (!date)              { showToast('기준일을 선택해 주세요.', 'error'); return; }
+  if (!rawPrice || rawPrice <= 0) { showToast('생알미늄 가격을 정확히 입력해 주세요.', 'error'); return; }
+  if (isNaN(proc) || proc < 0)    { showToast('가공비를 정확히 입력해 주세요(0 이상).', 'error'); return; }
+  if (rawPrice < 10 || rawPrice > 50) {
+    if (!confirm('생알미늄 가격은 통상 15~35 CNY/kg 범위입니다.\n입력값 ' + rawPrice + '로 저장하시겠습니까?')) return;
+  }
+
+  const data = loadQuoteData();
+  data.history = data.history.filter(h => h.date !== date);
+  data.history.push({
+    date,
+    rawAlPrice: rawPrice,
+    procPrice:  proc,
+    supplier:   supplier || '-',
+    enteredBy:  user,
+    note,
+  });
+  data.history.sort((a, b) => b.date.localeCompare(a.date));
+  data.history = data.history.slice(0, 24); // 약 2년치
+  saveQuoteData(data);
+
+  showToast('견적 ' + date + ' / 생알 ' + rawPrice + ' · 가공 ' + proc + ' CNY/kg 저장 완료', 'success');
+  document.getElementById('quote-raw-price').value  = '';
+  document.getElementById('quote-proc-price').value = '';
+  document.getElementById('quote-supplier').value   = '';
+  document.getElementById('quote-note').value       = '';
+  loadQuoteHistory();
+}
+
+function loadQuoteHistory() {
+  const data = loadQuoteData();
+  const tbody = document.getElementById('quote-history-tbody');
+  if (!tbody) return;
+  if (!data.history || data.history.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--text-muted); padding:1rem;">입력 이력 없음</td></tr>';
+    return;
+  }
+  tbody.innerHTML = data.history.slice(0, 12).map(h =>
+    `<tr>
+      <td>${h.date}</td>
+      <td><strong>${Number(h.rawAlPrice).toFixed(2)}</strong></td>
+      <td>${Number(h.procPrice).toFixed(2)}</td>
+      <td>${escHtml(h.supplier || '-')}</td>
+      <td>${escHtml(h.note || '-')}</td>
+      <td><button class="btn-danger-sm" onclick="deleteQuote('${h.date}')">×</button></td>
+    </tr>`
+  ).join('');
+}
+
+function deleteQuote(date) {
+  if (!confirm(date + ' 견적 단가를 삭제하시겠습니까?')) return;
+  const data = loadQuoteData();
+  data.history = data.history.filter(h => h.date !== date);
+  saveQuoteData(data);
+  loadQuoteHistory();
+  showToast(date + ' 견적 삭제 완료', 'info');
+}
+
+function exportQuoteHistory() {
+  const data = loadQuoteData();
+  if (!data.history || data.history.length === 0) {
+    showToast('내보낼 견적 이력이 없습니다.', 'error');
+    return;
+  }
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  const ts   = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+  a.href = url;
+  a.download = 'acis_quote_history_' + ts + '.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('견적 이력 백업 다운로드 완료', 'success');
+}
+
+// 페이지 로드 시 오늘 날짜 + 이력 표시
+document.addEventListener('DOMContentLoaded', () => {
+  const dateEl = document.getElementById('quote-date');
+  if (dateEl) dateEl.value = new Date().toISOString().split('T')[0];
+  loadQuoteHistory();
+});
+
+// CSS: quote-input-row 모바일 반응형 (smm-input-row 재사용)
+// (smm-input-row CSS와 같은 그리드 패턴이라 추가 CSS 없이 동작 가능)
+
 // ===== v2.1 SMM 알루미늄 현물가 일별 입력 (작업 3) =====
 const LS_SMM = 'acis_smm_history';
 
