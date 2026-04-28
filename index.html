@@ -1224,6 +1224,120 @@
   .prod-btn:hover { border-color: var(--gold-dark); color: var(--text-primary); }
   .prod-btn.active { background: rgba(201,168,76,0.12); color: var(--gold); border-color: var(--gold); }
   .prod-btn-sub { font-size: 0.62rem; font-weight: 400; opacity: 0.8; display: block; }
+
+  /* ===== v2.1 카테고리 + 사이즈 2단 선택 ===== */
+  .product-cat-row {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+    margin-bottom: 0.8rem;
+  }
+  .product-cat-btn {
+    background: var(--navy-card);
+    border: 1px solid var(--border-light);
+    color: var(--text-secondary);
+    padding: 0.7rem 0.9rem;
+    border-radius: 8px;
+    cursor: pointer;
+    text-align: left;
+    display: flex; flex-direction: column; gap: 3px;
+    transition: all 0.18s; font-family: inherit;
+  }
+  .product-cat-btn strong { font-size: 0.92rem; color: var(--text-primary); font-weight: 700; }
+  .product-cat-btn small  { font-size: 0.68rem; color: var(--text-muted); }
+  .product-cat-btn:hover  { border-color: var(--gold-dark); }
+  .product-cat-btn.active {
+    background: rgba(201,168,76,0.14);
+    border-color: var(--gold);
+  }
+  .product-cat-btn.active strong { color: var(--gold); }
+
+  .product-size-row {
+    display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;
+    margin-bottom: 0.6rem;
+    padding: 0.5rem 0.8rem;
+    background: rgba(255,255,255,0.025); border-radius: 6px;
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+  .product-size-row .size-label { font-size: 0.78rem; color: var(--text-secondary); margin-right: 0.2rem; font-weight: 600; }
+  .product-size-btn {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.10);
+    color: var(--text-secondary);
+    padding: 0.3rem 0.8rem;
+    border-radius: 6px;
+    font-size: 0.78rem; font-family: inherit; cursor: pointer;
+    transition: all 0.15s;
+  }
+  .product-size-btn:hover { background: rgba(255,255,255,0.08); }
+  .product-size-btn.active {
+    background: rgba(201,168,76,0.18); border-color: var(--gold);
+    color: var(--gold); font-weight: 700;
+  }
+  .size-current { margin-left: auto; font-size: 0.74rem; color: var(--text-muted); }
+  .size-current strong { color: var(--gold); }
+  .size-current span { color: var(--gold); }
+  @media (max-width: 700px) {
+    .product-cat-row { grid-template-columns: 1fr; }
+    .size-current { margin-left: 0; flex-basis: 100%; }
+  }
+
+  /* ===== v2.1 생알미늄 정보 카드 ===== */
+  .raw-info-section { margin: 1rem 0 1.5rem; }
+  .raw-info-card {
+    background: linear-gradient(135deg, rgba(201,168,76,0.06), rgba(201,168,76,0.02));
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--gold);
+    border-radius: 10px;
+    padding: 1.2rem 1.4rem;
+  }
+  .raw-info-header {
+    display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;
+    margin-bottom: 1rem; padding-bottom: 0.7rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .raw-info-header h3 { margin: 0; font-size: 1rem; color: var(--gold); font-weight: 700; }
+  .raw-info-tag {
+    font-size: 0.7rem; color: var(--text-muted);
+    background: rgba(255,255,255,0.04);
+    padding: 3px 10px; border-radius: 12px;
+  }
+  .raw-info-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.8rem;
+    margin-bottom: 1rem;
+  }
+  .raw-info-item {
+    background: rgba(0,0,0,0.18); padding: 0.7rem 0.8rem; border-radius: 8px;
+  }
+  .raw-info-label {
+    font-size: 0.7rem; color: var(--text-muted); margin-bottom: 0.25rem;
+  }
+  .raw-info-value {
+    font-size: 1.1rem; font-weight: 800; color: var(--gold); line-height: 1.2;
+  }
+  .raw-info-sub {
+    font-size: 0.7rem; color: var(--text-muted); margin-top: 0.2rem;
+  }
+  .raw-info-comparison {
+    background: rgba(0,0,0,0.15); padding: 0.8rem 1rem;
+    border-radius: 8px; margin-bottom: 0.8rem;
+  }
+  .raw-info-comparison-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.7rem; margin-top: 0.4rem;
+  }
+  .raw-info-comparison-grid > div {
+    display: flex; flex-direction: column; gap: 2px;
+  }
+  .raw-info-comparison-grid span { font-size: 0.7rem; color: var(--text-muted); }
+  .raw-info-comparison-grid strong { font-size: 0.92rem; color: var(--text-primary); font-weight: 700; }
+  .raw-info-note {
+    font-size: 0.74rem; color: var(--text-secondary);
+    background: rgba(46,204,113,0.06);
+    border: 1px solid rgba(46,204,113,0.18);
+    border-radius: 6px; padding: 0.6rem 0.8rem; line-height: 1.5;
+  }
+  @media (max-width: 768px) {
+    .raw-info-grid { grid-template-columns: repeat(2, 1fr); }
+    .raw-info-comparison-grid { grid-template-columns: 1fr; gap: 0.4rem; }
+  }
   .prod-hscode-bar {
     margin-top: 0.5rem; font-size: 0.72rem; color: var(--text-secondary);
     background: rgba(255,255,255,0.03); border: 1px solid var(--border);
@@ -2127,23 +2241,37 @@ Best regards,
       <span class="data-badge badge-calc">● 계산값</span> 수입원가·절감액은 입력값 기반 즉시 산출
     </div>
 
-    <!-- 제품 선택 -->
+    <!-- 제품 선택 (v2.1: 카테고리 3종 + 사이즈 서브) -->
     <div class="product-sel-wrap">
       <span class="product-sel-label">📦 제품 선택 — 중국 견적 기준 (생알미늄 24.39 CNY/kg · 가공비 4 CNY/kg)</span>
-      <div class="product-sel-grid">
-        <button class="prod-btn active" id="prod-oil17" onclick="selectProduct('oil17')">
-          지용성 코팅<br><span class="prod-btn-sub">0.17mm · 11.452 CNY/㎡</span>
+
+      <!-- 1단: 대분류 카테고리 -->
+      <div class="product-cat-row">
+        <button class="product-cat-btn"        id="cat-raw"   onclick="selectCategory('raw')">
+          <strong>생알미늄</strong>
+          <small>원자재 · kg 단위</small>
         </button>
-        <button class="prod-btn" id="prod-oil13" onclick="selectProduct('oil13')">
-          지용성 코팅<br><span class="prod-btn-sub">0.13mm · 9.734 CNY/㎡</span>
+        <button class="product-cat-btn active" id="cat-oil"   onclick="selectCategory('oil')">
+          <strong>지용성 코팅</strong>
+          <small>Oil-based · ㎡ 단위</small>
         </button>
-        <button class="prod-btn" id="prod-wat17" onclick="selectProduct('wat17')">
-          수용성코팅<br><span class="prod-btn-sub">0.17mm · 15.032 CNY/㎡</span>
-        </button>
-        <button class="prod-btn" id="prod-wat13" onclick="selectProduct('wat13')">
-          수용성코팅<br><span class="prod-btn-sub">0.13mm · 13.484 CNY/㎡</span>
+        <button class="product-cat-btn"        id="cat-water" onclick="selectCategory('water')">
+          <strong>수용성 코팅</strong>
+          <small>Water-based · ㎡ 단위</small>
         </button>
       </div>
+
+      <!-- 2단: 사이즈 토글 (생알미늄 선택 시 자동 숨김) -->
+      <div class="product-size-row" id="size-row">
+        <span class="size-label">사이즈:</span>
+        <button class="product-size-btn"        id="size-013" onclick="selectSize('0.13mm')">0.13mm</button>
+        <button class="product-size-btn active" id="size-017" onclick="selectSize('0.17mm')">0.17mm</button>
+        <span class="size-current">
+          현재: <strong id="prod-current-label">지용성 코팅 0.17mm</strong>
+          · <span id="prod-current-unit">11.452</span> CNY/㎡
+        </span>
+      </div>
+
       <div class="prod-hscode-bar" id="prod-hscode-bar">
         HSCODE: <strong id="prod-hscode-display">7607.20.9000</strong> &nbsp;|&nbsp;
         통상관세율: <strong>8%</strong> &nbsp;|&nbsp;
@@ -2151,6 +2279,52 @@ Best regards,
         적용: <strong id="prod-tariff-applied">한중FTA 1.6%</strong>
       </div>
     </div>
+
+    <!-- v2.1 작업 2: 생알미늄 정보 카드 (raw 모드 전용) -->
+    <div id="raw-info-section" class="raw-info-section" style="display:none;">
+      <div class="raw-info-card">
+        <div class="raw-info-header">
+          <h3>📊 생알미늄 시장 단가 정보</h3>
+          <span class="raw-info-tag">시장가 참고용 · 두께 무관</span>
+        </div>
+        <div class="raw-info-grid">
+          <div class="raw-info-item">
+            <div class="raw-info-label">단가 (CNY 기준)</div>
+            <div class="raw-info-value" id="raw-cny-kg">24.39 CNY/kg</div>
+            <div class="raw-info-sub">= <span id="raw-cny-mt">24,390</span> CNY/MT</div>
+          </div>
+          <div class="raw-info-item">
+            <div class="raw-info-label">단가 (KRW 환산)</div>
+            <div class="raw-info-value" id="raw-krw-kg">-- 원/kg</div>
+            <div class="raw-info-sub">= <span id="raw-krw-mt">--</span> 원/MT</div>
+          </div>
+          <div class="raw-info-item">
+            <div class="raw-info-label">적용 환율</div>
+            <div class="raw-info-value" id="raw-rate">217.6 원/위안</div>
+            <div class="raw-info-sub">송금환율 최대할인 적용</div>
+          </div>
+          <div class="raw-info-item">
+            <div class="raw-info-label">HSCODE</div>
+            <div class="raw-info-value" style="font-size:0.96rem;">7607.11.9000</div>
+            <div class="raw-info-sub">한중FTA 7.2% (합금 호일)</div>
+          </div>
+        </div>
+        <div class="raw-info-comparison">
+          <div class="raw-info-label">📈 시장가 비교 (CNY/MT)</div>
+          <div class="raw-info-comparison-grid">
+            <div><span>SHFE 선물</span><strong id="raw-vs-shfe">-- CNY/MT</strong></div>
+            <div><span>SMM 현물</span><strong id="raw-vs-smm">-- CNY/MT</strong></div>
+            <div><span>견적 기준</span><strong>24,390 CNY/MT</strong></div>
+          </div>
+        </div>
+        <div class="raw-info-note">
+          ℹ️ 생알미늄은 원자재 시장가 참고용 카드입니다. 코팅 제품의 시뮬레이션은 위에서 <strong>지용성 코팅</strong> 또는 <strong>수용성 코팅</strong> 카테고리를 선택해 주세요.
+        </div>
+      </div>
+    </div>
+
+    <!-- v2.1: 시뮬레이터 모드 영역 (raw 모드 시 숨김 토글) -->
+    <div id="sqm-mode-area">
 
     <!-- 단가 구성 상세 -->
     <div class="cost-comp-wrap" id="cost-comp-wrap">
@@ -2385,6 +2559,8 @@ Best regards,
         </tbody>
       </table>
     </div>
+
+    </div><!-- /sqm-mode-area (v2.1) -->
   </section>
 
 </main>
@@ -4297,6 +4473,66 @@ function renderRadarChart(idx) {
 
 // ===================== SIMULATOR =====================
 
+// v2.1 신규: 카테고리 기반 자료구조 (Bull 1·2 작업 1)
+// 생알미늄(kg 단위, 시장가 참고) / 지용성·수용성 코팅(㎡ 단위, 시뮬레이션)
+const RAW_AL_PRICE = 24.39;   // 생알미늄 가격 (CNY/kg) — 견적 기준값
+const PROC_PRICE   = 4.00;    // 가공비 (CNY/kg)
+
+const PRODUCT_CATEGORIES = {
+  raw: {
+    label:        '생알미늄',
+    desc:         '코팅 없는 순수 알루미늄 원자재 (시장가 참고용)',
+    hscode:       '7607.11.9000',
+    ftaRate:      7.2,
+    pricingMode:  'kg',       // kg 단위 — 두께 무관
+    pricePerKg:   RAW_AL_PRICE,
+  },
+  oil: {
+    label:        '지용성 코팅',
+    desc:         '유성(Oil-based) 코팅 PCB 엔트리 시트',
+    hscode:       '7607.20.9000',
+    ftaRate:      1.6,
+    pricingMode:  'sqm',      // ㎡ 단위, 사이즈별 시뮬레이션
+    sizes: {
+      '0.13mm': { weight: 0.271,  procCost: 2.04 },
+      '0.17mm': { weight: 0.3252, procCost: 2.22 },
+    },
+  },
+  water: {
+    label:        '수용성 코팅',
+    desc:         '수성(Water-based) 코팅 PCB 엔트리 시트',
+    hscode:       '7607.20.1000',
+    ftaRate:      0,
+    pricingMode:  'sqm',
+    sizes: {
+      '0.13mm': { weight: 0.271,  procCost: 5.79 },
+      '0.17mm': { weight: 0.3252, procCost: 5.80 },
+    },
+  },
+};
+const SIZE_OPTIONS = ['0.13mm', '0.17mm'];
+
+let currentCategory = 'oil';
+let currentSize     = '0.17mm';
+
+// 현재 카테고리·사이즈 조합의 sqm 모드 preset 반환 (raw 카테고리는 null)
+function getCurrentPreset() {
+  const cat = PRODUCT_CATEGORIES[currentCategory];
+  if (!cat || cat.pricingMode !== 'sqm') return null;
+  const size = cat.sizes[currentSize];
+  if (!size) return null;
+  return {
+    label:     cat.label + ' ' + currentSize,
+    weight:    size.weight,
+    procCost:  size.procCost,
+    ftaRate:   cat.ftaRate,
+    hscode:    cat.hscode,
+    alPrice:   RAW_AL_PRICE,
+    procPrice: PROC_PRICE,
+  };
+}
+
+// v1.0 호환용 — 기존 PRODUCT_PRESETS 객체 (다른 코드가 참조 중인 경우 대비)
 // 제품 프리셋 (중국견적.pdf 기준 — 생알미늄 24.39 CNY/kg, 가공비 4 CNY/kg)
 const PRODUCT_PRESETS = {
   oil17: { name:'지용성 코팅 0.17mm', cnyPerSqm:11.452, hscode:'7607.20.9000', ftaRate:1.6,
@@ -4335,6 +4571,12 @@ function updateMktGap() {
   document.getElementById('mkt-gap-hint').textContent = diff >= 0
     ? 'SMM > SHFE: 실물 수급 타이트. 협상 여지 적을 수 있음.'
     : 'SMM < SHFE: 실물 공급 여유. 가격 인하 협상 가능.';
+
+  // v2.1: 생알미늄 모드 카드의 SMM 비교값도 자동 갱신
+  if (typeof currentCategory !== 'undefined' && currentCategory === 'raw'
+      && typeof applyRawPreset === 'function') {
+    applyRawPreset();
+  }
 }
 
 // ===================== 컨테이너 ㎡ 자동 환산 =====================
@@ -4405,35 +4647,152 @@ function resetCostComp() {
   syncDomesticPrice();
 }
 
-function selectProduct(id) {
-  currentProductId = id;
-  const p = PRODUCT_PRESETS[id];
-  // 버튼 활성화
-  Object.keys(PRODUCT_PRESETS).forEach(k => {
-    document.getElementById('prod-' + k).classList.toggle('active', k === id);
+// v2.1 신규: 시뮬레이터 모드 UI (코팅 제품 선택 시) — 정보 카드 숨김, 시뮬레이터 표시
+function showSimulatorMode() {
+  const rawSec = document.getElementById('raw-info-section');
+  const sqmSec = document.getElementById('sqm-mode-area');
+  if (rawSec) rawSec.style.display = 'none';
+  if (sqmSec) sqmSec.style.display = '';
+}
+
+// v2.1 신규: 생알미늄 정보 카드 적용 (raw 모드) — 시뮬레이터 숨김, 정보 카드 표시
+function applyRawPreset() {
+  const cat = PRODUCT_CATEGORIES.raw;
+  const cnyPerKg = cat.pricePerKg;
+  const cnyPerMt = Math.round(cnyPerKg * 1000);
+
+  // 송금환율 (CNY/KRW) — sim-cny 입력값 우선, fallback remitCny
+  const rate = parseFloat(document.getElementById('sim-cny')?.value)
+            || (typeof remitCny !== 'undefined' ? remitCny : 217.6);
+  const krwPerKg = Math.round(cnyPerKg * rate);
+  const krwPerMt = krwPerKg * 1000;
+
+  // 정보 카드 값 채우기
+  const setText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  setText('raw-cny-kg', cnyPerKg.toFixed(2) + ' CNY/kg');
+  setText('raw-cny-mt', cnyPerMt.toLocaleString('ko-KR'));
+  setText('raw-krw-kg', krwPerKg.toLocaleString('ko-KR') + ' 원/kg');
+  setText('raw-krw-mt', krwPerMt.toLocaleString('ko-KR'));
+  setText('raw-rate',   rate.toFixed(1) + ' 원/위안');
+
+  // SHFE / SMM 비교
+  const shfe = (typeof lastLme !== 'undefined' && lastLme > 0) ? lastLme : null;
+  setText('raw-vs-shfe', shfe ? shfe.toLocaleString('ko-KR') + ' CNY/MT' : '-- CNY/MT');
+  const smmEl = document.getElementById('mkt-smm-val');
+  const smmVal = smmEl && smmEl.value ? parseFloat(smmEl.value) : null;
+  setText('raw-vs-smm', (smmVal && smmVal > 0) ? smmVal.toLocaleString('ko-KR') + ' CNY/MT' : '미입력');
+
+  // HSCODE 바 + customs 테이블 활성 행
+  const hsEl  = document.getElementById('prod-hscode-display');
+  const ftaEl = document.getElementById('prod-fta-display');
+  const taEl  = document.getElementById('prod-tariff-applied');
+  if (hsEl)  hsEl.textContent  = cat.hscode;
+  if (ftaEl) ftaEl.textContent = cat.ftaRate + '%';
+  if (taEl)  taEl.textContent  = '한중FTA ' + cat.ftaRate + '%';
+  ['7606','7607a','7607b','7607c'].forEach(k => {
+    document.getElementById('hs-' + k)?.classList.remove('hs-active');
   });
-  // 단가 구성 입력값 업데이트 (생알미늄·가공비kg은 공통 유지, 중량·㎡당가공비만 변경)
-  // ※ 순서 중요: cci-weight를 먼저 갱신해야 getContainerSqm()이 새 두께를 읽음.
-  //   sim-qty도 recalcCostComp() 진입 전에 갱신해야 체인 끝의 calculateSimulator()가
-  //   새 수량 기준으로 단 한 번에 정확히 산출됨.
+  document.getElementById('hs-7607a')?.classList.add('hs-active');
+
+  // 현재 라벨
+  const lblEl = document.getElementById('prod-current-label');
+  if (lblEl) lblEl.textContent = '생알미늄';
+
+  // 화면 토글: 시뮬레이터 숨김 + 정보 카드 표시
+  const rawSec = document.getElementById('raw-info-section');
+  const sqmSec = document.getElementById('sqm-mode-area');
+  if (rawSec) rawSec.style.display = '';
+  if (sqmSec) sqmSec.style.display = 'none';
+}
+
+// v2.1 신규: 코팅 제품(sqm 모드) 적용 — 기존 selectProduct 본문 일반화
+function applyCurrentPreset() {
+  const p = getCurrentPreset();
+  if (!p) return;
+
+  // 화면 토글: 정보 카드 숨김 + 시뮬레이터 복원
+  showSimulatorMode();
+
+  // ※ 순서 중요 (v1.0 정신 유지):
+  //   cci-weight 먼저 → sim-qty/sim-tariff 갱신 → recalcCostComp 체인
   document.getElementById('cci-weight').value     = p.weight;
   document.getElementById('cci-proc-cost').value  = p.procCost;
+  document.getElementById('cci-al-price').value   = p.alPrice;
+  document.getElementById('cci-proc-price').value = p.procPrice;
   document.getElementById('sim-qty').value        = getContainerSqm();
   document.getElementById('sim-tariff').value     = p.ftaRate;
   recalcCostComp(); // → syncContainerSqm() → recalcShipping() → calculateSimulator()
-  // HSCODE 바 업데이트
+
+  // HSCODE 바 + customs 테이블
   document.getElementById('prod-hscode-display').textContent = p.hscode;
   document.getElementById('prod-fta-display').textContent    = p.ftaRate + '%';
   document.getElementById('prod-tariff-applied').textContent = '한중FTA ' + p.ftaRate + '%';
-  document.getElementById('cost-comp-note').textContent = '※ ' + p.note;
-  // customs 테이블 활성 행 업데이트
   ['7606','7607a','7607b','7607c'].forEach(k => {
-    document.getElementById('hs-' + k).classList.remove('hs-active');
+    document.getElementById('hs-' + k)?.classList.remove('hs-active');
   });
-  if      (p.hscode === '7606.11.1000') document.getElementById('hs-7606').classList.add('hs-active');
-  else if (p.hscode === '7607.11.9000') document.getElementById('hs-7607a').classList.add('hs-active');
-  else if (p.hscode === '7607.20.1000') document.getElementById('hs-7607b').classList.add('hs-active');
-  else if (p.hscode === '7607.20.9000') document.getElementById('hs-7607c').classList.add('hs-active');
+  if      (p.hscode === '7606.11.1000') document.getElementById('hs-7606')?.classList.add('hs-active');
+  else if (p.hscode === '7607.11.9000') document.getElementById('hs-7607a')?.classList.add('hs-active');
+  else if (p.hscode === '7607.20.1000') document.getElementById('hs-7607b')?.classList.add('hs-active');
+  else if (p.hscode === '7607.20.9000') document.getElementById('hs-7607c')?.classList.add('hs-active');
+
+  // cost-comp-note (시뮬레이터 영역) — 카테고리 기준 안내문 갱신
+  const note = document.getElementById('cost-comp-note');
+  if (note) {
+    const cat = PRODUCT_CATEGORIES[currentCategory];
+    note.textContent = '※ ' + p.label + ' — HSCODE ' + p.hscode + ' (' + cat.desc + '). 한중FTA ' + p.ftaRate + '%.';
+  }
+
+  // 현재 라벨
+  const lblEl  = document.getElementById('prod-current-label');
+  const unitEl = document.getElementById('prod-current-unit');
+  if (lblEl) lblEl.textContent = p.label;
+  if (unitEl) {
+    const cciUnit = document.getElementById('cci-unit');
+    if (cciUnit) unitEl.textContent = cciUnit.textContent.replace(/CNY\/㎡|<span>CNY\/㎡<\/span>/, '').trim();
+  }
+}
+
+// v2.1 신규: 카테고리 토글
+function selectCategory(cat) {
+  if (!PRODUCT_CATEGORIES[cat]) return;
+  currentCategory = cat;
+  // 버튼 active 토글
+  ['raw','oil','water'].forEach(k => {
+    document.getElementById('cat-' + k)?.classList.toggle('active', k === cat);
+  });
+  const sizeRow = document.getElementById('size-row');
+  if (PRODUCT_CATEGORIES[cat].pricingMode === 'kg') {
+    if (sizeRow) sizeRow.style.display = 'none';
+    applyRawPreset();
+  } else {
+    if (sizeRow) sizeRow.style.display = '';
+    applyCurrentPreset();
+  }
+}
+
+// v2.1 신규: 사이즈 토글 (sqm 모드 전용)
+function selectSize(size) {
+  if (!SIZE_OPTIONS.includes(size)) return;
+  currentSize = size;
+  document.getElementById('size-013')?.classList.toggle('active', size === '0.13mm');
+  document.getElementById('size-017')?.classList.toggle('active', size === '0.17mm');
+  if (PRODUCT_CATEGORIES[currentCategory]?.pricingMode === 'sqm') {
+    applyCurrentPreset();
+  }
+}
+
+// v1.0 호환 wrapper — 기존 onclick="selectProduct('oil17')" 호출 보호
+// (외부에서 직접 호출되는 경로가 있을 경우 대비)
+function selectProduct(id) {
+  const map = {
+    raw:    ['raw',  null],
+    oil13:  ['oil',  '0.13mm'], oil17:  ['oil',  '0.17mm'],
+    wat13:  ['water','0.13mm'], wat17:  ['water','0.17mm'],
+    water13:['water','0.13mm'], water17:['water','0.17mm'],
+  };
+  const [cat, size] = map[id] || ['oil', '0.17mm'];
+  selectCategory(cat);
+  if (size && cat !== 'raw') selectSize(size);
 }
 
 function recalcShipping() {
@@ -4597,6 +4956,12 @@ function calculateSimulator() {
   // (P3-A 슬라이더로 sim-cny 변경 시, 수동 입력 시 모두 일관성 유지)
   const cciFxEl = document.getElementById('cci-fx-rate');
   if (cciFxEl) cciFxEl.innerHTML = rate.toFixed(1) + ' <span>원/위안</span>';
+
+  // v2.1: 생알미늄 모드 카드도 환율 변경 시 자동 갱신 (KRW 환산값)
+  if (typeof currentCategory !== 'undefined' && currentCategory === 'raw'
+      && typeof applyRawPreset === 'function') {
+    applyRawPreset();
+  }
 }
 
 // ===================== SCROLL NAV =====================
