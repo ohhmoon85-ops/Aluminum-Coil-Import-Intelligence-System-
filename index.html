@@ -1142,6 +1142,29 @@
   .mkt-smm-input:focus { outline: none; border-color: #7ec8e3; }
   .mkt-smm-input::placeholder { color: var(--text-muted); font-weight: 400; font-size: 0.8rem; }
 
+  /* ===== 견적 카드 사용자 입력 (mkt-smm-input 패턴 차용, 견적 색상) ===== */
+  .mkt-quote-input {
+    width: 100%; padding: 0.4rem 0.6rem; margin-bottom: 0.25rem;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(76,201,130,0.35);
+    color: #7ec8e3;
+    border-radius: 6px;
+    font-size: 1.05rem; font-weight: 800;
+    font-family: inherit; transition: border-color 0.2s;
+  }
+  .mkt-quote-input:focus { outline: none; border-color: #7ec8e3; }
+  .mkt-quote-input.mkt-quote-input-sm {
+    font-size: 0.86rem; font-weight: 700;
+    width: 70px; padding: 0.25rem 0.45rem;
+    margin-bottom: 0;
+  }
+  .mkt-quote-proc-row {
+    display: flex; align-items: center; gap: 0.4rem;
+    margin: 0.25rem 0 0.4rem;
+    flex-wrap: wrap;
+  }
+  .mkt-quote-sublabel { font-size: 0.72rem; color: var(--text-secondary); font-weight: 600; }
+
   /* ===== v2.1 SMM 출처 배지 + 외부 링크 ===== */
   .badge-mini {
     display: inline-block;
@@ -2276,15 +2299,29 @@ Best regards,
           <div class="mkt-ref-unit" id="mkt-gap-unit">CNY/MT 차이 · % 괴리율</div>
           <div class="mkt-ref-hint" id="mkt-gap-hint">SMM 가격 입력 시 자동 계산</div>
         </div>
-        <!-- 중국 견적 기준 생알미늄가 (v2.2 버그2 fix: admin 입력 자동 반영) -->
+        <!-- 중국 견적 기준 생알미늄가 (사용자 수정 가능 - SMM 카드 패턴 일관성) -->
         <div class="mkt-ref-card mkt-quote">
           <div class="mkt-ref-card-header">
             <span class="mkt-badge mkt-badge-quote">견적</span>
-            <span class="mkt-ref-card-sub">중국 견적 기준 생알미늄가</span>
+            <span class="mkt-ref-card-sub">
+              중국 견적 기준 생알미늄가
+              <span class="badge-mini" id="quote-card-source-badge">기본값</span>
+            </span>
           </div>
-          <div class="mkt-ref-value" style="color:#7ec8e3;"><span id="quote-card-raw">24.39</span></div>
-          <div class="mkt-ref-unit">CNY/kg · 가공비 <span id="quote-card-proc">4.00</span> CNY/kg 별도</div>
-          <div class="mkt-ref-hint">중국 공급업체 견적(<span id="quote-card-date">2026.03</span>) 기준 · 시장가 변동 시 재협상 필요</div>
+          <input class="mkt-quote-input" type="number" id="quote-card-raw-input"
+                 value="24.39" min="0" max="200" step="0.01"
+                 oninput="onQuoteCardEdit()" title="생알미늄 단가 (CNY/kg)">
+          <div class="mkt-quote-proc-row">
+            <span class="mkt-quote-sublabel">가공비</span>
+            <input class="mkt-quote-input mkt-quote-input-sm" type="number" id="quote-card-proc-input"
+                   value="4.00" min="0" max="100" step="0.01"
+                   oninput="onQuoteCardEdit()" title="가공비 (CNY/kg)">
+            <span class="mkt-ref-unit" style="margin:0;">CNY/kg 별도</span>
+          </div>
+          <div class="mkt-ref-hint">
+            중국 공급업체 견적(<span id="quote-card-date">2026.03</span>) 기준 ·
+            <span id="quote-card-status">시장가 변동 시 재협상 필요</span>
+          </div>
         </div>
       </div>
     </div>
@@ -4687,43 +4724,54 @@ function loadLatestQuote() {
   }
 }
 
-// 헤더 표시 + 견적 카드 갱신 (v2.2 버그2 fix)
+// 헤더 표시 갱신 (제품 선택 영역 hdr-* span)
+// 견적 카드 input value는 applyAdminQuote에서만 갱신 (수동 수정 중 reformat 방지)
 function refreshQuoteHeader() {
-  // 제품 선택 헤더
   const r = document.getElementById('hdr-raw-price');
   const p = document.getElementById('hdr-proc-price');
   if (r) r.textContent = RAW_AL_PRICE.toFixed(2);
   if (p) p.textContent = PROC_PRICE.toFixed(2);
-
-  // 견적 카드 (시장가 참고 패널 4번째)
-  const cardR = document.getElementById('quote-card-raw');
-  const cardP = document.getElementById('quote-card-proc');
-  if (cardR) cardR.textContent = RAW_AL_PRICE.toFixed(2);
-  if (cardP) cardP.textContent = PROC_PRICE.toFixed(2);
 }
 
 function applyAdminQuote() {
   const latest = loadLatestQuote();
   refreshQuoteHeader();
-  const badge = document.getElementById('quote-source-badge');
-  // 견적 카드 날짜 갱신 (v2.2 버그2 fix)
-  const cardDate = document.getElementById('quote-card-date');
+  const headerBadge = document.getElementById('quote-source-badge');
+  const cardBadge   = document.getElementById('quote-card-source-badge');
+  const cardDate    = document.getElementById('quote-card-date');
+  const cardStatus  = document.getElementById('quote-card-status');
+  const cardRawIn   = document.getElementById('quote-card-raw-input');
+  const cardProcIn  = document.getElementById('quote-card-proc-input');
+
   if (latest) {
-    if (badge) {
-      badge.textContent = '관리자 입력 (' + latest.date + ')';
-      badge.className = 'badge-mini badge-admin';
+    if (headerBadge) {
+      headerBadge.textContent = '관리자 입력 (' + latest.date + ')';
+      headerBadge.className = 'badge-mini badge-admin';
     }
-    // YYYY-MM-DD → YYYY.MM 형식으로 변환
+    if (cardBadge) {
+      cardBadge.textContent = '관리자 입력';
+      cardBadge.className = 'badge-mini badge-admin';
+    }
     if (cardDate && latest.date) {
       cardDate.textContent = latest.date.slice(0, 7).replace('-', '.');
     }
+    if (cardStatus) cardStatus.textContent = '시장가 변동 시 재협상 필요';
   } else {
-    if (badge) {
-      badge.textContent = '기본값 (견적 미입력)';
-      badge.className = 'badge-mini badge-warn';
+    if (headerBadge) {
+      headerBadge.textContent = '기본값 (견적 미입력)';
+      headerBadge.className = 'badge-mini badge-warn';
     }
-    if (cardDate) cardDate.textContent = '2026.03';
+    if (cardBadge) {
+      cardBadge.textContent = '기본값';
+      cardBadge.className = 'badge-mini badge-warn';
+    }
+    if (cardDate)   cardDate.textContent = '2026.03';
+    if (cardStatus) cardStatus.textContent = '시장가 변동 시 재협상 필요';
   }
+
+  // 견적 카드 input value 동기화 (수동 수정 상태에서 admin 값으로 복원)
+  if (cardRawIn)  cardRawIn.value  = RAW_AL_PRICE.toFixed(2);
+  if (cardProcIn) cardProcIn.value = PROC_PRICE.toFixed(2);
 
   // v2.2 버그2 fix: cci-al-price/cci-proc-price input value도 동기화
   // (recalcCostComp가 .value를 읽으므로 변수만 바꾸면 단가 계산이 옛값 사용)
@@ -4732,6 +4780,47 @@ function applyAdminQuote() {
   if (cciAl)   cciAl.value   = RAW_AL_PRICE.toFixed(2);
   if (cciProc) cciProc.value = PROC_PRICE.toFixed(2);
   // 단가 재계산 (sim-cny-sqm 등 후속 표시 갱신)
+  if (typeof recalcCostComp === 'function') recalcCostComp();
+}
+
+// 견적 카드 사용자 직접 수정 핸들러 (SMM의 onSmmManualEdit 패턴 일관)
+function onQuoteCardEdit() {
+  const rawInput  = document.getElementById('quote-card-raw-input');
+  const procInput = document.getElementById('quote-card-proc-input');
+  const cardBadge = document.getElementById('quote-card-source-badge');
+  const cardStatus= document.getElementById('quote-card-status');
+
+  const newRaw  = parseFloat(rawInput.value);
+  const newProc = parseFloat(procInput.value);
+  // 유효성: rawPrice > 0, procPrice ≥ 0
+  if (isNaN(newRaw) || newRaw <= 0)  return;
+  if (isNaN(newProc) || newProc < 0) return;
+
+  // 전역 단가 갱신
+  RAW_AL_PRICE = newRaw;
+  PROC_PRICE   = newProc;
+  // PRODUCT_CATEGORIES.raw.pricePerKg도 동기화
+  if (PRODUCT_CATEGORIES?.raw) PRODUCT_CATEGORIES.raw.pricePerKg = newRaw;
+
+  // 출처 배지를 "수동 수정"으로 변경
+  if (cardBadge) {
+    cardBadge.textContent = '수동 수정';
+    cardBadge.className = 'badge-mini badge-edit';
+  }
+  if (cardStatus) {
+    cardStatus.textContent = '임시 수정값 — 새로고침 시 admin 값으로 복원';
+  }
+
+  // 헤더(hdr-raw-price/proc) + 카드 텍스트 갱신
+  refreshQuoteHeader();
+
+  // 단가 구성 입력 동기화 (recalcCostComp가 cci-*.value를 읽음)
+  const cciAl   = document.getElementById('cci-al-price');
+  const cciProc = document.getElementById('cci-proc-price');
+  if (cciAl)   cciAl.value   = newRaw.toFixed(2);
+  if (cciProc) cciProc.value = newProc.toFixed(2);
+
+  // 재계산 트리거 → sim-cny-sqm/cci-unit 등 후속 표시 + calculateSimulator
   if (typeof recalcCostComp === 'function') recalcCostComp();
 }
 
