@@ -1540,6 +1540,19 @@
   .customs-table tbody tr.hs-active td { color: var(--gold); }
   .hs-rate-0  { color: var(--green); font-weight: 700; }
   .hs-rate-pos { color: var(--yellow); font-weight: 700; }
+  /* v2.3 작업9: HSCODE 가이드 표 하단 안내문 */
+  .hs-table-footer {
+    margin-top: 0.6rem;
+    padding: 0.7rem 1.1rem;
+    font-size: 0.72rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    background: rgba(255,255,255,0.025);
+    border-radius: 0 0 8px 8px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
+  .hs-table-footer strong { color: var(--text-primary); }
+  .customs-table tbody td em { font-style: normal; }
 
   /* ===== FOOTER ===== */
   #footer {
@@ -2626,12 +2639,21 @@ Best regards,
           <tr><th>품목</th><th>HS Code</th><th>통상관세율</th><th>한중FTA</th><th>비고</th></tr>
         </thead>
         <tbody id="customs-tbody">
-          <tr id="hs-7606" ><td>생알미늄 (판·시트)</td><td>7606.11.1000</td><td>8%</td><td class="hs-rate-0">0%</td><td>99.99% 순알미늄</td></tr>
-          <tr id="hs-7607a"><td>생알미늄 호일</td><td>7607.11.9000</td><td>8%</td><td class="hs-rate-pos">7.2%</td><td>99.3% 합금</td></tr>
-          <tr id="hs-7607b"><td>코팅알미늄 (순)</td><td>7607.20.1000</td><td>8%</td><td class="hs-rate-0">0%</td><td>99.99% 순알미늄 + 코팅 ← 수용성코팅</td></tr>
-          <tr id="hs-7607c" class="hs-active"><td>코팅알미늄 (합금)</td><td>7607.20.9000</td><td>8%</td><td class="hs-rate-pos">1.6%</td><td>99.3% 합금 + 코팅 ← <strong>지용성 코팅 해당</strong></td></tr>
+          <tr id="hs-7606"><td>알미늄 판·시트</td><td>7606.11.1000</td><td>8%</td><td class="hs-rate-0">0%</td><td>99.99% 순알미늄 · 두께 ≥ 0.2mm <em style="color:var(--text-muted);">(참고용 — ACIS 미사용)</em></td></tr>
+          <tr id="hs-7607-pure-raw"><td>생알미늄 호일 (순)</td><td>7607.11.1000</td><td>8%</td><td class="hs-rate-0">0%</td><td>99.99% 순알미늄 · 두께 &lt; 0.2mm</td></tr>
+          <tr id="hs-7607a"><td>생알미늄 호일 (합금)</td><td>7607.11.9000</td><td>8%</td><td class="hs-rate-pos">7.2%</td><td>99.3% 합금 · 두께 &lt; 0.2mm <strong style="color:var(--gold);">★ 실제 수입</strong></td></tr>
+          <tr id="hs-7607b"><td>코팅 알미늄 (순)</td><td>7607.20.1000</td><td>8%</td><td class="hs-rate-0">0%</td><td>99.99% 순알 + 코팅 (지용성·수용성 공통)</td></tr>
+          <tr id="hs-7607c" class="hs-active"><td>코팅 알미늄 (합금)</td><td>7607.20.9000</td><td>8%</td><td class="hs-rate-pos">1.6%</td><td>99.3% 합금 + 코팅 (지용성·수용성 공통) <strong style="color:var(--gold);">★ 실제 수입</strong></td></tr>
         </tbody>
       </table>
+      <!-- v2.3 작업9: HSCODE 안내문 (코팅 종류 무관, 부가세 등) -->
+      <div class="hs-table-footer">
+        ※ <strong>코팅 종류(지용성·수용성)는 HSCODE 분류 기준이 아닙니다.</strong>
+        지용성·수용성 모두 1000(순알) 및 9000(합금) 두 분류로 수입 가능합니다.<br>
+        ※ 판·시트(7606 시리즈)는 두께 0.2mm 이상으로 ACIS 대상 외 (호일 0.2mm 미만만 다룸).<br>
+        ※ 위 관세율 외 <strong>부가세 10% 별도 부과</strong> (수입자의 매입세액공제 대상이므로 시각 미반영).<br>
+        ※ ACIS는 위 4종 호일 HSCODE 기준으로 시뮬레이션 — <strong>카테고리 + 사이즈 + 순도</strong> 토글로 선택.
+      </div>
     </div>
 
     </div><!-- /sqm-mode-area (v2.1) -->
