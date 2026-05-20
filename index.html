@@ -333,9 +333,10 @@
     white-space: nowrap;
   }
   .scenario-btn:hover { background: rgba(255,255,255,0.08); color: var(--text-primary); }
-  .scenario-btn.active[data-scenario="bull"] { background: rgba(34,197,94,0.18); border-color: rgba(34,197,94,0.55); color: #4ade80; font-weight: 700; }
+  /* v2.1: 구매자 관점 색상 — 고가(bull)=빨강 불리 / 저가(bear)=녹색 유리 */
+  .scenario-btn.active[data-scenario="bull"] { background: rgba(239,68,68,0.18); border-color: rgba(239,68,68,0.55); color: #f87171; font-weight: 700; }
   .scenario-btn.active[data-scenario="base"] { background: rgba(168,85,247,0.18); border-color: rgba(168,85,247,0.55); color: #c084fc; font-weight: 700; }
-  .scenario-btn.active[data-scenario="bear"] { background: rgba(239,68,68,0.18); border-color: rgba(239,68,68,0.55); color: #f87171; font-weight: 700; }
+  .scenario-btn.active[data-scenario="bear"] { background: rgba(34,197,94,0.18); border-color: rgba(34,197,94,0.55); color: #4ade80; font-weight: 700; }
   .scenario-mini-cards { display: flex; gap: 0.4rem; flex-wrap: wrap; }
   .scenario-mini {
     font-size: 0.7rem; padding: 0.2rem 0.55rem;
@@ -346,9 +347,10 @@
   }
   .scenario-mini strong { color: var(--text-primary); font-weight: 700; margin-left: 4px; }
   .scenario-mini.is-active { border-color: currentColor; }
-  .scenario-mini.s-bull.is-active { color: #4ade80; }
+  /* v2.1: 구매자 관점 색상 swap */
+  .scenario-mini.s-bull.is-active { color: #f87171; }   /* 고가 = 빨강 (불리) */
   .scenario-mini.s-base.is-active { color: #c084fc; }
-  .scenario-mini.s-bear.is-active { color: #f87171; }
+  .scenario-mini.s-bear.is-active { color: #4ade80; }   /* 저가 = 녹색 (유리) */
   @media (max-width: 640px) {
     .scenario-bar { padding: 0.4rem 0.5rem; }
     .scenario-btn { padding: 0.25rem 0.55rem; font-size: 0.72rem; }
@@ -2010,9 +2012,9 @@
       <div class="scenario-bar">
         <div class="scenario-toggle-group">
           <span class="scenario-label">시나리오:</span>
-          <button class="scenario-btn" data-scenario="bull"  onclick="setScenario('bull')"  title="원자재 가격 상승 가속 + 원화 강세">🐂 낙관</button>
-          <button class="scenario-btn active" data-scenario="base" onclick="setScenario('base')" title="현재 모델 추세 그대로 진행">📊 기준</button>
-          <button class="scenario-btn" data-scenario="bear"  onclick="setScenario('bear')"  title="수요 둔화 + 원화 약세 위험">🐻 비관</button>
+          <button class="scenario-btn" data-scenario="bull"  onclick="setScenario('bull')"  title="가격 상승 가속 + 원화 강세 — 구매자에게 불리한 시나리오 (시장 표준: Bull)">📈 고가 예측 <small style="font-weight:400; opacity:0.6;">(불리)</small></button>
+          <button class="scenario-btn active" data-scenario="base" onclick="setScenario('base')" title="현재 모델 추세 그대로 (시장 표준: Base)">📊 기준 예측</button>
+          <button class="scenario-btn" data-scenario="bear"  onclick="setScenario('bear')"  title="가격 하락 + 원화 약세 — 구매자에게 유리한 시나리오 (시장 표준: Bear)">📉 저가 예측 <small style="font-weight:400; opacity:0.6;">(유리)</small></button>
         </div>
         <div class="scenario-mini-cards" id="scenario-mini-cards">
           <!-- JS로 채워짐 -->

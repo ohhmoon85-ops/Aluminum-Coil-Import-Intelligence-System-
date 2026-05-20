@@ -40,37 +40,39 @@ window.ACIS_CONFIG = {
     },
   },
 
-  // ---------------- 시나리오 (P2-A) ----------------
-  // Bull/Base/Bear 시나리오 가정 — 운영하면서 백테스트로 조정
-  // 출처: 지시서 § P2-A 초기값. 실제 시장 검증 후 보정 필요.
+  // ---------------- 시나리오 (P2-A) — v2.1: 구매자 관점 라벨 ----------------
+  // 내부 key(bull/bear)는 시장 표준(투자자 관점) 유지, UI 표시는 구매자 관점:
+  //   bull (가격↑+원화 강세) = 구매자에게 '고가' = 빨간색 (불리)
+  //   bear (가격↓+원화 약세) = 구매자에게 '저가' = 녹색 (유리)
+  // 색상 swap으로 일관성 확보 (빨강=비싸짐, 녹색=싸짐).
   scenarios: {
     bull: {
-      label: '낙관 (Bull)',
-      shortName: 'Bull',
-      color: '#22c55e',
-      shfeMultiplier: 1.3,    // 최근 14일 모멘텀 × 1.3
-      fxDelta: -0.02,         // 환율 -2% (원화 강세)
-      ciMultiplier: 1.0,      // 신뢰구간 폭 기본
-      description: '원자재 가격 상승 가속 + 원화 강세',
+      label: '고가 예측',
+      shortName: '고가',
+      color: '#ef4444',       // 빨강 — 구매자에게 불리
+      shfeMultiplier: 1.3,
+      fxDelta: -0.02,
+      ciMultiplier: 1.0,
+      description: '가격 상승 가속 + 원화 강세 (구매자 불리)',
     },
     base: {
-      label: '기준 (Base)',
-      shortName: 'Base',
+      label: '기준 예측',
+      shortName: '기준',
       color: '#a855f7',
-      shfeMultiplier: 1.0,    // 모델 그대로
+      shfeMultiplier: 1.0,
       fxDelta: 0.0,
       ciMultiplier: 1.0,
       description: '현재 모델 추세 그대로 진행',
     },
     bear: {
-      label: '비관 (Bear)',
-      shortName: 'Bear',
-      color: '#ef4444',
-      shfeMultiplier: 0.5,    // 추세 완화 + 평균 회귀 강화
-      meanReversion: true,    // bear는 평균회귀 강화
-      fxDelta: 0.03,          // 환율 +3% (원화 약세)
-      ciMultiplier: 1.2,      // 불확실성 증가 → CI 폭 1.2배
-      description: '수요 둔화 + 원화 약세 위험',
+      label: '저가 예측',
+      shortName: '저가',
+      color: '#22c55e',       // 녹색 — 구매자에게 유리
+      shfeMultiplier: 0.5,
+      meanReversion: true,
+      fxDelta: 0.03,
+      ciMultiplier: 1.2,
+      description: '가격 하락 + 원화 약세 (구매자 유리)',
     },
     default: 'base',
   },
@@ -115,9 +117,9 @@ window.ACIS_CONFIG = {
     },
     fallback: {
       // admin에서 기준가를 입력하지 않은 경우 사용할 대략값
-      // 2026-05 기준 SHFE 약 25,700 CNY/MT 시세 반영.
+      // 2026-05 기준 SHFE 실제 시세 24,000~26,500 CNY/MT 범위의 중앙값 적용.
       // 구조적 가격대가 다시 한 단계 점프하면(예: 6개월 이상 지속 상승) 갱신 필요.
-      baseSHFE:   25000,            // 2026년 New Normal 기준 SHFE 가격 (CNY/MT)
+      baseSHFE:   25250,            // 2026년 New Normal 기준 SHFE 가격 (CNY/MT)
       preWarSHFE: 20000,            // 전쟁 이전(~2025) 평균 SHFE 가격 (CNY/MT)
     },
   },
