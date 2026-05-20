@@ -505,12 +505,18 @@
   }
   @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
 
-  /* ===== NAV TABS ===== */
+  /* ===== NAV TABS (v2.1: 스크롤 시 상단 고정) ===== */
   #nav-tabs {
-    background: var(--navy);
+    background: rgba(26, 39, 68, 0.96);  /* navy + 약간 반투명 */
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     border-bottom: 1px solid var(--border);
     overflow-x: auto;
     scrollbar-width: none;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.25);
   }
   #nav-tabs::-webkit-scrollbar { display: none; }
   .nav-tabs-inner {
@@ -5725,27 +5731,34 @@ function calculateSimulator() {
   // v2.2: 정보 카드 제거 → applyRawPreset 호출 불필요 (시뮬레이터 통합)
 }
 
-// ===================== SCROLL NAV =====================
+// ===================== SCROLL NAV (v2.1: sticky nav 대응) =====================
+// nav가 sticky이므로 클릭 후 섹션이 nav 바로 아래에 오도록 nav 높이만큼 보정.
+function getNavOffset() {
+  const nav = document.getElementById('nav-tabs');
+  return (nav ? nav.offsetHeight : 50) + 12;  // nav 높이 + 여백
+}
+
 function scrollToSection(id, btn) {
   document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   const el = document.getElementById(id);
   if (el) {
-    const top = el.getBoundingClientRect().top + window.pageYOffset - 120;
+    const top = el.getBoundingClientRect().top + window.pageYOffset - getNavOffset();
     window.scrollTo({ top, behavior: 'smooth' });
   }
 }
 
-// Update nav tab on scroll
+// Update nav tab on scroll — 임계값도 nav 높이 기반으로
 window.addEventListener('scroll', () => {
   const sections = ['sec-kpi','sec-price','sec-fx','sec-fcsim','sec-signal','sec-supplier','sec-sim'];
   const tabs = document.querySelectorAll('.nav-tab');
+  const threshold = getNavOffset() + 20;
   let active = 0;
   sections.forEach((id, i) => {
     const el = document.getElementById(id);
     if (el) {
       const top = el.getBoundingClientRect().top;
-      if (top <= 140) active = i;
+      if (top <= threshold) active = i;
     }
   });
   tabs.forEach((t, i) => t.classList.toggle('active', i === active));
