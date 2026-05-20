@@ -123,12 +123,17 @@ window.ACIS_CONFIG = {
   },
 
   // ---------------- 매수/자제 오버레이 색상 ----------------
+  // v2.1: 뉴 노멀 4단계(buy/fxwait/hold/avoid) + 기존 시나리오 호환(wait)
   signalOverlay: {
-    buy:    'rgba(34, 197, 94, 0.12)',   // 녹색 12%
-    wait:   'rgba(245, 158, 11, 0.10)',  // 황색 10%
-    avoid:  'rgba(239, 68, 68, 0.12)',   // 적색 12%
+    buy:    'rgba(34, 197, 94, 0.12)',    // 녹색 — 매수
+    fxwait: 'rgba(96, 165, 250, 0.12)',   // 청색 — 환율 대기
+    hold:   'rgba(245, 158, 11, 0.10)',   // 황색 — 관망 (v2.1 표준)
+    wait:   'rgba(245, 158, 11, 0.10)',   // 황색 — 시나리오 호환용 alias
+    avoid:  'rgba(239, 68, 68, 0.12)',    // 적색 — 자제
     labelColors: {
       buy:    '#22c55e',
+      fxwait: '#60a5fa',
+      hold:   '#f59e0b',
       wait:   '#f59e0b',
       avoid:  '#ef4444',
     },

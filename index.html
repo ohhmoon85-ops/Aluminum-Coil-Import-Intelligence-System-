@@ -108,88 +108,53 @@
     white-space: nowrap;
     flex-shrink: 0;
   }
-  /* 결과별 색상 — STRONG_BUY / BUY / HOLD / AVOID / STRONG_AVOID */
-  .conclusion-card.cc-strong-buy {
-    background: linear-gradient(135deg, rgba(34,197,94,0.18), rgba(34,197,94,0.06));
-    border-color: rgba(34,197,94,0.45);
-  }
-  .conclusion-card.cc-strong-buy .conclusion-headline { color: #4ade80; }
+  /* 결과별 색상 — v2.1 뉴 노멀 4단계 (BUY / FX-WAIT / HOLD / AVOID) */
   .conclusion-card.cc-buy {
-    background: linear-gradient(135deg, rgba(34,197,94,0.10), rgba(34,197,94,0.03));
-    border-color: rgba(34,197,94,0.30);
+    background: linear-gradient(135deg, rgba(34,197,94,0.14), rgba(34,197,94,0.04));
+    border-color: rgba(34,197,94,0.40);
   }
   .conclusion-card.cc-buy .conclusion-headline { color: #4ade80; }
+  .conclusion-card.cc-fxwait {
+    background: linear-gradient(135deg, rgba(96,165,250,0.14), rgba(96,165,250,0.04));
+    border-color: rgba(96,165,250,0.40);
+  }
+  .conclusion-card.cc-fxwait .conclusion-headline { color: #60a5fa; }
   .conclusion-card.cc-hold {
-    background: linear-gradient(135deg, rgba(245,158,11,0.10), rgba(245,158,11,0.03));
-    border-color: rgba(245,158,11,0.30);
+    background: linear-gradient(135deg, rgba(245,158,11,0.12), rgba(245,158,11,0.03));
+    border-color: rgba(245,158,11,0.35);
   }
   .conclusion-card.cc-hold .conclusion-headline { color: #fbbf24; }
   .conclusion-card.cc-avoid {
-    background: linear-gradient(135deg, rgba(239,68,68,0.10), rgba(239,68,68,0.03));
-    border-color: rgba(239,68,68,0.30);
+    background: linear-gradient(135deg, rgba(239,68,68,0.14), rgba(239,68,68,0.04));
+    border-color: rgba(239,68,68,0.40);
   }
   .conclusion-card.cc-avoid .conclusion-headline { color: #f87171; }
-  .conclusion-card.cc-strong-avoid {
-    background: linear-gradient(135deg, rgba(239,68,68,0.20), rgba(239,68,68,0.06));
-    border-color: rgba(239,68,68,0.50);
-  }
-  .conclusion-card.cc-strong-avoid .conclusion-headline { color: #f87171; }
 
-  /* ===== 뉴 노멀(§4.4) 카드 ===== */
-  .newnormal-card {
-    background: linear-gradient(135deg, rgba(201,168,76,0.10), rgba(201,168,76,0.02));
-    border: 1px solid rgba(201,168,76,0.30);
-    border-left: 3px solid #c9a84c;
-    border-radius: 12px;
-    padding: 1rem 1.3rem;
-    margin-bottom: 1.5rem;
-    box-shadow: var(--shadow-sm);
+  /* 결론 카드 우측: SPI/ERI 미니 게이지 */
+  .conclusion-right { display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem; flex-shrink: 0; min-width: 200px; }
+  .cc-gauges { display: flex; flex-direction: column; gap: 0.45rem; width: 100%; min-width: 180px; }
+  .cc-gauge { background: rgba(0,0,0,0.18); border-radius: 6px; padding: 0.35rem 0.6rem; border: 1px solid rgba(255,255,255,0.05); }
+  .cc-gauge-label {
+    font-size: 0.7rem; color: var(--text-secondary);
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 0.2rem;
   }
-  .nn-head {
-    display: flex; align-items: center; justify-content: space-between;
-    flex-wrap: wrap; gap: 0.6rem; margin-bottom: 0.7rem;
-  }
-  .nn-title {
-    font-size: 1rem; font-weight: 800; color: #e0bf70; letter-spacing: 0.02em;
-    display: inline-flex; align-items: center; gap: 0.5rem;
-  }
-  .nn-title small { font-size: 0.65rem; font-weight: 600; color: var(--text-muted); letter-spacing: 0.08em; }
-  .nn-signal-badge {
-    font-size: 0.78rem; font-weight: 800; letter-spacing: 0.05em;
-    padding: 0.35rem 0.8rem; border-radius: 999px;
-    border: 1px solid;
-  }
-  .nn-sig-buy     { background: rgba(34,197,94,0.18);  color: #4ade80; border-color: rgba(34,197,94,0.45); }
-  .nn-sig-fxwait  { background: rgba(96,165,250,0.18); color: #60a5fa; border-color: rgba(96,165,250,0.45); }
-  .nn-sig-hold    { background: rgba(245,158,11,0.18); color: #fbbf24; border-color: rgba(245,158,11,0.45); }
-  .nn-sig-avoid   { background: rgba(239,68,68,0.18);  color: #f87171; border-color: rgba(239,68,68,0.45); }
+  .cc-gauge-label strong { font-size: 0.88rem; color: var(--text-primary); font-weight: 800; }
+  .cc-bar { position: relative; height: 6px; background: rgba(255,255,255,0.06); border-radius: 3px; overflow: hidden; }
+  .cc-bar-fill { position: absolute; top:0; bottom:0; left:0; border-radius: 3px; transition: width 0.4s; }
+  .cc-bar-marker { position: absolute; top: -2px; width: 2px; height: 10px; background: #fff; opacity: 0.85; transform: translateX(-1px); }
 
-  .nn-gauges { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; }
-  @media (max-width: 720px) { .nn-gauges { grid-template-columns: 1fr; } }
-  .nn-gauge {
-    background: rgba(0,0,0,0.20); border-radius: 8px; padding: 0.7rem 0.9rem;
-    border: 1px solid rgba(255,255,255,0.05);
+  /* 결론 카드 staleness 경고 (기준가 점검 필요 시) */
+  .conclusion-stale {
+    margin-top: 0.5rem; padding: 0.45rem 0.7rem;
+    background: rgba(239,68,68,0.10); border: 1px solid rgba(239,68,68,0.40); border-radius: 6px;
+    font-size: 0.78rem; color: #fca5a5; line-height: 1.5;
   }
-  .nn-gauge-label {
-    font-size: 0.72rem; color: var(--text-secondary);
-    display: flex; justify-content: space-between; margin-bottom: 0.3rem;
+  .conclusion-stale a { color: #fbbf24; text-decoration: underline; font-weight: 600; }
+  @media (max-width: 720px) {
+    .conclusion-card { flex-direction: column; align-items: stretch; }
+    .conclusion-right { align-items: stretch; min-width: 0; }
   }
-  .nn-gauge-label strong { font-size: 0.95rem; color: var(--text-primary); font-weight: 800; }
-  .nn-bar { position: relative; height: 8px; background: rgba(255,255,255,0.06); border-radius: 4px; overflow: hidden; }
-  .nn-bar-fill { position: absolute; top:0; bottom:0; left:0; border-radius: 4px; transition: width 0.4s; }
-  .nn-bar-marker {
-    position: absolute; top: -3px; width: 2px; height: 14px;
-    background: #fff; opacity: 0.85; transform: translateX(-1px);
-  }
-  .nn-gauge-zones {
-    display: flex; justify-content: space-between;
-    font-size: 0.62rem; color: var(--text-muted); margin-top: 0.25rem;
-  }
-  .nn-detail {
-    font-size: 0.82rem; color: var(--text-secondary); margin-top: 0.7rem;
-    line-height: 1.5;
-  }
-  .nn-detail strong { color: var(--text-primary); }
 
   /* ===== 차트 정확도 라벨 (P1-C) ===== */
   .chart-accuracy {
@@ -650,6 +615,7 @@
   .signal-badge.buy { background: rgba(46,204,113,0.15); color: var(--green); border: 1px solid var(--green); }
   .signal-badge.wait { background: rgba(241,196,15,0.15); color: var(--yellow); border: 1px solid var(--yellow); }
   .signal-badge.avoid { background: rgba(231,76,60,0.15); color: var(--red); border: 1px solid var(--red); }
+  .signal-badge.fxwait { background: rgba(96,165,250,0.15); color: #60a5fa; border: 1px solid #60a5fa; }
 
   /* ===== CHART CARDS ===== */
   .chart-card {
@@ -1835,7 +1801,7 @@
     <div class="data-legend-item"><span class="data-badge badge-ref">● 참고용</span> 수동 입력 — 실제 검증 필요</div>
   </div>
 
-  <!-- 오늘의 결론 카드 (P1-A) -->
+  <!-- v2.1 New Normal 표준 결론 카드 — SPI×ERI 2축 신호 + 미니 게이지 통합 -->
   <div class="conclusion-card cc-hold" id="conclusion-card">
     <div class="conclusion-left">
       <div class="conclusion-icon" id="conclusion-icon">⏸</div>
@@ -1843,50 +1809,29 @@
         <div class="conclusion-headline" id="conclusion-headline">
           분석 중<small id="conclusion-headline-en">…</small>
         </div>
-        <div class="conclusion-detail" id="conclusion-detail">데이터 로딩이 완료되면 단기·중장기 신호를 종합하여 권고를 표시합니다.</div>
+        <div class="conclusion-detail" id="conclusion-detail">데이터 로딩이 완료되면 뉴 노멀 SPI/ERI 기반 권고를 표시합니다.</div>
+        <div class="conclusion-stale" id="conclusion-stale" style="display:none;"></div>
       </div>
     </div>
-    <div class="conclusion-meta" id="conclusion-meta">갱신 대기</div>
-  </div>
-
-  <!-- ===== v2.1 §4.4 New Normal Detection 카드 ===== -->
-  <!-- SPI (구조적 가격지수) + ERI (환율지수) 2축으로 4단계 신호 산출 -->
-  <div class="newnormal-card" id="newnormal-card" style="display:none;">
-    <div class="nn-head">
-      <div class="nn-title">
-        🟡 뉴 노멀(New Normal) 모드 <small>SPI × ERI · v2.1 §4.4</small>
+    <div class="conclusion-right">
+      <div class="cc-gauges">
+        <div class="cc-gauge">
+          <div class="cc-gauge-label">SPI <strong id="cc-spi-val">--</strong></div>
+          <div class="cc-bar">
+            <div class="cc-bar-fill" id="cc-spi-fill" style="width:50%; background:linear-gradient(90deg,#22c55e,#fbbf24,#ef4444);"></div>
+            <div class="cc-bar-marker" id="cc-spi-marker" style="left:50%;"></div>
+          </div>
+        </div>
+        <div class="cc-gauge">
+          <div class="cc-gauge-label">ERI <strong id="cc-eri-val">--</strong></div>
+          <div class="cc-bar">
+            <div class="cc-bar-fill" id="cc-eri-fill" style="width:50%; background:linear-gradient(90deg,#22c55e,#fbbf24,#ef4444);"></div>
+            <div class="cc-bar-marker" id="cc-eri-marker" style="left:50%;"></div>
+          </div>
+        </div>
       </div>
-      <div class="nn-signal-badge nn-sig-hold" id="nn-badge">계산 중…</div>
+      <div class="conclusion-meta" id="conclusion-meta">갱신 대기</div>
     </div>
-    <div class="nn-gauges">
-      <div class="nn-gauge">
-        <div class="nn-gauge-label">
-          <span>SPI · 구조적 가격지수</span>
-          <strong id="nn-spi-val">--</strong>
-        </div>
-        <div class="nn-bar">
-          <div class="nn-bar-fill" id="nn-spi-fill" style="width:50%; background:linear-gradient(90deg,#22c55e,#fbbf24,#ef4444);"></div>
-          <div class="nn-bar-marker" id="nn-spi-marker" style="left:50%;"></div>
-        </div>
-        <div class="nn-gauge-zones">
-          <span>≤1.02 매수</span><span>≤1.05 관망</span><span>&gt;1.05 자제</span>
-        </div>
-      </div>
-      <div class="nn-gauge">
-        <div class="nn-gauge-label">
-          <span>ERI · 환율지수 (CNY/KRW vs 90일 평균)</span>
-          <strong id="nn-eri-val">--</strong>
-        </div>
-        <div class="nn-bar">
-          <div class="nn-bar-fill" id="nn-eri-fill" style="width:50%; background:linear-gradient(90deg,#22c55e,#fbbf24,#ef4444);"></div>
-          <div class="nn-bar-marker" id="nn-eri-marker" style="left:50%;"></div>
-        </div>
-        <div class="nn-gauge-zones">
-          <span>≤0.98 유리</span><span>0.98~1.02 중립</span><span>≥1.02 불리</span>
-        </div>
-      </div>
-    </div>
-    <div class="nn-detail" id="nn-detail">데이터 로딩 후 SPI·ERI 2축 신호가 표시됩니다.</div>
   </div>
 
   <!-- ① KPI Cards -->
@@ -2080,10 +2025,15 @@
   <section class="section" id="sec-signal">
     <div class="section-header">
       <div class="section-num">④</div>
-      <div class="section-title">구매 신호 패널</div>
-      <div class="section-sub">RPCI 기반 단기/중장기 구매 권고 신호</div>
+      <div class="section-title">보조 분석 (참고용) <small style="font-size:0.7rem; font-weight:500; color:var(--text-muted); margin-left:0.5rem;">— 60일/90일 이동평균 진단</small></div>
+      <div class="section-sub">v2.0 평균회귀형 신호 — 의사결정은 상단 결론 카드(뉴 노멀)를 사용하세요</div>
     </div>
-    <div class="data-source-bar source-bar-calc"><span class="data-badge badge-calc">● 계산값</span> RPCI = (SHFE가격 × CNY/KRW + 해상운임) × (1 + 관세율 + 부대비용) &nbsp;|&nbsp; <span class="data-badge badge-est">● 추정값</span> 해상운임 55,000원/MT (SCFI 기준 고정 추정) · 관세율 5% · 부대비용 3%</div>
+    <div class="data-source-bar source-bar-calc" style="background:rgba(154,163,186,0.06);">
+      <span class="data-badge badge-calc">● 참고 진단</span>
+      이 패널은 "현재가가 60일 평균보다 비싼지/싼지"만 보여줍니다.
+      뉴 노멀 환경에서는 평균이 가격을 따라 올라가 신호가 무뎌지므로 <strong>의사결정 기준이 아닙니다</strong>.
+      가격 변동성 진단·과거 추세 비교 목적으로만 활용하세요.
+    </div>
     <div class="signal-grid">
       <div class="signal-card">
         <div class="signal-card-title">단기 신호 (1~2주)</div>
@@ -3779,23 +3729,27 @@ async function startApp() {
   rpciChgEl.textContent = 'MA60 대비 ' + (rpciVsMa > 0 ? '+' : '') + rpciVsMa + '%';
   rpciChgEl.className = 'kpi-change ' + (rpciVsMa < 0 ? 'down' : rpciVsMa > 0 ? 'up' : 'neutral');
 
-  // Signal badge
+  // Signal badge — v2.1 뉴 노멀 4단계 (메인 결론 카드와 동일 로직)
   const sigBadge = document.getElementById('kpi-signal-badge');
   const sigDesc = document.getElementById('kpi-signal-desc');
-  if (shortSignal === 'buy') {
-    sigBadge.textContent = '매수'; sigBadge.className = 'signal-badge buy';
-    sigDesc.textContent = 'RPCI가 60일 이평 대비 ' + Math.abs(rpciVsMa) + '% 하회 — 유리한 구매 시점';
-  } else if (shortSignal === 'avoid') {
-    sigBadge.textContent = '자제'; sigBadge.className = 'signal-badge avoid';
-    sigDesc.textContent = 'RPCI가 60일 이평 대비 +' + rpciVsMa + '% 상회 — 구매 자제 권고';
+  const nnSig = (typeof evaluateNewNormal === 'function') ? evaluateNewNormal() : null;
+  if (nnSig) {
+    const map = {
+      buy:    { label: '매수',      cls: 'buy',    desc: `SPI ${nnSig.spi.toFixed(2)} · ERI ${nnSig.eri.toFixed(2)} — 가격·환율 동시 유리` },
+      fxwait: { label: '환율 대기', cls: 'fxwait', desc: `SPI ${nnSig.spi.toFixed(2)} 유리하나 ERI ${nnSig.eri.toFixed(2)} 불리 — 환율 안정 대기` },
+      hold:   { label: '관망',      cls: 'wait',   desc: `SPI ${nnSig.spi.toFixed(2)} — 뉴 노멀 밴드 내, 소량 분할 검토` },
+      avoid:  { label: '자제',      cls: 'avoid',  desc: `SPI ${nnSig.spi.toFixed(2)} — 밴드 상단 돌파, 신규 발주 자제` },
+    }[nnSig.signal];
+    sigBadge.textContent = map.label;
+    sigBadge.className = 'signal-badge ' + map.cls;
+    sigDesc.textContent = map.desc;
   } else {
     sigBadge.textContent = '대기'; sigBadge.className = 'signal-badge wait';
-    sigDesc.textContent = 'RPCI가 60일 이평 적정 범위 내 — 추세 모니터링 권고';
+    sigDesc.textContent = '데이터 로딩 중…';
   }
 
-  renderSignalPanel();
-  renderTodayConclusion();  // P1-A 결론 카드
-  renderNewNormalCard();    // v2.1 §4.4 뉴 노멀 카드
+  renderSignalPanel();      // 보조 분석 (60/90일 MA 진단)
+  renderTodayConclusion();  // v2.1 메인 결론 카드 (뉴 노멀 SPI/ERI)
   // P1-C 백테스트 정확도 (일자별 캐시)
   renderAccuracyLabel('acc-price', getBacktestCached('lme', lmeHist));
   renderAccuracyLabel('acc-fx',    getBacktestCached('cny', cnyHist));
@@ -3835,80 +3789,31 @@ async function startApp() {
   applyAdminSmm();
 }
 
-// ===================== 오늘의 결론 (P1-A) =====================
-// 단기(60MA) + 중장기(90MA) RPCI 편차 + 환율 추세를 종합해 5단계 권고 산출
-// STRONG_은 단·중장기 방향이 일치할 때만 발화 (noise 방어)
+// ===================== 오늘의 결론 (v2.1 — New Normal 표준) =====================
+// SPI(구조적 가격지수) × ERI(환율지수) 2축으로 4단계 권고 산출 (기획서 §4.3).
+// v2.0 60일 MA 기반 5단계 로직은 폐기됨 — 매번 평균이 따라 올라가 신호가 무뎌지는 한계 때문.
 function evaluateTodayConclusion() {
-  const cfg = (window.ACIS_CONFIG && window.ACIS_CONFIG.signal) || { waitBand: 3, strongBand: 10, requireDualConfirmForStrong: true };
-  const fxCfg = (window.ACIS_CONFIG && window.ACIS_CONFIG.fxTrend) || { risingThreshold: 0.5, fallingThreshold: -0.5 };
+  const nn = (typeof evaluateNewNormal === 'function') ? evaluateNewNormal() : null;
+  if (!nn) return null;
 
-  const ma60 = currentMA60;
-  const ma90 = currentMA90 || currentMA60;
-  if (!ma60 || !currentRPCI) return null;
-
-  const diff60 = (currentRPCI - ma60) / ma60 * 100;
-  const diff90 = (currentRPCI - ma90) / ma90 * 100;
-
-  // 환율 5일 변화율 (CNY/KRW) — fxTrend 보조 판정
-  let cny5dChg = 0;
-  if (cnyHist && cnyHist.length >= 6) {
-    const c5 = cnyHist[cnyHist.length - 6];
-    const cNow = cnyHist[cnyHist.length - 1];
-    if (c5 > 0) cny5dChg = (cNow - c5) / c5 * 100;
-  }
-  const fxRising  = cny5dChg > fxCfg.risingThreshold;
-  const fxFalling = cny5dChg < fxCfg.fallingThreshold;
-
-  // 단기 분류
-  const classify = (diff) => {
-    if (diff >  cfg.strongBand) return 'strongAvoid';
-    if (diff >  cfg.waitBand)   return 'avoid';
-    if (diff < -cfg.strongBand) return 'strongBuy';
-    if (diff < -cfg.waitBand)   return 'buy';
-    return 'hold';
-  };
-  const cat60 = classify(diff60);
-  const cat90 = classify(diff90);
-
-  // STRONG_은 단·중장기 일치할 때만 (지시서 추가 유의사항 1)
-  let verdict = cat60;
-  if (cfg.requireDualConfirmForStrong) {
-    if (cat60 === 'strongBuy'   && cat90 !== 'strongBuy'   && cat90 !== 'buy')   verdict = 'buy';
-    if (cat60 === 'strongAvoid' && cat90 !== 'strongAvoid' && cat90 !== 'avoid') verdict = 'avoid';
-  }
-
-  // 환율 추세로 BUY/AVOID 강화 또는 약화
-  if (verdict === 'buy'   && fxRising)  verdict = 'hold';   // 매수 신호 + 환율 악화 → 보류
-  if (verdict === 'avoid' && fxFalling) verdict = 'hold';   // 자제 신호 + 환율 안정 → 중립
-
-  // 메타데이터
   const cls = {
-    strongBuy:   { css: 'cc-strong-buy',   label: '적극 매수 권고',  en: 'STRONG BUY',   icon: '🟢' },
-    buy:         { css: 'cc-buy',          label: '매수 검토',       en: 'BUY',          icon: '🟢' },
-    hold:        { css: 'cc-hold',         label: '관망 권고',       en: 'HOLD',         icon: '⏸' },
-    avoid:       { css: 'cc-avoid',        label: '구매 자제',       en: 'AVOID',        icon: '🟡' },
-    strongAvoid: { css: 'cc-strong-avoid', label: '구매 보류 권고',  en: 'STRONG AVOID', icon: '🔴' },
-  }[verdict];
+    buy:    { css: 'cc-buy',    label: '매수 권고',    en: 'BUY',     icon: '🟢' },
+    fxwait: { css: 'cc-fxwait', label: '환율 대기',    en: 'FX-WAIT', icon: '🔵' },
+    hold:   { css: 'cc-hold',   label: '관망',         en: 'HOLD',    icon: '⏸' },
+    avoid:  { css: 'cc-avoid',  label: '구매 자제',    en: 'AVOID',   icon: '🔴' },
+  }[nn.signal];
 
-  // 보조 설명 문장
-  const dirText = diff60 > 0 ? `+${diff60.toFixed(1)}%` : `${diff60.toFixed(1)}%`;
-  const fxText  = fxRising ? '환율 상승 추세'
-                : fxFalling ? '환율 안정세'
-                : '환율 보합';
-  let detail;
-  if (verdict === 'strongBuy') {
-    detail = `RPCI가 60일 평균 ${dirText} (90일 평균 ${diff90.toFixed(1)}%) — 단·중장기 모두 저점 구간. ${fxText} 환경에서 적극적 발주 검토 가능.`;
-  } else if (verdict === 'buy') {
-    detail = `RPCI가 60일 평균 ${dirText}로 매수 구간 진입. ${fxText} 감안하여 단계적 발주 검토.`;
-  } else if (verdict === 'hold') {
-    detail = `RPCI 편차 ${dirText}로 적정 범위 — ${fxText}. 추가 신호 발생까지 관망 권고.`;
-  } else if (verdict === 'avoid') {
-    detail = `RPCI가 60일 평균 ${dirText}로 고비용 구간. ${fxText}이므로 신규 발주 자제 권고.`;
-  } else {
-    detail = `RPCI가 60일 평균 ${dirText} (90일 평균 ${diff90.toFixed(1)}%) — 단·중장기 모두 고점. ${fxText} — 신규 발주 보류 권고.`;
-  }
-
-  return { verdict, ...cls, detail, diff60, diff90, cny5dChg };
+  return {
+    verdict: nn.signal,
+    ...cls,
+    detail: nn.detail.replace(/<[^>]+>/g, ''),  // strong 태그 제거 (큰 헤드라인엔 평문)
+    spi: nn.spi,
+    eri: nn.eri,
+    baseline: nn.baseline,
+    stale: nn.stale,
+    staleDirection: nn.staleDirection,
+    stalePct: nn.stalePct,
+  };
 }
 
 function renderTodayConclusion() {
@@ -3919,18 +3824,51 @@ function renderTodayConclusion() {
   const detail = document.getElementById('conclusion-detail');
   const icon = document.getElementById('conclusion-icon');
   const meta = document.getElementById('conclusion-meta');
+  const stale = document.getElementById('conclusion-stale');
   if (!card || !head) return;
 
   card.className = 'conclusion-card ' + r.css;
-  // headline 내부를 한번에 재구성 (텍스트 노드 indentation 이슈 회피)
   head.innerHTML = r.label + '<small id="conclusion-headline-en">' + r.en + '</small>';
   if (detail) detail.textContent = r.detail;
   if (icon)   icon.textContent = r.icon;
+
+  // SPI/ERI 미니 게이지 채우기
+  const spiPos = Math.max(2, Math.min(98, ((r.spi - 0.95) / 0.15) * 100));
+  const eriPos = Math.max(2, Math.min(98, ((r.eri - 0.95) / 0.10) * 100));
+  const spiVal = document.getElementById('cc-spi-val');
+  const eriVal = document.getElementById('cc-eri-val');
+  if (spiVal) spiVal.textContent = r.spi.toFixed(3);
+  if (eriVal) eriVal.textContent = r.eri.toFixed(3);
+  const spiFill = document.getElementById('cc-spi-fill');
+  const eriFill = document.getElementById('cc-eri-fill');
+  const spiMark = document.getElementById('cc-spi-marker');
+  const eriMark = document.getElementById('cc-eri-marker');
+  if (spiFill) spiFill.style.width = spiPos + '%';
+  if (eriFill) eriFill.style.width = eriPos + '%';
+  if (spiMark) spiMark.style.left  = spiPos + '%';
+  if (eriMark) eriMark.style.left  = eriPos + '%';
+
+  // 기준가 점검 알림 (staleness)
+  if (stale) {
+    if (r.stale) {
+      const arrow = r.staleDirection === 'up' ? '▲' : '▼';
+      const dirText = r.staleDirection === 'up' ? '상승' : '하락';
+      const ageText = r.baseline.updatedAt
+        ? new Date(r.baseline.updatedAt).toLocaleDateString('ko-KR') + ' 이후'
+        : 'fallback 기본값';
+      stale.innerHTML = `⚠ <strong>기준가 점검 필요</strong> — 현재 SHFE가 저장된 뉴 노멀 기준가 대비 <strong>${arrow} ${r.stalePct}%</strong> ${dirText}했습니다 (${ageText}). <a href="./admin.html">admin에서 기준가 재설정</a>을 검토하세요.`;
+      stale.style.display = '';
+    } else {
+      stale.style.display = 'none';
+    }
+  }
+
   if (meta) {
     const now = new Date();
     const hh = String(now.getHours()).padStart(2,'0');
     const mm = String(now.getMinutes()).padStart(2,'0');
-    meta.textContent = `갱신 ${hh}:${mm} · ±${(window.ACIS_CONFIG?.signal?.waitBand)||3}% / ±${(window.ACIS_CONFIG?.signal?.strongBand)||10}% 임계`;
+    const srcTag = r.baseline.source === 'admin' ? 'admin 설정' : 'config fallback';
+    meta.innerHTML = `갱신 ${hh}:${mm}<br><span style="opacity:0.75;">기준 ${srcTag}</span>`;
   }
 }
 
@@ -4006,54 +3944,8 @@ function evaluateNewNormal() {
   return { spi, eri, signal, label, en, detail, baseline, stale, staleDirection, stalePct };
 }
 
-function renderNewNormalCard() {
-  const card = document.getElementById('newnormal-card');
-  if (!card) return;
-  const r = evaluateNewNormal();
-  if (!r) { card.style.display = 'none'; return; }
-  card.style.display = '';
-
-  const badge = document.getElementById('nn-badge');
-  badge.textContent = r.label + ' · ' + r.en;
-  badge.className = 'nn-signal-badge nn-sig-' + r.signal;
-
-  // SPI 게이지: 0.95(좌) ~ 1.10(우) 범위에 매핑
-  const spiPos = Math.max(2, Math.min(98, ((r.spi - 0.95) / 0.15) * 100));
-  document.getElementById('nn-spi-val').textContent = r.spi.toFixed(3);
-  document.getElementById('nn-spi-marker').style.left = spiPos + '%';
-  document.getElementById('nn-spi-fill').style.width = spiPos + '%';
-
-  // ERI 게이지: 0.95(좌) ~ 1.05(우) 범위에 매핑
-  const eriPos = Math.max(2, Math.min(98, ((r.eri - 0.95) / 0.10) * 100));
-  document.getElementById('nn-eri-val').textContent = r.eri.toFixed(3);
-  document.getElementById('nn-eri-marker').style.left = eriPos + '%';
-  document.getElementById('nn-eri-fill').style.width = eriPos + '%';
-
-  const srcText = r.baseline.source === 'admin'
-    ? `기준가 admin 설정값 (SHFE ${r.baseline.baseSHFE.toLocaleString()} / 전쟁 이전 ${r.baseline.preWarSHFE.toLocaleString()} CNY/MT)`
-    : `기준가 config fallback (SHFE ${r.baseline.baseSHFE.toLocaleString()} CNY/MT — admin에서 정확한 값 입력 권장)`;
-
-  // 기준가 갱신 알림 (SPI가 ±10% 이상 벗어났을 때)
-  let staleHtml = '';
-  if (r.stale) {
-    const arrow = r.staleDirection === 'up' ? '▲' : '▼';
-    const dirText = r.staleDirection === 'up' ? '상승' : '하락';
-    const ageText = r.baseline.updatedAt
-      ? new Date(r.baseline.updatedAt).toLocaleDateString('ko-KR') + ' 이후'
-      : 'fallback 기본값';
-    staleHtml =
-      `<div style="margin-top:0.6rem; padding:0.55rem 0.8rem; background:rgba(239,68,68,0.10); border:1px solid rgba(239,68,68,0.40); border-radius:6px; font-size:0.78rem; color:#fca5a5; line-height:1.55;">` +
-        `⚠ <strong>기준가 점검 필요</strong> — ` +
-        `현재 SHFE가 저장된 뉴 노멀 기준가 대비 <strong>${arrow} ${r.stalePct}%</strong> ${dirText}했습니다 (${ageText}). ` +
-        `구조적 가격 전환 가능성 — <a href="./admin.html" style="color:#fbbf24; text-decoration:underline; font-weight:600;">admin에서 기준가 재설정</a>을 검토하세요.` +
-      `</div>`;
-  }
-
-  document.getElementById('nn-detail').innerHTML =
-    r.detail +
-    `<br><span style="color:var(--text-muted); font-size:0.74rem;">※ ${srcText}</span>` +
-    staleHtml;
-}
+// 별도 뉴 노멀 카드는 v2.1 통합에서 제거됨 — SPI/ERI 게이지·staleness 알림은
+// renderTodayConclusion()이 메인 결론 카드 안에서 함께 렌더링.
 
 // ===================== SIGNAL PANEL =====================
 function renderSignalPanel() {
@@ -4132,19 +4024,26 @@ const signalOverlayPlugin = {
   id: 'signalOverlay',
   beforeDatasetsDraw(chart) {
     if (!chart.options?.plugins?.signalOverlay?.enabled) return;
-    // base 시나리오: 현재 신호(shortSignal) 사용 → KPI와 일관
-    // bull/bear 시나리오: 미래 RPCI 평균 기반 신호(scenarioOverlaySignal) 사용
+    // v2.1: 뉴 노멀 신호(BUY/FX-WAIT/HOLD/AVOID)를 차트 예측 구간에 매핑
+    // base: 뉴 노멀 SPI/ERI 현재 신호 / bull·bear: 시나리오 기반 신호 유지
     const inScenario = (typeof currentScenario !== 'undefined' && currentScenario !== 'base');
-    const activeSig = (inScenario && scenarioOverlaySignal)
-      ? scenarioOverlaySignal
-      : (typeof shortSignal !== 'undefined' ? shortSignal : null);
+    let activeSig;
+    if (inScenario && scenarioOverlaySignal) {
+      // 시나리오 신호(buy/wait/avoid) 그대로 — 호환성 유지
+      activeSig = scenarioOverlaySignal;
+    } else {
+      const nn = (typeof evaluateNewNormal === 'function') ? evaluateNewNormal() : null;
+      activeSig = nn ? nn.signal : null;
+    }
     if (!activeSig) return;
 
     const cfg = (window.ACIS_CONFIG && window.ACIS_CONFIG.signalOverlay) || {
-      buy:   'rgba(34,197,94,0.12)',
-      wait:  'rgba(245,158,11,0.10)',
-      avoid: 'rgba(239,68,68,0.12)',
-      labelColors: { buy: '#22c55e', wait: '#f59e0b', avoid: '#ef4444' },
+      buy:    'rgba(34,197,94,0.12)',
+      fxwait: 'rgba(96,165,250,0.12)',
+      hold:   'rgba(245,158,11,0.10)',
+      wait:   'rgba(245,158,11,0.10)',   // 시나리오 호환
+      avoid:  'rgba(239,68,68,0.12)',
+      labelColors: { buy: '#22c55e', fxwait: '#60a5fa', hold: '#f59e0b', wait: '#f59e0b', avoid: '#ef4444' },
     };
 
     const labels = chart.data.labels || [];
@@ -4163,16 +4062,18 @@ const signalOverlayPlugin = {
     const top = yScale.top;
     const bottom = yScale.bottom;
 
-    const fillColor  = cfg[activeSig] || cfg.wait;
+    const fillColor  = cfg[activeSig] || cfg.hold || cfg.wait;
     const labelColor = (cfg.labelColors && cfg.labelColors[activeSig]) || '#9aa3ba';
     const scenarioPrefix = (typeof currentScenario !== 'undefined' && currentScenario && currentScenario !== 'base')
       ? `[${(window.ACIS_CONFIG?.scenarios?.[currentScenario]?.shortName) || ''}] `
       : '';
-    const labelText  = scenarioPrefix + (
-        activeSig === 'buy' ? '매수 권고 구간'
-      : activeSig === 'avoid' ? '자제 권고 구간'
-      : '관망 구간'
-    );
+    const labelText  = scenarioPrefix + ({
+        buy:    '매수 권고 구간',
+        fxwait: '환율 대기 구간',
+        hold:   '관망 구간',
+        wait:   '관망 구간',
+        avoid:  '자제 권고 구간',
+      }[activeSig] || '관망 구간');
 
     const ctx = chart.ctx;
     ctx.save();
