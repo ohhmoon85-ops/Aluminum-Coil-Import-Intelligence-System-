@@ -1191,6 +1191,37 @@
       </div>
     </div>
 
+    <!-- v2.1 작업 §4.4: New Normal 기준가 입력 카드 -->
+    <div class="card" style="margin-bottom: 1.5rem; border-left: 3px solid #c9a84c;">
+      <div class="section-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
+        <div class="section-title">🟡 뉴 노멀(New Normal) 기준가 설정</div>
+        <span style="font-size:0.72rem; color:var(--text-muted);">v2.1 §4.4</span>
+      </div>
+      <div style="font-size:0.78rem; color:var(--text-secondary); margin-bottom:0.8rem; line-height:1.55;">
+        2026년 미국-이란 전쟁 이후 형성된 구조적 가격대를 시스템에 반영합니다.
+        대시보드의 <strong>SPI(구조적 가격지수)</strong>와 차트 오버레이(전쟁 이전 참조선·뉴 노멀 밴드)가 이 값을 기준으로 계산됩니다.
+      </div>
+      <div class="smm-input-row" style="display:grid; grid-template-columns:1fr 1fr 1fr auto auto; gap:0.6rem; align-items:end; margin-bottom:0.8rem;">
+        <div class="form-field">
+          <label class="form-label">뉴 노멀 기준 SHFE (CNY/MT)</label>
+          <input type="number" id="nn-base" class="form-input" placeholder="예: 20500" step="50" min="0">
+        </div>
+        <div class="form-field">
+          <label class="form-label">전쟁 이전 평균 SHFE (CNY/MT)</label>
+          <input type="number" id="nn-prewar" class="form-input" placeholder="예: 18000" step="50" min="0">
+        </div>
+        <div class="form-field">
+          <label class="form-label">밴드 폭 (±%)</label>
+          <input type="number" id="nn-band" class="form-input" placeholder="5" step="0.5" min="1" max="20">
+        </div>
+        <button class="btn btn-primary" onclick="saveNewNormal()" style="white-space:nowrap;">💾 저장</button>
+        <button class="btn btn-secondary" onclick="resetNewNormal()" style="white-space:nowrap;">↺ 기본값</button>
+      </div>
+      <div id="nn-current" style="font-size:0.78rem; color:var(--text-secondary); padding:0.6rem 0.8rem; background:rgba(201,168,76,0.06); border-radius:6px; border:1px dashed rgba(201,168,76,0.25);">
+        현재 저장된 기준: <span id="nn-current-text">로드 중…</span>
+      </div>
+    </div>
+
     <!-- Data Management Section -->
     <div class="card">
       <div class="section-header">
@@ -1919,6 +1950,77 @@ document.addEventListener('DOMContentLoaded', () => {
   if (dateEl) dateEl.value = new Date().toISOString().split('T')[0];
   loadSmmHistory();
 });
+
+// ===== v2.1 §4.4 New Normal 기준가 입력 =====
+const LS_NEWNORMAL = 'acis_newnormal';
+
+function loadNewNormal() {
+  try {
+    const raw = localStorage.getItem(LS_NEWNORMAL);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch (e) {
+    console.warn('[NN] localStorage 파싱 실패:', e);
+    return null;
+  }
+}
+
+function renderNewNormalCurrent() {
+  const nn = loadNewNormal();
+  const el = document.getElementById('nn-current-text');
+  if (!el) return;
+  if (!nn) {
+    el.innerHTML = '<em style="color:var(--text-muted);">설정 없음 — config의 fallback 값(20,500 / 18,000 / ±5%)이 사용됩니다.</em>';
+    return;
+  }
+  const ts = nn.updatedAt ? new Date(nn.updatedAt).toLocaleString('ko-KR') : '-';
+  el.innerHTML =
+    `기준 SHFE <strong>${Number(nn.baseSHFE).toLocaleString()}</strong> CNY/MT · ` +
+    `전쟁 이전 <strong>${Number(nn.preWarSHFE).toLocaleString()}</strong> CNY/MT · ` +
+    `밴드 <strong>±${nn.bandWidthPct}%</strong> ` +
+    `<span style="color:var(--text-muted);">(${ts} 갱신)</span>`;
+  // 입력칸도 채워줌
+  const base = document.getElementById('nn-base');
+  const prew = document.getElementById('nn-prewar');
+  const band = document.getElementById('nn-band');
+  if (base) base.value = nn.baseSHFE;
+  if (prew) prew.value = nn.preWarSHFE;
+  if (band) band.value = nn.bandWidthPct;
+}
+
+function saveNewNormal() {
+  const base = parseFloat(document.getElementById('nn-base').value);
+  const prew = parseFloat(document.getElementById('nn-prewar').value);
+  const band = parseFloat(document.getElementById('nn-band').value);
+  if (!base || base <= 0)            { showToast('뉴 노멀 기준 SHFE를 정확히 입력해 주세요.', 'error'); return; }
+  if (!prew || prew <= 0)            { showToast('전쟁 이전 평균 SHFE를 정확히 입력해 주세요.', 'error'); return; }
+  if (!band || band < 1 || band > 20){ showToast('밴드 폭은 1~20 사이로 입력해 주세요.', 'error'); return; }
+  if (prew >= base) {
+    if (!confirm('전쟁 이전 평균(' + prew + ')이 기준가(' + base + ') 이상입니다.\n구조적 상승 환경 가정과 맞지 않을 수 있습니다. 저장하시겠습니까?')) return;
+  }
+  const data = {
+    baseSHFE:    base,
+    preWarSHFE:  prew,
+    bandWidthPct: band,
+    updatedAt:   new Date().toISOString(),
+    updatedBy:   sessionStorage.getItem('acis_user') || 'admin',
+  };
+  localStorage.setItem(LS_NEWNORMAL, JSON.stringify(data));
+  showToast('뉴 노멀 기준가 저장 완료 — 대시보드에서 즉시 반영됩니다.', 'success');
+  renderNewNormalCurrent();
+}
+
+function resetNewNormal() {
+  if (!confirm('저장된 뉴 노멀 기준가를 삭제하시겠습니까?\n(config의 fallback 값으로 되돌아갑니다)')) return;
+  localStorage.removeItem(LS_NEWNORMAL);
+  document.getElementById('nn-base').value = '';
+  document.getElementById('nn-prewar').value = '';
+  document.getElementById('nn-band').value = '';
+  showToast('뉴 노멀 기준가 초기화 완료', 'info');
+  renderNewNormalCurrent();
+}
+
+document.addEventListener('DOMContentLoaded', renderNewNormalCurrent);
 
 function exportJSON() {
   const blob = new Blob([JSON.stringify(suppliers, null, 2)], { type: 'application/json' });

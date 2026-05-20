@@ -135,6 +135,62 @@
   }
   .conclusion-card.cc-strong-avoid .conclusion-headline { color: #f87171; }
 
+  /* ===== 뉴 노멀(§4.4) 카드 ===== */
+  .newnormal-card {
+    background: linear-gradient(135deg, rgba(201,168,76,0.10), rgba(201,168,76,0.02));
+    border: 1px solid rgba(201,168,76,0.30);
+    border-left: 3px solid #c9a84c;
+    border-radius: 12px;
+    padding: 1rem 1.3rem;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--shadow-sm);
+  }
+  .nn-head {
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 0.6rem; margin-bottom: 0.7rem;
+  }
+  .nn-title {
+    font-size: 1rem; font-weight: 800; color: #e0bf70; letter-spacing: 0.02em;
+    display: inline-flex; align-items: center; gap: 0.5rem;
+  }
+  .nn-title small { font-size: 0.65rem; font-weight: 600; color: var(--text-muted); letter-spacing: 0.08em; }
+  .nn-signal-badge {
+    font-size: 0.78rem; font-weight: 800; letter-spacing: 0.05em;
+    padding: 0.35rem 0.8rem; border-radius: 999px;
+    border: 1px solid;
+  }
+  .nn-sig-buy     { background: rgba(34,197,94,0.18);  color: #4ade80; border-color: rgba(34,197,94,0.45); }
+  .nn-sig-fxwait  { background: rgba(96,165,250,0.18); color: #60a5fa; border-color: rgba(96,165,250,0.45); }
+  .nn-sig-hold    { background: rgba(245,158,11,0.18); color: #fbbf24; border-color: rgba(245,158,11,0.45); }
+  .nn-sig-avoid   { background: rgba(239,68,68,0.18);  color: #f87171; border-color: rgba(239,68,68,0.45); }
+
+  .nn-gauges { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; }
+  @media (max-width: 720px) { .nn-gauges { grid-template-columns: 1fr; } }
+  .nn-gauge {
+    background: rgba(0,0,0,0.20); border-radius: 8px; padding: 0.7rem 0.9rem;
+    border: 1px solid rgba(255,255,255,0.05);
+  }
+  .nn-gauge-label {
+    font-size: 0.72rem; color: var(--text-secondary);
+    display: flex; justify-content: space-between; margin-bottom: 0.3rem;
+  }
+  .nn-gauge-label strong { font-size: 0.95rem; color: var(--text-primary); font-weight: 800; }
+  .nn-bar { position: relative; height: 8px; background: rgba(255,255,255,0.06); border-radius: 4px; overflow: hidden; }
+  .nn-bar-fill { position: absolute; top:0; bottom:0; left:0; border-radius: 4px; transition: width 0.4s; }
+  .nn-bar-marker {
+    position: absolute; top: -3px; width: 2px; height: 14px;
+    background: #fff; opacity: 0.85; transform: translateX(-1px);
+  }
+  .nn-gauge-zones {
+    display: flex; justify-content: space-between;
+    font-size: 0.62rem; color: var(--text-muted); margin-top: 0.25rem;
+  }
+  .nn-detail {
+    font-size: 0.82rem; color: var(--text-secondary); margin-top: 0.7rem;
+    line-height: 1.5;
+  }
+  .nn-detail strong { color: var(--text-primary); }
+
   /* ===== 차트 정확도 라벨 (P1-C) ===== */
   .chart-accuracy {
     font-size: 0.7rem; color: var(--text-secondary);
@@ -1793,6 +1849,46 @@
     <div class="conclusion-meta" id="conclusion-meta">갱신 대기</div>
   </div>
 
+  <!-- ===== v2.1 §4.4 New Normal Detection 카드 ===== -->
+  <!-- SPI (구조적 가격지수) + ERI (환율지수) 2축으로 4단계 신호 산출 -->
+  <div class="newnormal-card" id="newnormal-card" style="display:none;">
+    <div class="nn-head">
+      <div class="nn-title">
+        🟡 뉴 노멀(New Normal) 모드 <small>SPI × ERI · v2.1 §4.4</small>
+      </div>
+      <div class="nn-signal-badge nn-sig-hold" id="nn-badge">계산 중…</div>
+    </div>
+    <div class="nn-gauges">
+      <div class="nn-gauge">
+        <div class="nn-gauge-label">
+          <span>SPI · 구조적 가격지수</span>
+          <strong id="nn-spi-val">--</strong>
+        </div>
+        <div class="nn-bar">
+          <div class="nn-bar-fill" id="nn-spi-fill" style="width:50%; background:linear-gradient(90deg,#22c55e,#fbbf24,#ef4444);"></div>
+          <div class="nn-bar-marker" id="nn-spi-marker" style="left:50%;"></div>
+        </div>
+        <div class="nn-gauge-zones">
+          <span>≤1.02 매수</span><span>≤1.05 관망</span><span>&gt;1.05 자제</span>
+        </div>
+      </div>
+      <div class="nn-gauge">
+        <div class="nn-gauge-label">
+          <span>ERI · 환율지수 (CNY/KRW vs 90일 평균)</span>
+          <strong id="nn-eri-val">--</strong>
+        </div>
+        <div class="nn-bar">
+          <div class="nn-bar-fill" id="nn-eri-fill" style="width:50%; background:linear-gradient(90deg,#22c55e,#fbbf24,#ef4444);"></div>
+          <div class="nn-bar-marker" id="nn-eri-marker" style="left:50%;"></div>
+        </div>
+        <div class="nn-gauge-zones">
+          <span>≤0.98 유리</span><span>0.98~1.02 중립</span><span>≥1.02 불리</span>
+        </div>
+      </div>
+    </div>
+    <div class="nn-detail" id="nn-detail">데이터 로딩 후 SPI·ERI 2축 신호가 표시됩니다.</div>
+  </div>
+
   <!-- ① KPI Cards -->
   <section class="section" id="sec-kpi">
     <div class="section-header">
@@ -1879,6 +1975,8 @@
           <div class="legend-item"><div class="legend-dot" style="background:#e0bf70;"></div>MA60</div>
           <div class="legend-item"><div class="legend-dot" style="background:rgba(78,154,241,0.25);width:24px;height:8px;border-radius:3px;"></div>볼린저밴드</div>
           <div class="legend-item"><div class="legend-dot" style="background:#a855f7;"></div><span style="border-bottom:1px dashed #a855f7;">예측</span></div>
+          <div class="legend-item" title="v2.1 §4.4 — admin에서 기준가 설정"><div class="legend-dot" style="background:rgba(201,168,76,0.25);width:24px;height:8px;border-radius:3px;border:1px dashed #c9a84c;"></div>New Normal 밴드</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#9aa3ba;width:24px;height:1px;"></div><span style="border-bottom:1px dashed #9aa3ba;">전쟁 이전 평균</span></div>
         </div>
       </div>
 
@@ -2671,12 +2769,16 @@ Best regards,
       데이터 출처: <span>LME (London Metal Exchange)</span> · <span>SHFE (상해 선물거래소)</span> ·
       <span>한국은행 외환통계</span> · <span>관세청 수입 통계</span>
     </div>
+    <div style="font-size:0.74rem; color:var(--gold-light); margin-bottom:0.55rem; padding:0.55rem 0.8rem; background:rgba(201,168,76,0.06); border-left:2px solid rgba(201,168,76,0.45); border-radius:4px; line-height:1.55;">
+      <strong>v2.1 New Normal 전략</strong> — 2026년 미국-이란 전쟁 이후 원자재 가격이 구조적으로 상승한 '뉴 노멀' 환경에서, 과거 가격 회귀를 기다리는 소극적 전략은 더 이상 유효하지 않습니다.
+      ACIS는 새로운 가격 기준선(New Normal Band)을 동적으로 설정하고, 환율(ERI)이 동시에 유리한 '최적 창(Window)'을 포착하는 능동적 타이밍 전략을 채택합니다.
+    </div>
     <div class="footer-disclaimer">
       ※ 본 시스템의 가격 데이터 및 예측치는 교육·참고 목적의 모의 데이터이며, 실제 투자 또는 구매 의사결정에 직접 활용 시 발생하는 손실에 대해 당사는 책임을 지지 않습니다.
       최신 시장 데이터는 반드시 공신력 있는 기관을 통해 확인하시기 바랍니다.
     </div>
     <div style="margin-top:0.5rem;font-size:0.62rem;color:var(--text-muted);">
-      ACIS v2.0 · &copy; 2026 · Aluminum Coil Import Intelligence System
+      ACIS v2.1 · &copy; 2026 · Aluminum Coil Import Intelligence System &nbsp;·&nbsp; <span style="color:#c9a84c;">New Normal Edition</span>
     </div>
   </div>
 </footer>
@@ -3693,6 +3795,7 @@ async function startApp() {
 
   renderSignalPanel();
   renderTodayConclusion();  // P1-A 결론 카드
+  renderNewNormalCard();    // v2.1 §4.4 뉴 노멀 카드
   // P1-C 백테스트 정확도 (일자별 캐시)
   renderAccuracyLabel('acc-price', getBacktestCached('lme', lmeHist));
   renderAccuracyLabel('acc-fx',    getBacktestCached('cny', cnyHist));
@@ -3829,6 +3932,100 @@ function renderTodayConclusion() {
     const mm = String(now.getMinutes()).padStart(2,'0');
     meta.textContent = `갱신 ${hh}:${mm} · ±${(window.ACIS_CONFIG?.signal?.waitBand)||3}% / ±${(window.ACIS_CONFIG?.signal?.strongBand)||10}% 임계`;
   }
+}
+
+// ===================== v2.1 §4.4 New Normal Detection =====================
+// 뉴 노멀 기준값 로드: admin이 localStorage에 저장한 값 우선, 없으면 config.fallback
+function loadNewNormalBaseline() {
+  const nnCfg = (window.ACIS_CONFIG && window.ACIS_CONFIG.newNormal) || null;
+  if (!nnCfg) return null;
+  let stored = null;
+  try {
+    const raw = localStorage.getItem('acis_newnormal');
+    if (raw) stored = JSON.parse(raw);
+  } catch (e) { /* ignore */ }
+  return {
+    enabled:      nnCfg.enabled !== false,
+    baseSHFE:     (stored && stored.baseSHFE)   || nnCfg.fallback.baseSHFE,
+    preWarSHFE:   (stored && stored.preWarSHFE) || nnCfg.fallback.preWarSHFE,
+    bandWidthPct: (stored && stored.bandWidthPct) || nnCfg.bandWidthPct,
+    source:       stored ? 'admin' : 'fallback',
+    updatedAt:    stored && stored.updatedAt,
+  };
+}
+
+// SPI · ERI 산출 + 4단계 신호 (BUY / FX-WAIT / AVOID / HOLD)
+function evaluateNewNormal() {
+  const cfg = (window.ACIS_CONFIG && window.ACIS_CONFIG.newNormal) || null;
+  if (!cfg || cfg.enabled === false) return null;
+  const baseline = loadNewNormalBaseline();
+  if (!baseline) return null;
+
+  // 현재 SHFE 가격 (lmeHist 마지막 = CNY/MT)
+  if (typeof lmeHist === 'undefined' || !lmeHist || lmeHist.length === 0) return null;
+  if (typeof cnyHist === 'undefined' || !cnyHist || cnyHist.length === 0) return null;
+  const curShfe = lmeHist[lmeHist.length - 1];
+  const curCny  = cnyHist[cnyHist.length - 1];
+
+  // 기준 RPCI (baseSHFE × 현재 환율) — RPCI 정의(SHFE×FX+운임)×(1+관세+부대비)와 동일 구조
+  const baseRpci = calcRPCI(baseline.baseSHFE, curCny);
+  const spi = (typeof currentRPCI !== 'undefined' && currentRPCI && baseRpci)
+    ? currentRPCI / baseRpci
+    : null;
+
+  // ERI = 현재 환율 / 90일 평균 환율
+  const cnyAvg = cnyHist.reduce((a,b)=>a+b,0) / cnyHist.length;
+  const eri = cnyAvg > 0 ? curCny / cnyAvg : null;
+
+  if (spi === null || eri === null) return null;
+
+  // 4단계 신호 (기획서 §4.3 변경 후)
+  const sCfg = cfg.spi, eCfg = cfg.eri;
+  let signal, label, en, detail;
+  if (spi > sCfg.holdMax) {
+    signal = 'avoid';  label = '자제';     en = 'AVOID';
+    detail = `SPI <strong>${spi.toFixed(3)}</strong> — 뉴 노멀 밴드 상단(${sCfg.holdMax.toFixed(2)})을 돌파하여 추가 상승 압력 경계. 신규 발주 자제 권고.`;
+  } else if (spi <= sCfg.buyMax && eri <= eCfg.favorableMax) {
+    signal = 'buy';    label = '매수';     en = 'BUY';
+    detail = `SPI <strong>${spi.toFixed(3)}</strong> ≤ ${sCfg.buyMax} 이고 ERI <strong>${eri.toFixed(3)}</strong> ≤ ${eCfg.favorableMax} — 가격·환율 동시 유리한 최적 창(Window). 적극 발주 검토.`;
+  } else if (spi <= sCfg.buyMax && eri > eCfg.favorableMax) {
+    signal = 'fxwait'; label = '환율 대기'; en = 'FX-WAIT';
+    detail = `SPI <strong>${spi.toFixed(3)}</strong> — 가격은 유리하지만 환율(ERI ${eri.toFixed(3)})이 평균 이상. 환율 추가 안정 시 발주.`;
+  } else {
+    signal = 'hold';   label = '관망';     en = 'HOLD';
+    detail = `SPI <strong>${spi.toFixed(3)}</strong> — 뉴 노멀 밴드 내(${sCfg.buyMax}~${sCfg.holdMax}). ERI ${eri.toFixed(3)}. 소량 분할 구매 검토.`;
+  }
+
+  return { spi, eri, signal, label, en, detail, baseline };
+}
+
+function renderNewNormalCard() {
+  const card = document.getElementById('newnormal-card');
+  if (!card) return;
+  const r = evaluateNewNormal();
+  if (!r) { card.style.display = 'none'; return; }
+  card.style.display = '';
+
+  const badge = document.getElementById('nn-badge');
+  badge.textContent = r.label + ' · ' + r.en;
+  badge.className = 'nn-signal-badge nn-sig-' + r.signal;
+
+  // SPI 게이지: 0.95(좌) ~ 1.10(우) 범위에 매핑
+  const spiPos = Math.max(2, Math.min(98, ((r.spi - 0.95) / 0.15) * 100));
+  document.getElementById('nn-spi-val').textContent = r.spi.toFixed(3);
+  document.getElementById('nn-spi-marker').style.left = spiPos + '%';
+  document.getElementById('nn-spi-fill').style.width = spiPos + '%';
+
+  // ERI 게이지: 0.95(좌) ~ 1.05(우) 범위에 매핑
+  const eriPos = Math.max(2, Math.min(98, ((r.eri - 0.95) / 0.10) * 100));
+  document.getElementById('nn-eri-val').textContent = r.eri.toFixed(3);
+  document.getElementById('nn-eri-marker').style.left = eriPos + '%';
+  document.getElementById('nn-eri-fill').style.width = eriPos + '%';
+
+  const srcText = r.baseline.source === 'admin'
+    ? `기준가 admin 설정값 (SHFE ${r.baseline.baseSHFE.toLocaleString()} / 전쟁 이전 ${r.baseline.preWarSHFE.toLocaleString()} CNY/MT)`
+    : `기준가 config fallback (SHFE ${r.baseline.baseSHFE.toLocaleString()} CNY/MT — admin에서 정확한 값 입력 권장)`;
+  document.getElementById('nn-detail').innerHTML = r.detail + `<br><span style="color:var(--text-muted); font-size:0.74rem;">※ ${srcText}</span>`;
 }
 
 // ===================== SIGNAL PANEL =====================
@@ -3973,6 +4170,90 @@ const signalOverlayPlugin = {
     ctx.textBaseline = 'top';
     ctx.fillText(labelText, x1 + 6, top + 6);
     ctx.restore();
+  },
+};
+
+// v2.1 §4.4: 가격 차트(SHFE CNY/MT) 위에 뉴 노멀 밴드 + 전쟁 이전 참조선 오버레이
+// loadNewNormalBaseline()로 기준값 로드. enabled=false거나 baseline 없으면 그리지 않음.
+const newNormalBandPlugin = {
+  id: 'newNormalBand',
+  beforeDatasetsDraw(chart) {
+    if (!chart.options?.plugins?.newNormalBand?.enabled) return;
+    if (typeof loadNewNormalBaseline !== 'function') return;
+    const b = loadNewNormalBaseline();
+    if (!b || !b.enabled) return;
+
+    const cfg = (window.ACIS_CONFIG && window.ACIS_CONFIG.newNormal) || null;
+    if (!cfg) return;
+    const colors = cfg.colors || {};
+
+    const xScale = chart.scales.x, yScale = chart.scales.y;
+    if (!xScale || !yScale) return;
+
+    const ctx = chart.ctx;
+    const halfPct = (b.bandWidthPct || 5) / 100;
+    const yTop    = yScale.getPixelForValue(b.baseSHFE * (1 + halfPct));
+    const yBot    = yScale.getPixelForValue(b.baseSHFE * (1 - halfPct));
+    const yBase   = yScale.getPixelForValue(b.baseSHFE);
+    const yPreWar = yScale.getPixelForValue(b.preWarSHFE);
+
+    // ① 뉴 노멀 밴드 음영 (차트 전체 가로폭)
+    const yMin = Math.min(yTop, yBot), yMax = Math.max(yTop, yBot);
+    if (yMax > yScale.top && yMin < yScale.bottom) {
+      ctx.save();
+      ctx.fillStyle = colors.band || 'rgba(201,168,76,0.10)';
+      ctx.fillRect(xScale.left, Math.max(yMin, yScale.top), xScale.right - xScale.left, Math.min(yMax, yScale.bottom) - Math.max(yMin, yScale.top));
+      // 밴드 상/하 경계
+      ctx.strokeStyle = colors.bandBorder || 'rgba(201,168,76,0.45)';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([3, 3]);
+      [yTop, yBot].forEach(y => {
+        if (y >= yScale.top && y <= yScale.bottom) {
+          ctx.beginPath(); ctx.moveTo(xScale.left, y); ctx.lineTo(xScale.right, y); ctx.stroke();
+        }
+      });
+      ctx.setLineDash([]);
+
+      // 라벨 (우측 상단)
+      ctx.fillStyle = colors.bandBorder || 'rgba(201,168,76,0.95)';
+      ctx.font = 'bold 10px "Malgun Gothic", sans-serif';
+      ctx.textBaseline = 'top';
+      ctx.textAlign = 'right';
+      ctx.fillText(`New Normal 밴드 ±${b.bandWidthPct}%`, xScale.right - 6, Math.max(yMin, yScale.top) + 4);
+      ctx.textAlign = 'left';
+      ctx.restore();
+    }
+
+    // ② 뉴 노멀 기준선 (실선, gold)
+    if (yBase >= yScale.top && yBase <= yScale.bottom) {
+      ctx.save();
+      ctx.strokeStyle = colors.bandBorder || '#c9a84c';
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.moveTo(xScale.left, yBase); ctx.lineTo(xScale.right, yBase);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // ③ 전쟁 이전 평균 참조선 (점선, silver)
+    if (yPreWar >= yScale.top && yPreWar <= yScale.bottom) {
+      ctx.save();
+      ctx.strokeStyle = colors.preWarLine || '#9aa3ba';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([6, 4]);
+      ctx.globalAlpha = 0.7;
+      ctx.beginPath();
+      ctx.moveTo(xScale.left, yPreWar); ctx.lineTo(xScale.right, yPreWar);
+      ctx.stroke();
+      ctx.setLineDash([]); ctx.globalAlpha = 1;
+
+      ctx.fillStyle = colors.preWarLine || '#9aa3ba';
+      ctx.font = '10px "Malgun Gothic", sans-serif';
+      ctx.textBaseline = 'bottom';
+      ctx.textAlign = 'left';
+      ctx.fillText('전쟁 이전 평균 ' + b.preWarSHFE.toLocaleString() + ' CNY/MT', xScale.left + 6, yPreWar - 2);
+      ctx.restore();
+    }
   },
 };
 
@@ -4276,13 +4557,14 @@ function initPriceChart() {
   priceChart = new Chart(ctx, {
     type: 'line',
     data: { labels, datasets },
-    plugins: [signalOverlayPlugin, bepPriceLinePlugin],  // P1-B + 옵션 A
+    plugins: [signalOverlayPlugin, newNormalBandPlugin, bepPriceLinePlugin],  // P1-B + v2.1 §4.4 + 옵션 A
     options: {
       responsive: true, maintainAspectRatio: true,
       interaction: { mode: 'index', intersect: false },
       plugins: {
         legend: { display: false },
         signalOverlay: { enabled: true },
+        newNormalBand: { enabled: true },
         bepPriceLine: { enabled: true },
         tooltip: {
           backgroundColor: 'rgba(17,29,53,0.95)',

@@ -92,6 +92,35 @@ window.ACIS_CONFIG = {
     fillAbove: 'rgba(239,68,68,0.10)',  // 임계선 위쪽 음영
   },
 
+  // ---------------- 뉴 노멀 (v2.1 §4.4) ----------------
+  // 미국-이란 전쟁 이후 형성된 구조적 가격 상승 환경을 모델에 반영하는 모듈.
+  // 기준가(baseSHFE, preWarSHFE)는 admin.html에서 입력 → localStorage('acis_newnormal').
+  // 본 config 값은 입력 누락 시의 fallback 및 임계값으로 사용.
+  newNormal: {
+    enabled: true,                  // 기능 토글 (false면 §4.4 카드 비표시)
+    bandWidthPct: 5,                // 기준가 ±5% 를 New Normal 밴드로 음영
+    spi: {                          // 구조적 가격지수 (SPI) = 현재 RPCI ÷ 뉴노멀 기준 RPCI
+      buyMax:    1.02,              // SPI ≤ 1.02 → 매수 후보
+      holdMax:   1.05,              // 1.02 < SPI ≤ 1.05 → 관망
+      // SPI > 1.05 → 자제 (밴드 상단 돌파 경계)
+    },
+    eri: {                          // 환율지수 (ERI) = 현재 CNY/KRW ÷ 90일 평균
+      favorableMax: 0.98,           // ERI ≤ 0.98 → 환율 유리 (BUY 확정 조건)
+      unfavorableMin: 1.02,         // ERI ≥ 1.02 → 환율 불리 경계
+    },
+    colors: {
+      band:       'rgba(201,168,76,0.10)',   // New Normal 밴드 음영 (gold 10%)
+      bandBorder: 'rgba(201,168,76,0.45)',
+      preWarLine: '#9aa3ba',                 // 전쟁 이전 평균 참조선 (silver, dashed)
+    },
+    fallback: {
+      // admin에서 기준가를 입력하지 않은 경우 사용할 대략값
+      // (실데이터 누적 후 admin에서 정확한 수치로 갱신할 것)
+      baseSHFE:   20500,            // 2026년 New Normal 기준 SHFE 가격 (CNY/MT)
+      preWarSHFE: 18000,            // 전쟁 이전(~2025) 평균 SHFE 가격 (CNY/MT)
+    },
+  },
+
   // ---------------- 매수/자제 오버레이 색상 ----------------
   signalOverlay: {
     buy:    'rgba(34, 197, 94, 0.12)',   // 녹색 12%
