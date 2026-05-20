@@ -708,6 +708,56 @@
   .signal-big-badge.diagnostic.buy   { background: rgba(46,204,113,0.06); border-color: rgba(46,204,113,0.45); }
   .signal-big-badge.diagnostic.wait  { background: rgba(241,196,15,0.06); border-color: rgba(241,196,15,0.45); }
   .signal-big-badge.diagnostic.avoid { background: rgba(231,76,60,0.06);  border-color: rgba(231,76,60,0.45); }
+
+  /* v2.1: ④ 보조 분석 — 기본 접힘 details/summary 스타일 */
+  .aux-details {
+    background: rgba(154,163,186,0.04);
+    border: 1px solid rgba(154,163,186,0.15);
+    border-radius: 10px;
+    padding: 0;
+  }
+  .aux-summary {
+    cursor: pointer;
+    list-style: none;
+    padding: 0.85rem 1.2rem;
+    display: flex; align-items: center; gap: 0.7rem;
+    user-select: none;
+    border-radius: 10px;
+    transition: background 0.15s;
+  }
+  .aux-summary::-webkit-details-marker { display: none; }
+  .aux-summary:hover { background: rgba(154,163,186,0.07); }
+  .aux-summary-num {
+    width: 28px; height: 28px; border-radius: 8px;
+    background: rgba(154,163,186,0.15); color: var(--text-secondary);
+    display: inline-flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 0.85rem; flex-shrink: 0;
+  }
+  .aux-summary-title { font-size: 0.95rem; font-weight: 700; color: var(--text-primary); }
+  .aux-summary-sub { font-size: 0.75rem; color: var(--text-muted); }
+  .aux-summary-arrow {
+    margin-left: auto;
+    font-size: 0.75rem; color: var(--text-muted);
+    transition: transform 0.2s;
+  }
+  details[open] > .aux-summary > .aux-summary-arrow { transform: rotate(180deg); }
+  details[open] > .aux-summary > .aux-summary-title::after { content: ''; }
+  .aux-body { padding: 0 1.2rem 1.2rem; }
+
+  /* 데이터 통계 표시 박스 (배지 대체) */
+  .aux-stat {
+    display: flex; align-items: center; justify-content: space-between;
+    background: rgba(0,0,0,0.18);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 8px;
+    padding: 0.7rem 1rem;
+    margin: 0.8rem 0;
+  }
+  .aux-stat-label { font-size: 0.78rem; color: var(--text-secondary); }
+  .aux-stat-value {
+    font-size: 1.4rem; font-weight: 800;
+    color: var(--text-primary); font-variant-numeric: tabular-nums;
+  }
   .signal-factors { list-style: none; }
   .signal-factors li {
     font-size: 0.78rem; color: var(--text-secondary);
@@ -2052,75 +2102,69 @@
 
   <hr class="section-divider">
 
-  <!-- ④ Purchase Signal Panel -->
+  <!-- ④ 보조 분석 — 기본 접힘 (v2.1: 의사결정은 상단 결론 카드, 여기는 순수 데이터 진단) -->
   <section class="section" id="sec-signal">
-    <div class="section-header">
-      <div class="section-num">④</div>
-      <div class="section-title">보조 분석 (참고용) <small style="font-size:0.7rem; font-weight:500; color:var(--text-muted); margin-left:0.5rem;">— 60일/90일 이동평균 진단</small></div>
-      <div class="section-sub">v2.0 평균회귀형 신호 — 의사결정은 상단 결론 카드(뉴 노멀)를 사용하세요</div>
-    </div>
-    <div class="data-source-bar source-bar-calc" style="background:rgba(154,163,186,0.06);">
-      <span class="data-badge badge-calc">● 참고 진단</span>
-      이 패널은 "현재가가 60일 평균보다 비싼지/싼지"만 보여줍니다.
-      뉴 노멀 환경에서는 평균이 가격을 따라 올라가 신호가 무뎌지므로 <strong>의사결정 기준이 아닙니다</strong>.
-      가격 변동성 진단·과거 추세 비교 목적으로만 활용하세요.
-    </div>
-    <div class="signal-grid">
-      <div class="signal-card">
-        <div class="signal-card-title">단기 신호 (1~2주)</div>
-        <div class="signal-big">
-          <div class="signal-big-badge buy" id="signal-short-badge">
-            매수<small id="signal-short-en">BUY</small>
-          </div>
+    <details class="aux-details">
+      <summary class="aux-summary">
+        <span class="aux-summary-num">④</span>
+        <span class="aux-summary-title">보조 분석 데이터 보기</span>
+        <span class="aux-summary-sub">— 60일/90일 이동평균 대비 RPCI 위치 (참고용)</span>
+        <span class="aux-summary-arrow">▼</span>
+      </summary>
+      <div class="aux-body">
+        <div class="data-source-bar source-bar-calc" style="background:rgba(154,163,186,0.06);">
+          <span class="data-badge badge-calc">● 데이터 진단</span>
+          이 패널은 객관 데이터(현재가 vs 과거 이동평균)만 표시합니다 — 구매 판단 단어 없음.
+          의사결정은 반드시 <strong>상단 결론 카드(뉴 노멀)</strong>를 따르세요.
         </div>
-        <ul class="signal-factors" id="signal-short-factors">
-          <li>RPCI가 60일 이동평균 대비 2.8% 하회 — 단기 저점 진입</li>
-          <li>LME 현물가 최근 5일 연속 하락 — 매수 기회</li>
-          <li>CNY/KRW 환율 안정세 유지 — 환리스크 낮음</li>
-          <li>기술적 지지선(MA20) 상회 유지 중</li>
-        </ul>
-        <div class="rpci-bar-section">
-          <div class="rpci-bar-label">
-            <span>RPCI 위치 (60일 MA 기준)</span>
-            <span id="rpci-pct-label-short">--</span>
+        <div class="signal-grid">
+          <div class="signal-card">
+            <div class="signal-card-title">단기 (1~2주, 60일 MA 기준)</div>
+            <div class="aux-stat">
+              <div class="aux-stat-label">RPCI 편차</div>
+              <div class="aux-stat-value" id="rpci-pct-label-short">--</div>
+            </div>
+            <ul class="signal-factors" id="signal-short-factors">
+              <li>데이터 로딩 중…</li>
+            </ul>
+            <div class="rpci-bar-section">
+              <div class="rpci-bar-label">
+                <span>RPCI 위치 (60일 MA 기준)</span>
+              </div>
+              <div class="rpci-bar-track">
+                <div class="rpci-bar-fill" id="rpci-bar-fill-short" style="width:30%;background:rgba(154,163,186,0.35);"></div>
+                <div class="rpci-bar-marker" id="rpci-bar-marker-short" style="left:30%;"></div>
+              </div>
+              <div style="display:flex;justify-content:space-between;font-size:0.62rem;color:var(--text-muted);margin-top:4px;">
+                <span>+10% 상회</span><span>평균(0%)</span><span>−10% 하회</span>
+              </div>
+            </div>
           </div>
-          <div class="rpci-bar-track">
-            <div class="rpci-bar-fill" id="rpci-bar-fill-short" style="width:30%;background:linear-gradient(90deg,#2ecc71,#27ae60);"></div>
-            <div class="rpci-bar-marker" id="rpci-bar-marker-short" style="left:30%;"></div>
-          </div>
-          <div style="display:flex;justify-content:space-between;font-size:0.62rem;color:var(--text-muted);margin-top:4px;">
-            <span>자제구간</span><span>적정구간</span><span>매수구간</span>
-          </div>
-        </div>
-      </div>
-      <div class="signal-card">
-        <div class="signal-card-title">중장기 신호 (1~3개월)</div>
-        <div class="signal-big">
-          <div class="signal-big-badge wait" id="signal-long-badge">
-            대기<small id="signal-long-en">WAIT</small>
-          </div>
-        </div>
-        <ul class="signal-factors" id="signal-long-factors">
-          <li>중장기(90일) 이동평균 대비 RPCI +0.8% — 중립 구간</li>
-          <li>중국 알루미늄 생산량 증가 추세 — 공급 압력 완화 예상</li>
-          <li>글로벌 경기 불확실성 — 수요 변동 리스크 존재</li>
-          <li>환율 30일 예측 소폭 상승 전망 — 비용 증가 가능성</li>
-        </ul>
-        <div class="rpci-bar-section">
-          <div class="rpci-bar-label">
-            <span>RPCI 위치 (90일 MA 기준)</span>
-            <span id="rpci-pct-label-long">--</span>
-          </div>
-          <div class="rpci-bar-track">
-            <div class="rpci-bar-fill" id="rpci-bar-fill-long" style="width:50%;background:linear-gradient(90deg,#f1c40f,#d4ac0d);"></div>
-            <div class="rpci-bar-marker" id="rpci-bar-marker-long" style="left:50%;"></div>
-          </div>
-          <div style="display:flex;justify-content:space-between;font-size:0.62rem;color:var(--text-muted);margin-top:4px;">
-            <span>자제구간</span><span>적정구간</span><span>매수구간</span>
+          <div class="signal-card">
+            <div class="signal-card-title">중장기 (1~3개월, 90일 MA 기준)</div>
+            <div class="aux-stat">
+              <div class="aux-stat-label">RPCI 편차</div>
+              <div class="aux-stat-value" id="rpci-pct-label-long">--</div>
+            </div>
+            <ul class="signal-factors" id="signal-long-factors">
+              <li>데이터 로딩 중…</li>
+            </ul>
+            <div class="rpci-bar-section">
+              <div class="rpci-bar-label">
+                <span>RPCI 위치 (90일 MA 기준)</span>
+              </div>
+              <div class="rpci-bar-track">
+                <div class="rpci-bar-fill" id="rpci-bar-fill-long" style="width:50%;background:rgba(154,163,186,0.35);"></div>
+                <div class="rpci-bar-marker" id="rpci-bar-marker-long" style="left:50%;"></div>
+              </div>
+              <div style="display:flex;justify-content:space-between;font-size:0.62rem;color:var(--text-muted);margin-top:4px;">
+                <span>+10% 상회</span><span>평균(0%)</span><span>−10% 하회</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </details>
   </section>
 
   <hr class="section-divider">
@@ -3983,28 +4027,18 @@ function evaluateNewNormal() {
 // 별도 뉴 노멀 카드는 v2.1 통합에서 제거됨 — SPI/ERI 게이지·staleness 알림은
 // renderTodayConclusion()이 메인 결론 카드 안에서 함께 렌더링.
 
-// ===================== SIGNAL PANEL =====================
+// ===================== SIGNAL PANEL (v2.1: 순수 데이터 진단, 판단 단어 없음) =====================
 function renderSignalPanel() {
   const signals = [
-    { id:'short', signal: shortSignal, ma: currentMA60, label:'60일 MA 기준',
+    { id:'short', signal: shortSignal, ma: currentMA60,
       labelId:'rpci-pct-label-short', fillId:'rpci-bar-fill-short', markerId:'rpci-bar-marker-short',
-      badgeId:'signal-short-badge', enId:'signal-short-en',
       factors: getSignalFactors(shortSignal, '단기') },
-    { id:'long', signal: longSignal, ma: currentMA90 || currentMA60, label:'90일 MA 기준',
-      labelId:'rpci-pct-label-long', fillId:'rpci-bar-fill-long', markerId:'rpci-bar-marker-long',
-      badgeId:'signal-long-badge', enId:'signal-long-en',
+    { id:'long', signal: longSignal, ma: currentMA90 || currentMA60,
+      labelId:'rpci-pct-label-long',  fillId:'rpci-bar-fill-long',  markerId:'rpci-bar-marker-long',
       factors: getSignalFactors(longSignal, '중장기') },
   ];
 
   signals.forEach(s => {
-    // Badge — v2.1: 진단 용어 사용 (의사결정 카드와 혼동 방지)
-    const badge = document.getElementById(s.badgeId);
-    const en = document.getElementById(s.enId);
-    const labels   = { buy:'저점 진단', wait:'적정 범위', avoid:'고점 진단' };
-    const enLabels = { buy:'LOW',       wait:'NORMAL',    avoid:'HIGH'      };
-    badge.innerHTML = labels[s.signal] + '<small>' + enLabels[s.signal] + '</small>';
-    badge.className = 'signal-big-badge diagnostic ' + s.signal;
-
     // Factor list (bullet) DOM 갱신
     const ulId = (s.id === 'short') ? 'signal-short-factors' : 'signal-long-factors';
     const ul = document.getElementById(ulId);
@@ -4012,18 +4046,18 @@ function renderSignalPanel() {
       ul.innerHTML = s.factors.map(t => `<li>${t}</li>`).join('');
     }
 
-    // Bar
+    // RPCI 위치 바 — 색상은 회색 단일 (판단 함의 제거, 위치만 표시)
     const pct = ((currentRPCI - s.ma)/s.ma*100);
-    // Map: -5% → 85%, 0% → 50%, +5% → 15% (inverted)
-    const barPos = Math.max(5, Math.min(95, 50 - pct * 7));
-    document.getElementById(s.labelId).textContent = (pct > 0 ? '+' : '') + pct.toFixed(1) + '% vs MA';
-    document.getElementById(s.fillId).style.width = barPos + '%';
-    document.getElementById(s.fillId).style.background = s.signal === 'buy'
-      ? 'linear-gradient(90deg,#2ecc71,#27ae60)'
-      : s.signal === 'avoid'
-        ? 'linear-gradient(90deg,#e74c3c,#c0392b)'
-        : 'linear-gradient(90deg,#f1c40f,#d4ac0d)';
-    document.getElementById(s.markerId).style.left = barPos + '%';
+    const barPos = Math.max(5, Math.min(95, 50 - pct * 7));   // +10% → 좌, -10% → 우
+    const lbl = document.getElementById(s.labelId);
+    if (lbl) lbl.textContent = (pct > 0 ? '+' : '') + pct.toFixed(1) + '%';
+    const fill = document.getElementById(s.fillId);
+    if (fill) {
+      fill.style.width = barPos + '%';
+      fill.style.background = 'rgba(154,163,186,0.35)';   // 중립 회색
+    }
+    const mark = document.getElementById(s.markerId);
+    if (mark) mark.style.left = barPos + '%';
   });
 }
 
