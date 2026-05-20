@@ -3996,7 +3996,14 @@ function evaluateNewNormal() {
     detail = `SPI <strong>${spi.toFixed(3)}</strong> — 뉴 노멀 밴드 내(${sCfg.buyMax}~${sCfg.holdMax}). ERI ${eri.toFixed(3)}. 소량 분할 구매 검토.`;
   }
 
-  return { spi, eri, signal, label, en, detail, baseline };
+  // 기준가 staleness 판정 — 현재가가 기준가 대비 ±10% 이상 벗어났으면 갱신 필요
+  const STALE_THRESHOLD = 0.10;
+  const deviation = Math.abs(spi - 1.0);
+  const stale = deviation > STALE_THRESHOLD;
+  const staleDirection = spi > 1.0 ? 'up' : 'down';
+  const stalePct = (deviation * 100).toFixed(1);
+
+  return { spi, eri, signal, label, en, detail, baseline, stale, staleDirection, stalePct };
 }
 
 function renderNewNormalCard() {
@@ -4025,7 +4032,27 @@ function renderNewNormalCard() {
   const srcText = r.baseline.source === 'admin'
     ? `기준가 admin 설정값 (SHFE ${r.baseline.baseSHFE.toLocaleString()} / 전쟁 이전 ${r.baseline.preWarSHFE.toLocaleString()} CNY/MT)`
     : `기준가 config fallback (SHFE ${r.baseline.baseSHFE.toLocaleString()} CNY/MT — admin에서 정확한 값 입력 권장)`;
-  document.getElementById('nn-detail').innerHTML = r.detail + `<br><span style="color:var(--text-muted); font-size:0.74rem;">※ ${srcText}</span>`;
+
+  // 기준가 갱신 알림 (SPI가 ±10% 이상 벗어났을 때)
+  let staleHtml = '';
+  if (r.stale) {
+    const arrow = r.staleDirection === 'up' ? '▲' : '▼';
+    const dirText = r.staleDirection === 'up' ? '상승' : '하락';
+    const ageText = r.baseline.updatedAt
+      ? new Date(r.baseline.updatedAt).toLocaleDateString('ko-KR') + ' 이후'
+      : 'fallback 기본값';
+    staleHtml =
+      `<div style="margin-top:0.6rem; padding:0.55rem 0.8rem; background:rgba(239,68,68,0.10); border:1px solid rgba(239,68,68,0.40); border-radius:6px; font-size:0.78rem; color:#fca5a5; line-height:1.55;">` +
+        `⚠ <strong>기준가 점검 필요</strong> — ` +
+        `현재 SHFE가 저장된 뉴 노멀 기준가 대비 <strong>${arrow} ${r.stalePct}%</strong> ${dirText}했습니다 (${ageText}). ` +
+        `구조적 가격 전환 가능성 — <a href="./admin.html" style="color:#fbbf24; text-decoration:underline; font-weight:600;">admin에서 기준가 재설정</a>을 검토하세요.` +
+      `</div>`;
+  }
+
+  document.getElementById('nn-detail').innerHTML =
+    r.detail +
+    `<br><span style="color:var(--text-muted); font-size:0.74rem;">※ ${srcText}</span>` +
+    staleHtml;
 }
 
 // ===================== SIGNAL PANEL =====================
