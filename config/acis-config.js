@@ -115,9 +115,10 @@ window.ACIS_CONFIG = {
     },
     fallback: {
       // admin에서 기준가를 입력하지 않은 경우 사용할 대략값
-      // (실데이터 누적 후 admin에서 정확한 수치로 갱신할 것)
-      baseSHFE:   20500,            // 2026년 New Normal 기준 SHFE 가격 (CNY/MT)
-      preWarSHFE: 18000,            // 전쟁 이전(~2025) 평균 SHFE 가격 (CNY/MT)
+      // 2026-05 기준 SHFE 약 25,700 CNY/MT 시세 반영.
+      // 구조적 가격대가 다시 한 단계 점프하면(예: 6개월 이상 지속 상승) 갱신 필요.
+      baseSHFE:   25000,            // 2026년 New Normal 기준 SHFE 가격 (CNY/MT)
+      preWarSHFE: 20000,            // 전쟁 이전(~2025) 평균 SHFE 가격 (CNY/MT)
     },
   },
 

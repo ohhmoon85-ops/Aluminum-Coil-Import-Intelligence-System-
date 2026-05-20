@@ -1217,8 +1217,22 @@
         <button class="btn btn-primary" onclick="saveNewNormal()" style="white-space:nowrap;">💾 저장</button>
         <button class="btn btn-secondary" onclick="resetNewNormal()" style="white-space:nowrap;">↺ 기본값</button>
       </div>
+      <div style="display:flex; gap:0.5rem; margin-bottom:0.6rem; flex-wrap:wrap;">
+        <button class="btn btn-secondary" onclick="suggestNewNormalFromMarket()" style="font-size:0.78rem; padding:0.4rem 0.8rem;">
+          🤖 현재 시세 기준 자동 추천 (최근 90일 중앙값)
+        </button>
+        <span style="font-size:0.72rem; color:var(--text-muted); align-self:center;">
+          ※ 입력란만 채워줍니다 — 검토 후 [저장] 누르세요
+        </span>
+      </div>
       <div id="nn-current" style="font-size:0.78rem; color:var(--text-secondary); padding:0.6rem 0.8rem; background:rgba(201,168,76,0.06); border-radius:6px; border:1px dashed rgba(201,168,76,0.25);">
         현재 저장된 기준: <span id="nn-current-text">로드 중…</span>
+      </div>
+      <div style="margin-top:0.6rem; font-size:0.72rem; color:var(--text-muted); line-height:1.5;">
+        💡 <strong>갱신 시점 가이드</strong>:
+        뉴 노멀 기준가는 매일 바꾸는 값이 아닙니다.
+        SHFE 시세가 ±10% 이상 구조적으로 이동했거나 (예: 6개월 평균이 기준가 대비 ±10% 이상 변화), 새로운 지정학적 사건이 발생했을 때만 재설정하세요.
+        전쟁 이전 평균은 역사적 사실이므로 한 번 설정하면 변경 불필요합니다.
       </div>
     </div>
 
@@ -2018,6 +2032,46 @@ function resetNewNormal() {
   document.getElementById('nn-band').value = '';
   showToast('뉴 노멀 기준가 초기화 완료', 'info');
   renderNewNormalCurrent();
+}
+
+// 현재 SHFE 90일 데이터에서 중앙값을 추출해 입력란에 자동 채움
+async function suggestNewNormalFromMarket() {
+  const btn = event && event.target;
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ 가격 데이터 조회 중...'; }
+  try {
+    const res = await fetch('/api/aluminum');
+    if (!res.ok) throw new Error('SHFE API 오류 ' + res.status);
+    const json = await res.json();
+    const prices = (json.data || []).map(d => d.price).filter(p => p > 0);
+    if (prices.length < 30) throw new Error('가격 데이터 부족 (30일 미만)');
+
+    // 중앙값 (median) — 평균보다 일시적 스파이크에 강건
+    const sorted = [...prices].sort((a, b) => a - b);
+    const mid = Math.floor(sorted.length / 2);
+    const median = sorted.length % 2 === 0
+      ? (sorted[mid - 1] + sorted[mid]) / 2
+      : sorted[mid];
+    const baseSuggestion = Math.round(median / 100) * 100; // 100 단위 반올림
+
+    // 전쟁 이전 평균은 admin이 한 번만 입력하면 되는 값이라 자동 추천하지 않고 기존값 유지
+    const prewarEl = document.getElementById('nn-prewar');
+    const baseEl   = document.getElementById('nn-base');
+    const bandEl   = document.getElementById('nn-band');
+
+    baseEl.value = baseSuggestion;
+    if (!prewarEl.value) prewarEl.value = Math.round(baseSuggestion * 0.78 / 100) * 100; // 추정 (구조적 상승률 ~28% 가정)
+    if (!bandEl.value)   bandEl.value = 5;
+
+    showToast(
+      `자동 추천: 기준가 ${baseSuggestion.toLocaleString()} CNY/MT (최근 ${prices.length}일 중앙값). 검토 후 [저장] 누르세요.`,
+      'success'
+    );
+  } catch (e) {
+    console.error('[NN] 자동 추천 실패:', e);
+    showToast('자동 추천 실패: ' + e.message, 'error');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '🤖 현재 시세 기준 자동 추천 (최근 90일 중앙값)'; }
+  }
 }
 
 document.addEventListener('DOMContentLoaded', renderNewNormalCurrent);
