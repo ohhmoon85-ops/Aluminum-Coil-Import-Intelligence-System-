@@ -143,6 +143,11 @@
   .cc-bar { position: relative; height: 6px; background: rgba(255,255,255,0.06); border-radius: 3px; overflow: hidden; }
   .cc-bar-fill { position: absolute; top:0; bottom:0; left:0; border-radius: 3px; transition: width 0.4s; }
   .cc-bar-marker { position: absolute; top: -2px; width: 2px; height: 10px; background: #fff; opacity: 0.85; transform: translateX(-1px); }
+  .cc-zones {
+    display: flex; justify-content: space-between;
+    font-size: 0.6rem; color: var(--text-muted); margin-top: 0.2rem;
+  }
+  .cc-gauge[title] { cursor: help; }
 
   /* 결론 카드 staleness 경고 (기준가 점검 필요 시) */
   .conclusion-stale {
@@ -686,6 +691,17 @@
   .signal-big-badge.wait { background: rgba(241,196,15,0.12); color: var(--yellow); border: 2px solid var(--yellow); }
   .signal-big-badge.avoid { background: rgba(231,76,60,0.12); color: var(--red); border: 2px solid var(--red); }
   .signal-big-badge small { font-size: 0.7rem; font-weight: 400; opacity: 0.7; letter-spacing: 0; }
+  /* v2.1: 진단용 배지(④ 보조 분석) — 메인 결론 배지와 시각적으로 구분 (작고 연하게) */
+  .signal-big-badge.diagnostic {
+    padding: 0.55rem 1.4rem;
+    font-size: 1.15rem;
+    border-width: 1px;
+    letter-spacing: 1px;
+    opacity: 0.78;
+  }
+  .signal-big-badge.diagnostic.buy   { background: rgba(46,204,113,0.06); border-color: rgba(46,204,113,0.45); }
+  .signal-big-badge.diagnostic.wait  { background: rgba(241,196,15,0.06); border-color: rgba(241,196,15,0.45); }
+  .signal-big-badge.diagnostic.avoid { background: rgba(231,76,60,0.06);  border-color: rgba(231,76,60,0.45); }
   .signal-factors { list-style: none; }
   .signal-factors li {
     font-size: 0.78rem; color: var(--text-secondary);
@@ -1644,6 +1660,7 @@
     .sim-card { padding: 1.1rem; }
     .kpi-card { padding: 1rem 1.1rem; }
     .signal-big-badge { font-size: 1.6rem; padding: 0.75rem 2rem; }
+    .signal-big-badge.diagnostic { font-size: 1rem; padding: 0.5rem 1.2rem; }
   }
 
   /* 모바일 */
@@ -1815,19 +1832,27 @@
     </div>
     <div class="conclusion-right">
       <div class="cc-gauges">
-        <div class="cc-gauge">
-          <div class="cc-gauge-label">SPI <strong id="cc-spi-val">--</strong></div>
+        <div class="cc-gauge" title="SPI (구조적 가격지수) = 현재 알루미늄 가격 ÷ 뉴 노멀 기준가&#10;1.00 = 기준가와 동일&#10;1.02 이하 = 싸다 (매수 OK)&#10;1.02~1.05 = 정상 범위 (관망)&#10;1.05 초과 = 비싸다 (자제)">
+          <div class="cc-gauge-label">
+            <span>가격 수준 <small style="opacity:0.55;">(SPI)</small></span>
+            <strong id="cc-spi-val">--</strong>
+          </div>
           <div class="cc-bar">
             <div class="cc-bar-fill" id="cc-spi-fill" style="width:50%; background:linear-gradient(90deg,#22c55e,#fbbf24,#ef4444);"></div>
             <div class="cc-bar-marker" id="cc-spi-marker" style="left:50%;"></div>
           </div>
+          <div class="cc-zones"><span style="color:#22c55e;">싸다</span><span>정상</span><span style="color:#ef4444;">비싸다</span></div>
         </div>
-        <div class="cc-gauge">
-          <div class="cc-gauge-label">ERI <strong id="cc-eri-val">--</strong></div>
+        <div class="cc-gauge" title="ERI (환율지수) = 현재 CNY/KRW ÷ 90일 평균 환율&#10;1.00 = 평균과 동일&#10;0.98 이하 = 환율 유리 (원화 강세)&#10;0.98~1.02 = 중립&#10;1.02 이상 = 환율 불리 (원화 약세)">
+          <div class="cc-gauge-label">
+            <span>환율 수준 <small style="opacity:0.55;">(ERI)</small></span>
+            <strong id="cc-eri-val">--</strong>
+          </div>
           <div class="cc-bar">
             <div class="cc-bar-fill" id="cc-eri-fill" style="width:50%; background:linear-gradient(90deg,#22c55e,#fbbf24,#ef4444);"></div>
             <div class="cc-bar-marker" id="cc-eri-marker" style="left:50%;"></div>
           </div>
+          <div class="cc-zones"><span style="color:#22c55e;">유리</span><span>중립</span><span style="color:#ef4444;">불리</span></div>
         </div>
       </div>
       <div class="conclusion-meta" id="conclusion-meta">갱신 대기</div>
@@ -3917,21 +3942,26 @@ function evaluateNewNormal() {
 
   if (spi === null || eri === null) return null;
 
-  // 4단계 신호 (기획서 §4.3 변경 후)
+  // 4단계 신호 (기획서 §4.3 변경 후) — 평문(% 기반) 안내
   const sCfg = cfg.spi, eCfg = cfg.eri;
+  const priceDiffPct = ((spi - 1) * 100).toFixed(1);  // 기준가 대비 %
+  const fxDiffPct    = ((eri - 1) * 100).toFixed(1);  // 90일 평균 대비 %
+  const priceTxt = (priceDiffPct >= 0 ? '+' : '') + priceDiffPct + '%';
+  const fxTxt    = (fxDiffPct    >= 0 ? '+' : '') + fxDiffPct    + '%';
+
   let signal, label, en, detail;
   if (spi > sCfg.holdMax) {
     signal = 'avoid';  label = '자제';     en = 'AVOID';
-    detail = `SPI <strong>${spi.toFixed(3)}</strong> — 뉴 노멀 밴드 상단(${sCfg.holdMax.toFixed(2)})을 돌파하여 추가 상승 압력 경계. 신규 발주 자제 권고.`;
+    detail = `알루미늄 가격이 뉴 노멀 기준 대비 ${priceTxt} 비쌉니다. 추가 상승 압력 — 신규 발주를 자제하세요.`;
   } else if (spi <= sCfg.buyMax && eri <= eCfg.favorableMax) {
     signal = 'buy';    label = '매수';     en = 'BUY';
-    detail = `SPI <strong>${spi.toFixed(3)}</strong> ≤ ${sCfg.buyMax} 이고 ERI <strong>${eri.toFixed(3)}</strong> ≤ ${eCfg.favorableMax} — 가격·환율 동시 유리한 최적 창(Window). 적극 발주 검토.`;
+    detail = `가격은 기준 대비 ${priceTxt}, 환율도 90일 평균 대비 ${fxTxt} 유리합니다. 가격·환율 동시 좋은 절호의 매수 시점.`;
   } else if (spi <= sCfg.buyMax && eri > eCfg.favorableMax) {
     signal = 'fxwait'; label = '환율 대기'; en = 'FX-WAIT';
-    detail = `SPI <strong>${spi.toFixed(3)}</strong> — 가격은 유리하지만 환율(ERI ${eri.toFixed(3)})이 평균 이상. 환율 추가 안정 시 발주.`;
+    detail = `가격은 좋습니다(기준 대비 ${priceTxt})만 환율이 평균 대비 ${fxTxt} 불리합니다. 환율 진정될 때까지 대기.`;
   } else {
     signal = 'hold';   label = '관망';     en = 'HOLD';
-    detail = `SPI <strong>${spi.toFixed(3)}</strong> — 뉴 노멀 밴드 내(${sCfg.buyMax}~${sCfg.holdMax}). ERI ${eri.toFixed(3)}. 소량 분할 구매 검토.`;
+    detail = `가격이 기준 근처(${priceTxt}), 환율도 평균 근처(${fxTxt}) — 뚜렷한 우위 없음. 소량 분할 구매 또는 환율 유리해질 때까지 관망.`;
   }
 
   // 기준가 staleness 판정 — 현재가가 기준가 대비 ±10% 이상 벗어났으면 갱신 필요
@@ -3961,13 +3991,13 @@ function renderSignalPanel() {
   ];
 
   signals.forEach(s => {
-    // Badge
+    // Badge — v2.1: 진단 용어 사용 (의사결정 카드와 혼동 방지)
     const badge = document.getElementById(s.badgeId);
     const en = document.getElementById(s.enId);
-    const labels = { buy:'매수', wait:'대기', avoid:'자제' };
-    const enLabels = { buy:'BUY', wait:'WAIT', avoid:'AVOID' };
+    const labels   = { buy:'저점 진단', wait:'적정 범위', avoid:'고점 진단' };
+    const enLabels = { buy:'LOW',       wait:'NORMAL',    avoid:'HIGH'      };
     badge.innerHTML = labels[s.signal] + '<small>' + enLabels[s.signal] + '</small>';
-    badge.className = 'signal-big-badge ' + s.signal;
+    badge.className = 'signal-big-badge diagnostic ' + s.signal;
 
     // Factor list (bullet) DOM 갱신
     const ulId = (s.id === 'short') ? 'signal-short-factors' : 'signal-long-factors';
@@ -3993,24 +4023,25 @@ function renderSignalPanel() {
 
 function getSignalFactors(signal, type) {
   const rpciPct = ((currentRPCI - currentMA60)/currentMA60*100).toFixed(1);
+  // v2.1: 진단 문장(객관적 사실 기술), 의사결정 표현 제거
   const base = {
     buy: [
-      `RPCI가 60일 이동평균 대비 ${Math.abs(rpciPct)}% 하회 — ${type} 저점 진입`,
-      `SHFE 현물가 최근 하락 국면 — 저점 매수 기회`,
-      `CNY/KRW 환율 안정세 유지 — 환리스크 제한적`,
-      `기술적 지지선(MA20) 대비 유리한 가격 형성`,
+      `RPCI가 60일 이동평균 대비 ${Math.abs(rpciPct)}% 하회 (${type} 진단)`,
+      `SHFE 현물가 최근 하락 추세`,
+      `CNY/KRW 환율 안정 추세 유지`,
+      `기술적 지지선(MA20) 상회 중`,
     ],
     wait: [
-      `RPCI가 60일 이동평균 적정 범위(±3%) 내 위치`,
-      `중국 알루미늄 생산량 증가 추세 — 공급 압력 중립`,
-      `글로벌 경기 불확실성 — 수요 변동 리스크 존재`,
-      `환율 단기 예측 소폭 변동 예상 — 모니터링 권고`,
+      `RPCI가 60일 이동평균 ±3% 적정 범위 내 위치`,
+      `중국 알루미늄 생산량 증가 추세`,
+      `글로벌 경기 불확실성 지속`,
+      `환율 단기 소폭 변동 예상`,
     ],
     avoid: [
-      `RPCI가 60일 이동평균 대비 ${rpciPct}% 상회 — 고비용 구간`,
-      `SHFE 현물가 상승세 지속 — 추가 비용 증가 우려`,
-      `CNY/KRW 환율 상승 압력 — 수입 원가 악화 가능성`,
-      `기술적 저항선 근접 — 단기 하락 전환 가능성 모니터링 필요`,
+      `RPCI가 60일 이동평균 대비 ${rpciPct}% 상회 (${type} 진단)`,
+      `SHFE 현물가 상승 추세 지속`,
+      `CNY/KRW 환율 상승 압력 관찰됨`,
+      `기술적 저항선 근접`,
     ]
   };
   return base[signal];
