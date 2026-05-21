@@ -217,41 +217,83 @@
   }
   .fcsim-slider-wrap {
     position: relative;
-    height: 28px;
-    display: flex; align-items: center;
+    height: 44px;       /* 라벨 공간(20) + 슬라이더 트랙(20) + 여유 */
+    padding-top: 20px;  /* 중점 마커 라벨 공간 */
   }
+  /* v2.1: zone 그래디언트 — 슬라이더 트랙 색상 가이드 (구매자 관점) */
+  .fcsim-zone-track {
+    position: absolute;
+    bottom: 10px;       /* 슬라이더 트랙 위치와 동일 */
+    left: 0; right: 0;
+    height: 8px;
+    border-radius: 4px;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .fcsim-zone-track.shfe {
+    background: linear-gradient(to right, #22c55e 0%, #f59e0b 50%, #ef4444 100%);
+    opacity: 0.32;
+  }
+  .fcsim-zone-track.cny {
+    background: linear-gradient(to right, #22c55e 0%, #9ca3af 50%, #ef4444 100%);
+    opacity: 0.30;
+  }
+  /* CI 밴드 (신뢰구간 강조) — zone 위에 옅게 */
   .fcsim-ci-band {
     position: absolute;
-    top: 50%; transform: translateY(-50%);
-    height: 6px;
+    bottom: 10px;
+    height: 8px;
     background: linear-gradient(
       to right,
-      rgba(239,68,68,0.22) 0%,
-      rgba(239,68,68,0.22) var(--ci-min, 30%),
-      rgba(34,197,94,0.18) var(--ci-min, 30%),
-      rgba(34,197,94,0.18) var(--ci-max, 70%),
-      rgba(239,68,68,0.22) var(--ci-max, 70%),
-      rgba(239,68,68,0.22) 100%
+      transparent 0%,
+      transparent var(--ci-min, 30%),
+      rgba(255,255,255,0.10) var(--ci-min, 30%),
+      rgba(255,255,255,0.10) var(--ci-max, 70%),
+      transparent var(--ci-max, 70%),
+      transparent 100%
     );
-    border-radius: 3px;
+    border-radius: 4px;
     pointer-events: none;
     width: 100%;
+    z-index: 1;
+  }
+  /* v2.1: 중점 마커 (뉴 노멀 / 90일 평균) — 트랙 영역만 세로선 */
+  .fcsim-midpoint {
+    position: absolute;
+    bottom: 7px; height: 14px;
+    width: 2px;
+    background: rgba(245, 158, 11, 0.85);
+    pointer-events: none;
+    z-index: 2;
+    transform: translateX(-1px);
+  }
+  .fcsim-midpoint::before {
+    content: attr(data-label);
+    position: absolute;
+    bottom: 16px; left: 50%; transform: translateX(-50%);
+    font-size: 0.62rem; color: #fbbf24; white-space: nowrap;
+    background: var(--navy-dark);
+    padding: 1px 5px; border-radius: 3px;
+    font-weight: 700;
+    border: 1px solid rgba(245,158,11,0.35);
   }
   .fcsim-slider {
-    position: relative;
+    position: absolute;
+    bottom: 6px;        /* zone-track의 bottom:10, height:8 → 중심 14 → 슬라이더 height:8 중심도 14 */
+    left: 0; right: 0;
     -webkit-appearance: none;
     appearance: none;
     width: 100%;
-    height: 6px;
+    height: 8px;
     background: transparent;
     cursor: pointer;
-    z-index: 2;
+    z-index: 3;
   }
   .fcsim-slider::-webkit-slider-runnable-track {
-    height: 6px; background: transparent;
+    height: 8px; background: transparent;
   }
   .fcsim-slider::-moz-range-track {
-    height: 6px; background: transparent;
+    height: 8px; background: transparent;
   }
   .fcsim-slider::-webkit-slider-thumb {
     -webkit-appearance: none; appearance: none;
@@ -261,7 +303,7 @@
     border: 2px solid var(--navy-dark);
     box-shadow: 0 1px 4px rgba(0,0,0,0.4);
     cursor: pointer;
-    margin-top: -6px;
+    margin-top: -5px;
     transition: transform 0.12s, background 0.12s;
   }
   .fcsim-slider::-webkit-slider-thumb:hover,
@@ -2113,10 +2155,10 @@
   <section class="section" id="sec-fcsim">
     <div class="section-header">
       <div class="section-num">⚙</div>
-      <div class="section-title">예측 시나리오 시뮬레이션 <small style="font-size:0.7rem;color:var(--text-secondary);margin-left:8px;">슬라이더로 30일 후 가격·환율을 직접 설정 → 수입원가 즉시 갱신</small></div>
-      <div class="section-sub">PCB 계산기와 양방향 결합 — BEP 가로선이 차트에서 실시간 이동</div>
+      <div class="section-title">예측 시나리오 시뮬레이션 <small style="font-size:0.7rem;color:var(--text-secondary);margin-left:8px;">30일 후 내 예상 가격·환율을 설정하면 → 지금 살지 기다릴지 알려드립니다</small></div>
+      <div class="section-sub">슬라이더 좌측(녹색) = 구매자 유리 / 우측(빨강) = 구매자 불리</div>
     </div>
-    <div class="data-source-bar source-bar-calc"><span class="data-badge badge-pred">● 통계 예측</span> 슬라이더 기본값 = 모델 예측값 &nbsp;|&nbsp; <span class="data-badge badge-ref">● 참고용</span> 사용자 슬라이더 입력은 What-if 분석 — 실제 시장 검증 필요</div>
+    <div class="data-source-bar source-bar-calc"><span class="data-badge badge-pred">● 통계 예측</span> 슬라이더 기본값 = 모델 예측값 &nbsp;|&nbsp; <span class="data-badge badge-ref">● 참고용</span> 직접 조정하면 What-if 분석 — 실제 시장 검증 필요</div>
 
     <div class="fcsim-card">
       <div class="fcsim-row">
@@ -2126,7 +2168,9 @@
             <span class="fcsim-value" id="fcsim-shfe-display">--</span>
           </div>
           <div class="fcsim-slider-wrap">
+            <div class="fcsim-zone-track shfe"></div>
             <div class="fcsim-ci-band" id="fcsim-shfe-ci"></div>
+            <div class="fcsim-midpoint" id="fcsim-shfe-midpoint" data-label="뉴 노멀" style="left:50%;"></div>
             <input type="range" class="fcsim-slider" id="fcsim-shfe" min="0" max="100" value="50" step="0.1">
           </div>
           <div class="fcsim-meta">
@@ -2141,7 +2185,9 @@
             <span class="fcsim-value" id="fcsim-cny-display">--</span>
           </div>
           <div class="fcsim-slider-wrap">
+            <div class="fcsim-zone-track cny"></div>
             <div class="fcsim-ci-band" id="fcsim-cny-ci"></div>
+            <div class="fcsim-midpoint" id="fcsim-cny-midpoint" data-label="90일 평균" style="left:50%;"></div>
             <input type="range" class="fcsim-slider" id="fcsim-cny" min="0" max="100" value="50" step="0.1">
           </div>
           <div class="fcsim-meta">
@@ -3217,13 +3263,17 @@ const FCSIM_RANGE = {
   cny:  { pct: 0.10 },  // 모델 예측값 ±10%
 };
 
-// v2.1 §4.4 연동: SHFE 슬라이더 절대 범위 (뉴 노멀 밴드 기준)
+// v2.1 §4.4 연동: 절대 범위 슬라이더 (구매자 관점)
+// SHFE 50% = 뉴 노멀 기준가, CNY 50% = 90일 평균 (둘 다 비대칭 매핑)
 const FCSIM_SHFE_ABS_MIN = 24000;
 const FCSIM_SHFE_ABS_MAX = 32000;
+const FCSIM_CNY_ABS_MIN  = 185;
+const FCSIM_CNY_ABS_MAX  = 240;
 
 let fcsimShfeMin, fcsimShfeMax, fcsimShfeModel, fcsimShfeCiMin, fcsimShfeCiMax;
 let fcsimCnyMin,  fcsimCnyMax,  fcsimCnyModel,  fcsimCnyCiMin,  fcsimCnyCiMax;
-let fcsimShfeBase;  // 슬라이더 50% 지점 = 뉴 노멀 기준가
+let fcsimShfeBase;  // SHFE 슬라이더 50% = 뉴 노멀 기준가
+let fcsimCnyBase;   // CNY 슬라이더 50% = 90일 평균 (ERI=1.0 기준점)
 
 function initFcsimSliders() {
   if (!Array.isArray(lmePred) || lmePred.length === 0) return;
@@ -3237,35 +3287,47 @@ function initFcsimSliders() {
   fcsimCnyCiMax  = cnyPredUpper[cnyPredUpper.length - 1];
 
   // v2.1: SHFE 슬라이더 = 뉴 노멀 밴드 기준 절대 범위 (¥24,000~¥32,000)
-  // 중앙(50%) = 뉴 노멀 기준가. 양쪽이 비대칭이므로 sliderValToShfe에서 분기 보간.
   const nnBaseline = (typeof loadNewNormalBaseline === 'function') ? loadNewNormalBaseline() : null;
   fcsimShfeBase = (nnBaseline && nnBaseline.baseSHFE) || fcsimShfeModel;
-  // 기준가가 절대 범위 밖이면 fallback
   if (fcsimShfeBase < FCSIM_SHFE_ABS_MIN || fcsimShfeBase > FCSIM_SHFE_ABS_MAX) {
     fcsimShfeBase = (FCSIM_SHFE_ABS_MIN + FCSIM_SHFE_ABS_MAX) / 2;
   }
   fcsimShfeMin = FCSIM_SHFE_ABS_MIN;
   fcsimShfeMax = FCSIM_SHFE_ABS_MAX;
 
-  // CNY 슬라이더는 기존 동작 유지 (모델 ±10%)
-  fcsimCnyMin  = fcsimCnyModel  * (1 - FCSIM_RANGE.cny.pct);
-  fcsimCnyMax  = fcsimCnyModel  * (1 + FCSIM_RANGE.cny.pct);
+  // v2.1: CNY 슬라이더 = 절대 범위 185~240, 중앙(50%) = 90일 평균 (ERI=1.0)
+  fcsimCnyMin = FCSIM_CNY_ABS_MIN;
+  fcsimCnyMax = FCSIM_CNY_ABS_MAX;
+  if (typeof cnyHist !== 'undefined' && cnyHist && cnyHist.length > 0) {
+    fcsimCnyBase = cnyHist.reduce((a,b)=>a+b,0) / cnyHist.length;
+  } else {
+    fcsimCnyBase = fcsimCnyModel;
+  }
+  if (fcsimCnyBase < FCSIM_CNY_ABS_MIN || fcsimCnyBase > FCSIM_CNY_ABS_MAX) {
+    fcsimCnyBase = (FCSIM_CNY_ABS_MIN + FCSIM_CNY_ABS_MAX) / 2;
+  }
 
   // 모델값 라벨
   document.getElementById('fcsim-shfe-model').textContent = '¥' + fmtNum(Math.round(fcsimShfeModel));
   document.getElementById('fcsim-cny-model').textContent  = fmtNum(fcsimCnyModel, 1) + '원';
 
-  // 슬라이더 초기화 — SHFE는 모델 예측값에 해당하는 % 위치로, CNY는 50% (모델값)
+  // 중점 마커 라벨 갱신 (실제 값 표시)
+  const shfeMid = document.getElementById('fcsim-shfe-midpoint');
+  const cnyMid  = document.getElementById('fcsim-cny-midpoint');
+  if (shfeMid) shfeMid.setAttribute('data-label', '뉴 노멀 ¥' + fmtNum(Math.round(fcsimShfeBase)));
+  if (cnyMid)  cnyMid.setAttribute('data-label',  '90일 평균 ' + fcsimCnyBase.toFixed(1) + '원');
+
+  // 슬라이더 초기화 — 모델 예측값 위치로
   const shfeSlider = document.getElementById('fcsim-shfe');
   const cnySlider  = document.getElementById('fcsim-cny');
   if (shfeSlider) shfeSlider.value = shfeToSliderPct(fcsimShfeModel);
-  if (cnySlider)  cnySlider.value  = 50;
+  if (cnySlider)  cnySlider.value  = cnyToSliderPct(fcsimCnyModel);
 
-  // CI 밴드 위치 계산 (SHFE는 비대칭 매핑, CNY는 선형)
+  // CI 밴드 위치 계산 (둘 다 비대칭 매핑)
   const shfeCiMinPct = Math.max(0, Math.min(100, shfeToSliderPct(fcsimShfeCiMin)));
   const shfeCiMaxPct = Math.max(0, Math.min(100, shfeToSliderPct(fcsimShfeCiMax)));
-  const cnyCiMinPct  = Math.max(0, Math.min(100, ((fcsimCnyCiMin  - fcsimCnyMin)  / (fcsimCnyMax  - fcsimCnyMin )) * 100));
-  const cnyCiMaxPct  = Math.max(0, Math.min(100, ((fcsimCnyCiMax  - fcsimCnyMin)  / (fcsimCnyMax  - fcsimCnyMin )) * 100));
+  const cnyCiMinPct  = Math.max(0, Math.min(100, cnyToSliderPct(fcsimCnyCiMin)));
+  const cnyCiMaxPct  = Math.max(0, Math.min(100, cnyToSliderPct(fcsimCnyCiMax)));
   const shfeCiBand = document.getElementById('fcsim-shfe-ci');
   const cnyCiBand  = document.getElementById('fcsim-cny-ci');
   if (shfeCiBand) {
@@ -3305,7 +3367,21 @@ function shfeToSliderPct(price) {
   if (fcsimShfeMax === fcsimShfeBase) return 100;
   return 50 + ((price - fcsimShfeBase) / (fcsimShfeMax - fcsimShfeBase)) * 50;
 }
-function sliderValToCny(v) { return fcsimCnyMin + (fcsimCnyMax - fcsimCnyMin) * (v / 100); }
+// v2.1: CNY 슬라이더 비대칭 매핑 (0~50% = min~90일평균, 50~100% = 90일평균~max)
+function sliderValToCny(v) {
+  if (typeof fcsimCnyBase === 'undefined') return fcsimCnyMin + (fcsimCnyMax - fcsimCnyMin) * (v / 100);
+  if (v <= 50) return fcsimCnyMin + (fcsimCnyBase - fcsimCnyMin) * (v / 50);
+  return fcsimCnyBase + (fcsimCnyMax - fcsimCnyBase) * ((v - 50) / 50);
+}
+function cnyToSliderPct(price) {
+  if (typeof fcsimCnyBase === 'undefined') return 50;
+  if (price <= fcsimCnyBase) {
+    if (fcsimCnyBase === fcsimCnyMin) return 0;
+    return ((price - fcsimCnyMin) / (fcsimCnyBase - fcsimCnyMin)) * 50;
+  }
+  if (fcsimCnyMax === fcsimCnyBase) return 100;
+  return 50 + ((price - fcsimCnyBase) / (fcsimCnyMax - fcsimCnyBase)) * 50;
+}
 
 function applyFcsimSliders() {
   const shfeSlider = document.getElementById('fcsim-shfe');
@@ -3318,21 +3394,30 @@ function applyFcsimSliders() {
   document.getElementById('fcsim-shfe-display').textContent = '¥' + fmtNum(Math.round(shfeTarget));
   document.getElementById('fcsim-cny-display').textContent  = fmtNum(cnyTarget, 1) + '원';
 
-  // 모델 예측 대비 ("구매자 관점에서 낙관 = 저가, 비관 = 고가")
+  // v2.1: 모델 예측 대비 — 가격은 낙관/비관, 환율은 유리/불리. 색상 적용.
+  const setCompare = (el, d, kind) => {
+    if (!el) return;
+    const sign = d > 0 ? '+' : '';
+    let label, color;
+    if (Math.abs(d) < (kind === 'price' ? 0.5 : 0.1)) {
+      label = '모델 예측과 거의 같음';
+      color = '#9ca3af';  // 회색
+    } else if (kind === 'price') {
+      label = d < 0 ? `구매자 낙관` : `구매자 비관`;
+      color = d < 0 ? '#22c55e' : '#ef4444';
+    } else {
+      label = d < 0 ? `구매자 유리` : `구매자 불리`;
+      color = d < 0 ? '#22c55e' : '#ef4444';
+    }
+    el.textContent = Math.abs(d) < (kind === 'price' ? 0.5 : 0.1)
+      ? `· ${label}`
+      : `· 모델 대비 ${sign}${d.toFixed(1)}% (${label})`;
+    el.style.color = color;
+  };
   const shfeVsModel = document.getElementById('fcsim-shfe-vs-model');
-  if (shfeVsModel && fcsimShfeModel) {
-    const d = ((shfeTarget - fcsimShfeModel) / fcsimShfeModel) * 100;
-    if (Math.abs(d) < 0.5)      shfeVsModel.textContent = '· 모델 예측과 거의 같음';
-    else if (d < 0)             shfeVsModel.textContent = `· 모델 대비 ${d.toFixed(1)}% (구매자 낙관)`;
-    else                        shfeVsModel.textContent = `· 모델 대비 +${d.toFixed(1)}% (구매자 비관)`;
-  }
+  if (shfeVsModel && fcsimShfeModel) setCompare(shfeVsModel, ((shfeTarget - fcsimShfeModel) / fcsimShfeModel) * 100, 'price');
   const cnyVsModel = document.getElementById('fcsim-cny-vs-model');
-  if (cnyVsModel && fcsimCnyModel) {
-    const d = ((cnyTarget - fcsimCnyModel) / fcsimCnyModel) * 100;
-    if (Math.abs(d) < 0.1)      cnyVsModel.textContent = '· 모델 예측과 거의 같음';
-    else if (d < 0)             cnyVsModel.textContent = `· 모델 대비 ${d.toFixed(1)}% (환율 낙관)`;
-    else                        cnyVsModel.textContent = `· 모델 대비 +${d.toFixed(1)}% (환율 비관)`;
-  }
+  if (cnyVsModel && fcsimCnyModel)   setCompare(cnyVsModel,  ((cnyTarget  - fcsimCnyModel)  / fcsimCnyModel)  * 100, 'fx');
 
   // 신뢰구간 경고
   const shfeWarnEl = document.getElementById('fcsim-shfe-warn');
@@ -3377,11 +3462,11 @@ function applyFcsimSliders() {
 
 // v2.1: 시뮬레이션 결과 — 예상 RPCI/원가, SPI/ERI, 신호, 추천
 function renderFcsimResult(shfeTarget, cnyTarget) {
-  // 예상 수입 원가 — 단순 SHFE×FX(원/MT) ÷ 1000 = 원/kg (운임·관세 미포함, 직관 비교용)
-  const krwPerMt = shfeTarget * cnyTarget;
-  const krwPerKg = Math.round(krwPerMt / 1000);
-  const currentKrwPerKg = (typeof lastLme !== 'undefined' && typeof lastCny !== 'undefined' && lastLme > 0 && lastCny > 0)
-    ? Math.round((lastLme * lastCny) / 1000) : null;
+  // v2.1: 예상 수입 원가 = calcRPCI / 1000 (관세·운임·부대비 포함 landed cost, 원/kg)
+  const simRpci = (typeof calcRPCI === 'function') ? calcRPCI(shfeTarget, cnyTarget) : (shfeTarget * cnyTarget);
+  const krwPerKg = Math.round(simRpci / 1000);
+  const currentKrwPerKg = (typeof currentRPCI !== 'undefined' && currentRPCI > 0)
+    ? Math.round(currentRPCI / 1000) : null;
   const diffKg = currentKrwPerKg ? (krwPerKg - currentKrwPerKg) : null;
   const diffPct = (currentKrwPerKg && currentKrwPerKg > 0) ? (diffKg / currentKrwPerKg * 100) : null;
 
@@ -3414,10 +3499,10 @@ function renderFcsimResult(shfeTarget, cnyTarget) {
   const meta  = document.getElementById('fcsim-instant-meta');
   if (badge && signal) {
     const labels = {
-      buy:    { txt: '매수 권고 · BUY',     css: 'buy' },
-      fxwait: { txt: '환율 대기 · FX-WAIT', css: 'fxwait' },
-      hold:   { txt: '관망 · HOLD',         css: 'hold' },
-      avoid:  { txt: '구매 자제 · AVOID',   css: 'avoid' },
+      buy:    { txt: '🟢 매수 권고 · BUY',     css: 'buy' },
+      fxwait: { txt: '🔵 환율 대기 · FX-WAIT', css: 'fxwait' },
+      hold:   { txt: '🟡 관망 · HOLD',         css: 'hold' },
+      avoid:  { txt: '🔴 자제 권고 · AVOID',   css: 'avoid' },
     }[signal];
     badge.textContent = labels.txt;
     badge.className = 'fcsim-instant-badge ' + labels.css;
@@ -3437,7 +3522,8 @@ function renderFcsimResult(shfeTarget, cnyTarget) {
   const spiEl  = document.getElementById('fcsim-result-spi');
   const eriEl  = document.getElementById('fcsim-result-eri');
   if (costEl) {
-    costEl.textContent = `¥${fmtNum(Math.round(shfeTarget))} × ${cnyTarget.toFixed(1)}원 = ${krwPerKg.toLocaleString()}원/kg`;
+    // calcRPCI = (SHFE × FX + 운임) × (1 + 관세 + 부대비) → 원/MT, ÷1000 = 원/kg
+    costEl.innerHTML = `<strong>${krwPerKg.toLocaleString()}원/kg</strong> <small style="opacity:0.65; margin-left:6px;">(¥${fmtNum(Math.round(shfeTarget))} × ${cnyTarget.toFixed(1)}원 + 운임·관세·부대비)</small>`;
   }
   if (diffEl) {
     if (diffKg === null) {
@@ -3471,24 +3557,25 @@ function renderFcsimResult(shfeTarget, cnyTarget) {
     }
   }
 
-  // (C) 추천 한 줄
+  // (C) 추천 한 줄 — 명세 §4 참조
   const tipEl = document.getElementById('fcsim-result-tip');
   if (tipEl && signal) {
     const tips = {
-      buy:    `💡 <strong>추천:</strong> 30일 후 시나리오가 매수 구간에 진입. 가격·환율 동시 유리 — 적극적 발주 검토 가능.`,
-      fxwait: `💡 <strong>추천:</strong> 30일 후에도 가격은 유리하나 환율이 불리. 환율 안정 시점까지 발주 대기 권고.`,
-      hold:   `💡 <strong>추천:</strong> 30일 후에도 뚜렷한 우위 없음. 소량 분할 구매 또는 환율 유리해질 때까지 관망.`,
-      avoid:  `💡 <strong>추천:</strong> 30일 후에도 자제 구간 유지 예상. 지금 당장 소량 구매하거나, 가격·환율 하락 시까지 대기.`,
+      buy:    `💡 <strong>추천:</strong> 30일 후 가격·환율 모두 유리 예상. 지금보다 매수 조건 개선됨. 현재 관망하며 30일 후 적극 매수 준비.`,
+      fxwait: `💡 <strong>추천:</strong> 30일 후 가격은 유리하나 환율이 여전히 불리 예상. 환율 개선 시까지 소량 분할 구매 권고.`,
+      hold:   `💡 <strong>추천:</strong> 30일 후에도 관망 구간 유지 예상. 지금 당장 소량 구매하거나, 가격·환율 하락 시까지 대기.`,
+      avoid:  `💡 <strong>추천:</strong> 30일 후에도 자제 구간 유지 예상. 긴급 소량 구매 외 대규모 발주 보류 권고.`,
     };
     tipEl.innerHTML = tips[signal];
   }
 }
 
 function resetFcsimSliders() {
+  // v2.1: 비대칭 매핑이므로 50%가 아닌 모델 예측값 위치로 복귀
   const shfeSlider = document.getElementById('fcsim-shfe');
   const cnySlider  = document.getElementById('fcsim-cny');
-  if (shfeSlider) shfeSlider.value = 50;
-  if (cnySlider)  cnySlider.value = 50;
+  if (shfeSlider && fcsimShfeModel) shfeSlider.value = shfeToSliderPct(fcsimShfeModel);
+  if (cnySlider  && fcsimCnyModel)  cnySlider.value  = cnyToSliderPct(fcsimCnyModel);
   applyFcsimSliders();
 }
 
