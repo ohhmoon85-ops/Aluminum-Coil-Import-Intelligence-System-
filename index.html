@@ -2553,16 +2553,11 @@ Best regards,
         </button>
       </div>
 
-      <!-- 2단: 사이즈 + 순도 + 폭 토글 (v2.3: 순도 / v2.4: 폭 그룹 추가) -->
+      <!-- 2단: 두께 + 폭 토글 (v2.4: 순도 토글 제거 — 1050 단일 재질(순알 1000) 고정) -->
       <div class="product-size-row" id="size-row">
         <div class="size-group">
           <span class="size-label">두께:</span>
           <div id="size-buttons-container" style="display:flex; gap:0.4rem;"></div>
-        </div>
-        <span class="size-divider">|</span>
-        <div class="size-group">
-          <span class="size-label">순도:</span>
-          <div id="alloy-buttons-container" style="display:flex; gap:0.4rem;"></div>
         </div>
         <span class="size-divider">|</span>
         <div class="size-group">
@@ -2824,11 +2819,11 @@ Best regards,
       <!-- v2.3 작업9: HSCODE 안내문 (코팅 종류 무관, 부가세 등) -->
       <div class="hs-table-footer">
         ※ <strong>코팅 종류(지용성·수용성)는 HSCODE 분류 기준이 아닙니다.</strong>
-        지용성·수용성 모두 1000(순알) 및 9000(합금) 두 분류로 수입 가능합니다.<br>
+        아래 9000(합금) 행은 참고용이며, 확정 품목 1050은 순알(1000) 라인에 해당합니다.<br>
         ※ 판·시트(7606 시리즈)는 두께 0.2mm 이상으로 ACIS 대상 외 (호일 0.2mm 미만만 다룸).<br>
         ※ 위 관세율 외 <strong>부가세 10% 별도 부과</strong> (수입자의 매입세액공제 대상이므로 시각 미반영).<br>
-        ※ ACIS는 위 4종 호일 HSCODE 기준으로 시뮬레이션 — <strong>카테고리 + 두께 + 순도 + 폭</strong> 토글로 선택.<br>
-        ※ 품목은 <strong>알루미늄 1050 (H18, 완전경질, 99.5%↑)</strong> — 비합금이므로 기본 적용은 순알(1000) 라인. 폭(540/630)은 발주 스펙 표기용으로 원가에 영향 없음.
+        ※ 품목은 <strong>알루미늄 1050 (H18, 완전경질, 99.5%↑) — 비합금(순알)</strong>이므로 순알(1000) 라인 고정, 한중FTA 0%.
+        ACIS는 <strong>카테고리 + 두께 + 폭</strong> 토글로 선택 (폭 540/630은 발주 스펙 표기용, 원가 영향 없음).
       </div>
     </div>
 
@@ -3896,9 +3891,8 @@ async function startApp() {
   // → 이후 applyCurrentPreset/calculateSimulator 등이 새 값을 사용
   applyAdminQuote();
 
-  // v2.2 작업6 + v2.3 + v2.4: 초기 사이즈 + 순도 + 폭 버튼 렌더링
+  // v2.4: 초기 두께 + 폭 버튼 렌더링 (순도 토글 제거 — 1050 순알 고정)
   renderSizeButtons();
-  renderAlloyButtons();
   renderWidthButtons();
 
   // admin.html이 저장한 공급업체 데이터를 우선 사용
@@ -5673,10 +5667,9 @@ function selectCategory(cat) {
   ['raw','oil','water'].forEach(k => {
     document.getElementById('cat-' + k)?.classList.toggle('active', k === cat);
   });
-  // 사이즈 + 순도 + 폭 버튼 동적 렌더링
+  // 두께 + 폭 버튼 동적 렌더링 (v2.4: 순도 토글 제거)
   renderSizeButtons();
-  renderAlloyButtons();
-  renderWidthButtons();   // v2.4
+  renderWidthButtons();
   // 모든 카테고리가 시뮬레이터 사용 (raw도 0.10/0.12mm으로 시뮬레이션 가능)
   applyCurrentPreset();
 }
