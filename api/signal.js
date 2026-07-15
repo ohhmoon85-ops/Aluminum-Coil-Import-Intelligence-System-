@@ -17,7 +17,14 @@
 // ============================================================================
 
 // ── index.html 과 동일한 순수 함수 ──────────────────────────────────────────
-function calcRPCI(shfe_cny, cny_krw, tariff = 0.05, misc = 0.03) {
+// v2.5: 관세 정정 — 생알미늄 7607.11-9000, 한중FTA 7.2% (C/O 구비 기준).
+//   세율은 config/acis-config.js 의 duty 블록에서 로드 (index.html 과 동일 소스).
+//   아래 상수는 config 로드 실패 시 폴백 — INLINE 과 같은 역할.
+//   SPI = currentRPCI/baseRpci 는 (1+관세+부대비)가 약분되어 관세율에 불변 → signal/spi 무변동,
+//   응답의 rpci(원/MT) 절대값만 정정된다.
+const DUTY_FTA_RAW_FALLBACK = 0.072;
+
+function calcRPCI(shfe_cny, cny_krw, tariff = DUTY_FTA_RAW_FALLBACK, misc = 0.03) {
   const shipping = 55000; // KRW/MT
   return parseFloat(((shfe_cny * cny_krw + shipping) * (1 + tariff + misc)).toFixed(0));
 }
@@ -55,6 +62,7 @@ const INLINE = {
     eri: { favorableMax: 0.98, unfavorableMin: 1.02 },
     fallback: { baseSHFE: 25250 },
   },
+  duty: { raw: { hscode: '7607.11-9000', fta: 7.2, basic: 8.0 } },
 };
 
 export default async function handler(req, res) {
@@ -85,6 +93,10 @@ export default async function handler(req, res) {
     const sCfg = nn.spi, eCfg = nn.eri;
     const baseSHFE = (nn.fallback && nn.fallback.baseSHFE) || 25250;
 
+    // v2.5: 관세율도 config 단일 소스에서 (index.html 의 DUTY_RATES 와 동일 값)
+    const dutyCfg = ((cfgRaw && cfgRaw.duty) || INLINE.duty).raw;
+    const dutyRate = dutyCfg.fta / 100;   // C/O 구비 기준 (RPCI 는 정상 수입 전제)
+
     // ── 시계열 구성 (loadRealData 와 동일) ──
     const cnyRows = (rates.cny || []).filter((r) => r.DATA_VALUE && r.DATA_VALUE !== '-');
     const usdRows = (rates.usd || []).filter((r) => r.DATA_VALUE && r.DATA_VALUE !== '-');
@@ -105,8 +117,8 @@ export default async function handler(req, res) {
     const curUsd = usdHist[usdHist.length - 1];
     const curShfe = shfeHist[shfeHist.length - 1];
 
-    const currentRPCI = calcRPCI(curShfe, curCny);         // rpciHist 마지막과 동일
-    const baseRpci = calcRPCI(baseSHFE, curCny);
+    const currentRPCI = calcRPCI(curShfe, curCny, dutyRate);   // rpciHist 마지막과 동일
+    const baseRpci = calcRPCI(baseSHFE, curCny, dutyRate);
     const spi = baseRpci > 0 ? currentRPCI / baseRpci : null;
     const cnyAvg = mean(cnyHist);
     const eri = cnyAvg > 0 ? curCny / cnyAvg : null;
@@ -142,7 +154,9 @@ export default async function handler(req, res) {
       label,                                    // '매수' | '환율 대기' | '관망' | '자제'
       spi: Math.round(spi * 1000) / 1000,       // 비율 (예: 0.949)
       eri: Math.round(eri * 1000) / 1000,       // 비율 (예: 1.009)
-      rpci: currentRPCI,                        // 원/MT
+      rpci: currentRPCI,                        // 원/MT (관세 duty_rate 반영)
+      duty_rate: dutyCfg.fta,                   // v2.5: RPCI 산출에 쓰인 관세율(%) — 7607.11-9000 한중FTA
+      duty_hscode: dutyCfg.hscode,              // v2.5: 근거 HS Code
       shfe_price: curShfe,                      // SHFE CNY/MT
       lme_price: lmeUsd,                        // LME USD/MT (참고)
       cny_krw: curCny,

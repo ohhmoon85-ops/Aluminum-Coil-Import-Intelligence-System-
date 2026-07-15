@@ -8,6 +8,9 @@
 *.docx
 *.xlsx
 
+# 수정 전 원본 백업 (로컬 보관 — 커밋 금지)
+*.bak-*
+
 # OS
 .DS_Store
 Thumbs.db
