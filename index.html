@@ -2211,8 +2211,8 @@
   <section class="section" id="sec-supplier">
     <div class="section-header">
       <div class="section-num">⑤</div>
-      <div class="section-title">공급업체 종합 평가</div>
-      <div class="section-sub">중국 알루미늄 코일 주요 공급업체 TOP 5 — 클릭하여 상세 레이더 확인</div>
+      <div class="section-title">공급업체 종합 평가 — 원단 / 코팅 트랙 분리</div>
+      <div class="section-sub">원단 공급사(신다통·HNFS 주력) · 코팅 가공사(Chalco·TMR·鑫华快捷·科鑫 4사) — 클릭하여 상세 레이더 확인</div>
     </div>
     <div class="data-source-bar source-bar-ref"><span class="data-badge badge-ref">● 참고용</span> 업체명은 실제 존재하는 기업이나, 평가 점수는 수동 입력값입니다. 실제 업무 적용 전 D&amp;B · SGS · 阿里巴巴 등 공식 데이터로 검증이 필요합니다.</div>
     <div class="supplier-layout">
@@ -2237,7 +2237,7 @@
       </div>
       <div class="radar-card">
         <div class="radar-title">공급업체 역량 레이더 분석</div>
-        <div class="radar-company" id="radar-company-name">Chalco</div>
+        <div class="radar-company" id="radar-company-name">—</div>
         <canvas id="radarChart" style="max-height:280px;"></canvas>
       </div>
     </div>
@@ -2288,7 +2288,7 @@
       <!-- 기술 사양 가이드 -->
       <div class="ref-panel">
         <div class="ref-panel-title">📐 기술 사양 가이드 — 발주 전 체크리스트</div>
-        <div class="ref-panel-sub">중국 업체 견적 요청 시 아래 사양을 명확히 전달해야 정확한 견적을 받을 수 있습니다.</div>
+        <div class="ref-panel-sub">표준 사양(원단 발주 기준)과 <strong style="color:#c9a84c;">동원 대체 사양(코팅용 원단)</strong>을 구분해 전달합니다.</div>
         <table class="spec-table">
           <thead>
             <tr><th>항목</th><th>권장 규격</th><th>비고</th></tr>
@@ -2296,33 +2296,38 @@
           <tbody>
             <tr>
               <td><strong>합금 (Alloy)</strong></td>
-              <td>1100 / 1050 / 1060 <em>(기본)</em><br>3003 <em>(강도 필요 시)</em></td>
-              <td>1000계열 = 고순도 알루미늄<br>3003 = Mn 함유, 강도↑</td>
+              <td><strong>1050 주력(확정)</strong> · 대안 1100/1060 · 강도 필요 시 3003</td>
+              <td>동원 대체 원단(코팅용)은 <strong>1050 우선, 차선 1235 또는 8079</strong> — Al 99.35%↑, Si+Fe 0.65%↓ 명기</td>
             </tr>
             <tr>
-              <td><strong>경도 (Temper)</strong></td>
+              <td><strong>조질 (Temper)</strong></td>
               <td><strong>H18</strong> (경질)</td>
-              <td>드릴 시 버(Burr) 최소화를 위해 H18 필수</td>
+              <td>드릴 시 버(Burr) 최소화 필수. <strong>인장 14kgf/mm² 이상 · 연신 1% 이상</strong> (동원 MTC 준용)</td>
             </tr>
             <tr>
               <td><strong>두께 (Thickness)</strong></td>
-              <td>0.15mm ~ 0.30mm</td>
-              <td>가장 일반적: 0.15 / 0.18 / 0.20mm<br>설비에 맞는 수치 사전 확인 필요</td>
+              <td>표준 0.15 / 0.18 / 0.20mm (범위 0.15~0.30) · <strong style="color:#c9a84c;">동원 대체 0.12mm</strong></td>
+              <td>0.12mm는 신다통 공표범위(0.15~0.2mm) <strong>하한 밖</strong> — 압연 가부 사전 확인 필수</td>
             </tr>
             <tr>
               <td><strong>폭 (Width)</strong></td>
-              <td>1,000mm / 1,200mm</td>
-              <td>공장 설비 규격에 따라 지정</td>
+              <td>표준 1,000 / 1,200mm 또는 940×1244mm 시트 · <strong style="color:#c9a84c;">동원 대체 450 / 630mm 슬리팅</strong></td>
+              <td>슬리팅 시 에지 버(Burr) 관리 기준 별도 확인</td>
             </tr>
             <tr>
               <td><strong>표면 처리 (Surface)</strong></td>
-              <td>Grease-free (탈지 처리)<br>평탄도(Flatness) 확보</td>
-              <td>드릴 비트 오염 방지 필수 조건<br>윤활 코팅 옵션은 Kexin 문의</td>
+              <td>Grease-free (탈지) · 평탄도(Flatness) 확보</td>
+              <td>코팅은 별도 트랙(코팅 가공사 4사) — 원단 발주와 분리. DOS 도포품은 <strong>도유량 규격(mg/m²·공차)·측정법 명기</strong></td>
+            </tr>
+            <tr>
+              <td><strong>품질 문서</strong></td>
+              <td>로트별 MTC + RoHS 확인서</td>
+              <td>제3자 시험(SGS / BV) 병행</td>
             </tr>
             <tr>
               <td><strong>초도 수량 (Trial MOQ)</strong></td>
               <td>500kg ~ 1MT</td>
-              <td>첫 거래는 소량 샘플로 드릴링 테스트 후 본계약 권장</td>
+              <td>소량 샘플 드릴테스트 후 본계약. <strong>계약 법인·송금 계좌 명의 일치 확인</strong></td>
             </tr>
           </tbody>
         </table>
@@ -2350,16 +2355,17 @@
 
         <div class="tip-section">
           <div class="tip-section-title">④ 박람회 현장 미팅</div>
-          <div class="tip-section-body"><strong>2026 상하이 알루미늄 박람회</strong>에 Chalco·Haomei 등 주요 업체가 반드시 참가합니다. 현장에서 직접 샘플을 확인하고 가격·납기를 협의하는 것이 가장 효율적입니다.</div>
+          <div class="tip-section-body"><strong>상하이 알루미늄 박람회</strong> 상담은 <strong>2026 상반기 완료</strong>. 차기 접점은 <strong>10월 말 선전 PCB 박람회</strong> — 코팅 가공사(Chalco·TMR·鑫华快捷·科鑫) 부스 출전 여부 사전 확인 후 방문 계획을 잡습니다.</div>
         </div>
 
         <div class="tip-section">
-          <div class="tip-section-title">⑤ 업체 선택 가이드</div>
+          <div class="tip-section-title">⑤ 업체 선택 가이드 (원단 / 코팅 트랙 분리)</div>
           <div class="tip-section-body">
             <div class="choose-guide-grid">
-              <div class="choose-item"><span class="choose-tag tag-q">품질·신뢰도 최우선</span><span class="choose-arrow">→</span><strong>Chalco, Dingsheng</strong> (대형 국영·상장사, MOQ 높음)</div>
-              <div class="choose-item"><span class="choose-tag tag-s">빠른 응대·소량 가능</span><span class="choose-arrow">→</span><strong>Haomei, TMR</strong> (해외 수출팀 보유, 샘플 협조적)</div>
-              <div class="choose-item"><span class="choose-tag tag-p">고사양 드릴링 특화</span><span class="choose-arrow">→</span><strong>Kexin Electronics</strong> (윤활 코팅 엔트리 시트 전문)</div>
+              <div class="choose-item"><span class="choose-tag tag-q">원단 1순위</span><span class="choose-arrow">→</span><strong>신다통 (Xindatong)</strong> · <strong>HNFS</strong> (한국 수출 실적, 명함·자사웹·업계 디렉토리 3중 검증 완료)</div>
+              <div class="choose-item"><span class="choose-tag tag-s">원단 백업</span><span class="choose-arrow">→</span><strong>Mingtai · Longding</strong> (상장·박연 라인 보유 — 1순위 불안정 시 즉시 전환)</div>
+              <div class="choose-item"><span class="choose-tag tag-p">코팅 가공(별도 트랙)</span><span class="choose-arrow">→</span><strong>Chalco</strong>(수용성+핫멜트) · <strong>TMR</strong>(수용성) · <strong>鑫华快捷</strong>(수용성 전문) · <strong>科鑫</strong>(기존 관계 확인 선행)</div>
+              <div class="choose-item"><span class="choose-tag tag-q" style="background:rgba(154,163,186,0.15);color:#9aa3ba;">벤치마크 전용</span><span class="choose-arrow">→</span><strong>류신 (Newccess)</strong> (한국 직공급 가능성 — 경쟁충돌 우려로 접촉 최소화)</div>
             </div>
           </div>
         </div>
@@ -3849,41 +3855,113 @@ async function loadRealData() {
 
 // ===================== SUPPLIERS =====================
 // admin.html이 localStorage('acis_suppliers')에 저장한 값이 있으면 startApp()에서 덮어씀
+// v2.2 재구성 — 원단 공급사 / 코팅 가공사 2개 카테고리 분리
+//   status: lead(주력) · backup(백업) · reference(참고·초기 후보) · hold(보류) · benchmark(벤치마크 전용)
+//   unrated:true 는 신규 후보(점수 미평가) — 렌더링 시 "미평가" 표기
 let suppliers = [
-  { rank:1, name:'Chalco (中国铝业公司)', nameShort:'Chalco', score:88.0, tier:1,
-    cap:95, qual:88, fin:95, logi:80, price:68,
-    location:'베이징 / 전국',
-    desc:'중국 최대 국영 알루미늄 기업. 1100·1060·3003 등 PCB 드릴용 표준 합금 시트 대량 공급. ISO 9001·IPC-4562·RoHS 인증 보유. 안정적 공급망과 최고 수준의 재무 신뢰도.',
-    cert:'ISO 9001, IPC-4562, RoHS', email:'sale@chalcoaluminum.com', website:'www.chalco.com.cn',
-    tips:'국영기업 특성상 재무·품질 신뢰도 최상. MOQ(최소주문수량)가 다소 높을 수 있으므로 초도 거래 시 사전 협의 필수. 알리바바·Made-in-China 입점. 2026 상하이 알루미늄 박람회 참가 예정.',
-    moq:'협의 (대형 발주 선호)', contact:'이메일 선문의 → 담당자 배정' },
-  { rank:2, name:'Dingsheng New Material (鼎盛新材料)', nameShort:'鼎盛新材料', score:85.3, tier:1,
+  // ── [원단 공급사] ──────────────────────────────────────────
+  { category:'raw', status:'lead', rank:'#1', unrated:true,
+    name:'신다통 (郑州信达通, Xindatong)', nameShort:'Xindatong',
+    location:'허난성 정저우(郑州)',
+    desc:'PCB 전용 시트(1100·H18·0.15~0.2mm·940×1244) 생산. 명함+자사웹+업계디렉토리 3중 검증 완료. 대만 유니플러스에 생알 및 DOS 도포품 납품 실적. 자사 공표 규격 범위: 두께 0.15~0.2mm, 폭 940×1244mm.',
+    cert:'자사 웹·업계 디렉토리 등록 확인 (인증서 원본 확보 필요)',
+    email:'iris@xdtal.com (Iris Zhang)', website:'www.xdtal.com',
+    tips:'7.21~22 사장 방한 담판 예정. 동원 대체 사양(0.12mm)은 자사 공표 범위(0.15~0.2mm) 하한 밖 — 압연 가부 사전 확인 필수.',
+    moq:'협의 (샘플 → 본계약)', contact:'이메일(Iris Zhang) 또는 방한 직접 미팅' },
+  { category:'raw', status:'lead', rank:'#2', unrated:true,
+    name:'HNFS (河南佛山铝业, 허난 궁이)', nameShort:'HNFS',
+    location:'허난성 궁이(巩义)',
+    desc:'1050 코일 0.1~10mm·H18 압연. 한국 수출 실적 보유. 코일·시트 광폭 대응.',
+    cert:'한국 수출 실적 기반 (인증서 목록 별도 요청 필요)',
+    email:'cassie@hnfsaluminum.com (Cassie Tang)', website:'www.hnfsaluminum.com',
+    tips:'계약 시 무역법인(Henan Xiangxin)과 생산법인 명의 일치 확인 필수. 송금 계좌 명의도 반드시 크로스체크.',
+    moq:'협의', contact:'이메일(Cassie Tang)' },
+  { category:'raw', status:'backup', rank:'백업', unrated:true,
+    name:'Mingtai (安徽明泰)', nameShort:'Mingtai',
+    location:'안후이성',
+    desc:'A주 상장기업. 1050/1100 주력, 박연(薄延) 라인 보유. 대형 생산 능력 기반 안정 공급 가능.',
+    cert:'A주 상장 (공시 자료 참고)',
+    email:'별도 확인 필요', website:'별도 확인 필요',
+    tips:'상장기업 재무 투명성 확보. 1순위 공급 불안정 시 백업 후보.',
+    moq:'협의 (대형 발주 선호)', contact:'알리바바 또는 공식 홈페이지' },
+  { category:'raw', status:'backup', rank:'백업', unrated:true,
+    name:'Longding (龙鼎, 뤄양 이촨)', nameShort:'Longding',
+    location:'허난성 뤄양 이촨(伊川)',
+    desc:'1050/1100 주력, 박연 라인 보유. 지역 접근성(허난성)으로 신다통·HNFS와 물류 연동 가능.',
+    cert:'별도 확인 필요',
+    email:'별도 확인 필요', website:'별도 확인 필요',
+    tips:'1순위 공급 불안정 시 백업 후보.',
+    moq:'협의', contact:'알리바바 또는 위챗 담당자' },
+  { category:'raw', status:'reference', rank:'참고', score:85.3, tier:1,
     cap:88, qual:92, fin:85, logi:78, price:70,
+    name:'Dingsheng New Material (鼎盛新材料)', nameShort:'鼎盛新材料',
     location:'장쑤성 전장(镇江)',
-    desc:'전 세계 알루미늄 호일 시장 점유율 상위권. PCB·전자용 정밀 알루미늄 코일 전문. 3003-H18·1100-H18 기준 두께 편차 ±0.003mm 관리. 글로벌 전자업체 다수 공급 이력.',
-    cert:'ISO 9001, IATF 16949, RoHS', email:'jiayin.yang@dingshenggroup.com', website:'www.dingshenggroup.com',
-    tips:'기술 데이터시트(TDS) 상세 제공. 상장기업(A주)으로 재무 투명성 높음. MOQ가 높을 수 있으므로 초도 소량 샘플→검증→본계약 순서를 권장.',
-    moq:'협의 (상장기업, 대형 발주 선호)', contact:'이메일 또는 위챗(WeChat) 담당자 연락' },
-  { rank:3, name:'Haomei Aluminum (好美铝业)', nameShort:'好美铝业', score:81.6, tier:1,
+    desc:'전 세계 알루미늄 호일 시장 점유율 상위권. PCB·전자용 정밀 알루미늄 코일 전문. 초기 후보로 검토 → 원단 백업 그룹 아래 참고 등급.',
+    cert:'ISO 9001, IATF 16949, RoHS',
+    email:'jiayin.yang@dingshenggroup.com', website:'www.dingshenggroup.com',
+    tips:'상장기업(A주)·글로벌 점유율 상위권으로 안정 공급 가능하나, 신다통·HNFS 확정으로 참고 후보로 강등.',
+    moq:'협의 (상장기업, 대형 발주 선호)', contact:'이메일 또는 위챗(WeChat)' },
+  { category:'raw', status:'reference', rank:'참고', score:81.6, tier:1,
     cap:75, qual:90, fin:72, logi:88, price:82,
+    name:'Haomei Aluminum (好美铝业)', nameShort:'好美铝业',
     location:'허난성 정저우(郑州)',
-    desc:'PCB 엔트리 시트 전문 라인 보유. 두께 오차 최소화, 표면 탈지(Grease-free) 처리 우수. 한국 등 해외 수출 경험 다수 보유. 소량 커스텀 주문 대응 강점.',
-    cert:'ISO 9001, RoHS', email:'alu@haomeicn.com', website:'www.haomeicn.com',
-    tips:'해외 바이어 전담팀 운영으로 응대 속도 빠름. 샘플 발송에 매우 협조적. 소량 긴급 오더 가능. 2026 상하이 알루미늄 박람회 참가 예정으로 현장 미팅 추천.',
-    moq:'소량 가능 (해외 샘플 대응 우수)', contact:'이메일 → 해외영업 담당자 직접 연결' },
-  { rank:4, name:'TMR Aluminum', nameShort:'TMR', score:76.3, tier:2,
+    desc:'PCB 엔트리 시트 전문 라인 보유. 두께 오차 최소화, 표면 탈지 처리 우수. 초기 후보로 검토 → 원단 백업 그룹 아래 참고 등급.',
+    cert:'ISO 9001, RoHS',
+    email:'alu@haomeicn.com', website:'www.haomeicn.com',
+    tips:'DOS 전용 라인 운영 — 가격 협상 카드로 유지 가치. 소량 샘플·긴급 오더 대응 강점.',
+    moq:'소량 가능 (해외 샘플 대응 우수)', contact:'이메일 → 해외영업 담당자' },
+  { category:'raw', status:'hold', rank:'보류', unrated:true,
+    name:'Worthwill / Jurun (워스윌 / 쥬룬)', nameShort:'Worthwill/Jurun',
+    location:'중국 (지역 미확정)',
+    desc:'공식 제품군은 건축·장식용 알루미늄 — PCB 엔트리 시트 생산 가부 서면 확인 대기.',
+    cert:'미확인',
+    email:'별도 확인 필요', website:'별도 확인 필요',
+    tips:'엔트리 시트 라인 유무 서면 회신 전까지 활성 후보 아님.',
+    moq:'미정', contact:'알리바바' },
+  { category:'raw', status:'benchmark', rank:'벤치마크', unrated:true,
+    name:'류신 (柳鑫, Newccess)', nameShort:'Newccess',
+    location:'중국 (본사) / 글로벌 판매',
+    desc:'글로벌 盖垫板(엔트리 시트) 1위 · IPO 진행 중. 한국 직공급 가능성으로 경쟁충돌 우려.',
+    cert:'업계 1위 (공시 자료)',
+    email:'접촉 최소화', website:'공개 자료 참조',
+    tips:'경쟁충돌 리스크로 접촉 최소화. 시장 벤치마크(가격·품질) 참고 목적으로만 활용.',
+    moq:'N/A', contact:'직접 접촉 지양 — 공개 자료·업계 리포트로 추적' },
+
+  // ── [코팅 가공사] (지용성·수용성 코팅 트랙) ────────────────
+  { category:'coating', status:'lead', rank:'주력', score:88.0, tier:1,
+    cap:95, qual:88, fin:95, logi:80, price:68,
+    name:'Chalco (中国铝业公司)', nameShort:'Chalco',
+    location:'베이징 / 전국',
+    desc:'중국 최대 국영 알루미늄 기업. 코팅 트랙: 수용성 + 핫멜트 모두 대응. PCB 드릴 엔트리 시트 코팅 가공 공급.',
+    cert:'ISO 9001, RoHS, IPC-4562(보유 주장 — 적용 범위 확인 필요)',
+    email:'sale@chalcoaluminum.com', website:'www.chalco.com.cn',
+    tips:'⚠ 연락 이메일 도메인(chalcoaluminum.com)이 공식 도메인(chalco.com.cn)과 불일치 — 국영 Chalco 공식 채널인지, 동명 무역업체인지 D&B·사업자등록 검증 필수. 검증 전 신용재무 95점은 잠정치. 상하이 박람회 상담 완료(2026 상반기). 차기 접점: 10월 말 선전 PCB 박람회 (부스 출전 여부 사전 확인).',
+    moq:'협의 (대형 발주 선호)', contact:'이메일 선문의 → 담당자 배정' },
+  { category:'coating', status:'lead', rank:'주력', score:76.3, tier:2,
     cap:70, qual:80, fin:65, logi:85, price:90,
+    name:'TMR Aluminum (Tomorrow)', nameShort:'TMR',
     location:'허난성 정저우(郑州)',
-    desc:'1000·3000 계열 PCB 드릴링 전용 엔트리 소재 전문 생산. 다양한 합금·규격 재고 상시 보유. 가성비 우수. 소량·긴급 오더 대응 강점.',
-    cert:'ISO 9001', email:'홈페이지 문의 양식', website:'',
-    tips:'수출 전담 대응팀 보유로 해외 바이어 응대 빠름. 홈페이지 내 채팅/문의 양식으로 첫 접촉 권장. 알리바바 입점 여부 확인 후 실시간 채팅도 가능.',
+    desc:'수용성 코팅 트랙 담당. 1000·3000 계열 PCB 엔트리 소재 가공. 소량·긴급 오더 대응 강점.',
+    cert:'ISO 9001',
+    email:'홈페이지 문의 양식', website:'',
+    tips:'수출 전담 대응팀 보유. 첫 접촉은 홈페이지 문의 양식 또는 알리바바 채팅.',
     moq:'소량 가능 (긴급 대응 강점)', contact:'홈페이지 문의 양식 또는 알리바바 채팅' },
-  { rank:5, name:'Kexin Electronics (科新电子)', nameShort:'科新电子', score:75.8, tier:2,
+  { category:'coating', status:'lead', rank:'주력', unrated:true,
+    name:'선전 신화콰이제 (深圳 鑫华快捷)', nameShort:'鑫华快捷',
+    location:'광둥성 선전(深圳)',
+    desc:'PCB 엔트리 시트 수용성 코팅 전문 가공사.',
+    cert:'별도 확인 필요',
+    email:'별도 확인 필요', website:'별도 확인 필요',
+    tips:'수용성 코팅 트랙 후보. 첫 접촉은 전화로 개시 후 이메일 팔로업.',
+    moq:'협의', contact:'전화 0755-23228180' },
+  { category:'coating', status:'lead', rank:'주력', score:75.8, tier:2,
     cap:65, qual:88, fin:68, logi:80, price:75,
+    name:'둥관 Kexin (科鑫)', nameShort:'Kexin (科鑫)',
     location:'광둥성 둥관(东莞)',
-    desc:'PCB 부자재 전문 기업. 일반 알루미늄 시트 외에도 드릴 비트 윤활을 돕는 윤활 코팅(Lubricant-coated) 알루미늄 엔트리 시트 취급. 고사양 PCB 드릴링에 특화.',
-    cert:'ISO 9001, RoHS, IPC', email:'sales@kexindg.com', website:'',
-    tips:'단순 알루미늄판재가 아닌 윤활 처리된 특수 엔트리 시트를 취급하므로 고정밀·고사양 드릴링 공정에 적합. 일반 시트 대비 버(Burr) 발생 저감 효과 기대.',
+    desc:'코팅 가공사 후보. 내부 사양표 언급 당사자로 기존 관계 확인 선행 필요.',
+    cert:'ISO 9001',
+    email:'sales@kexindg.com', website:'www.kexindg.com',
+    tips:'⚠ 현행 표기 "Kexin Electronics (科新电子)"는 오기 의심 — 당사 후보는 둥관 科鑫(kexindg.com). 별개 회사 여부 서면 확인 필요. 지용성/수용성 코팅 대응 범위 확인 필요.',
     moq:'협의 (중소형 로트 대응)', contact:'이메일 또는 Made-in-China.com 채팅' },
 ];
 
@@ -3907,29 +3985,33 @@ async function startApp() {
   renderWidthButtons();
 
   // admin.html이 저장한 공급업체 데이터를 우선 사용
+  // v2.2 재구성: 카테고리(raw/coating) + 상태(lead/backup/reference/hold/benchmark) + unrated 지원
+  //   기존 admin 저장분에는 category 필드가 없을 수 있으므로, 없으면 기본값 유지 후 렌더링 시 통합 그룹으로 표시
   try {
     const stored = localStorage.getItem('acis_suppliers');
     if (stored) {
       const parsed = JSON.parse(stored);
       if (Array.isArray(parsed) && parsed.length > 0) {
-        suppliers = parsed
-          .map(s => {
-            const score = typeof s.score === 'number' ? s.score
-              : parseFloat(((s.cap*25 + s.qual*30 + s.fin*20 + s.logi*15 + s.price*10) / 100).toFixed(1));
-            return {
-              ...s,
-              score,
-              tier:     s.tier     || (score >= 80 ? 1 : score >= 60 ? 2 : 0),
-              location: s.location || '-',
-              desc:     s.desc     || '-',
-              tips:     s.tips     || '-',
-              moq:      s.moq      || '-',
-              contact:  s.contact  || '-',
-            };
-          })
-          .sort((a, b) => b.score - a.score)
-          .map((s, i) => ({ ...s, rank: i + 1 }))
-          .slice(0, 5);
+        suppliers = parsed.map(s => {
+          const unrated = s.unrated === true || typeof s.score !== 'number';
+          const score = unrated ? null
+            : (typeof s.score === 'number' ? s.score
+              : parseFloat(((s.cap*25 + s.qual*30 + s.fin*20 + s.logi*15 + s.price*10) / 100).toFixed(1)));
+          return {
+            ...s,
+            unrated,
+            score,
+            tier:     unrated ? null : (s.tier || (score >= 80 ? 1 : score >= 60 ? 2 : 0)),
+            category: s.category || 'raw',
+            status:   s.status   || 'lead',
+            rank:     s.rank     || '-',
+            location: s.location || '-',
+            desc:     s.desc     || '-',
+            tips:     s.tips     || '-',
+            moq:      s.moq      || '-',
+            contact:  s.contact  || '-',
+          };
+        });
         console.info('[ACIS] admin 저장 공급업체 데이터 사용 (' + suppliers.length + '건)');
       }
     }
@@ -4974,42 +5056,118 @@ Best regards,
   });
 }
 
+// v2.2 재구성: 카테고리(원단/코팅) 그룹 헤더 + 미평가(unrated) 지원
+const CATEGORY_LABELS = {
+  raw:     { label: '[원단 공급사] — 알루미늄 시트/코일 압연·공급', color: '#c9a84c' },
+  coating: { label: '[코팅 가공사] — 지용성·수용성 코팅 가공 (지용성 대체 트랙)', color: '#4ec9b0' },
+};
+const STATUS_LABELS = {
+  lead:      { label: '주력',      cls: 'st-lead'      },
+  backup:    { label: '백업',      cls: 'st-backup'    },
+  reference: { label: '참고',      cls: 'st-reference' },
+  hold:      { label: '보류',      cls: 'st-hold'      },
+  benchmark: { label: '벤치마크',  cls: 'st-benchmark' },
+};
+
 function renderSupplierTable() {
   const tbody = document.getElementById('supplier-tbody');
   tbody.innerHTML = '';
-  suppliers.forEach((s, idx) => {
-    const tr = document.createElement('tr');
-    if (idx === 0) tr.classList.add('selected');
-    tr.onclick = () => {
-      document.querySelectorAll('#supplier-tbody tr').forEach(r => r.classList.remove('selected'));
-      tr.classList.add('selected');
-      renderRadarChart(idx);
-    };
-    const scoreBar = (v) => `<div class="score-mini"><div class="score-mini-bar"><div class="score-mini-fill" style="width:${v}%;"></div></div><span class="score-num">${v}</span></div>`;
-    tr.innerHTML = `
-      <td><span class="rank-num">#${s.rank}</span></td>
-      <td><strong>${s.name}</strong></td>
-      <td><strong style="color:var(--gold);font-size:0.9rem;">${s.score}</strong></td>
-      <td><span class="tier-badge tier-${s.tier}">Tier ${s.tier}</span></td>
-      <td>${scoreBar(s.cap)}</td>
-      <td>${scoreBar(s.qual)}</td>
-      <td>${scoreBar(s.fin)}</td>
-      <td>${scoreBar(s.logi)}</td>
-      <td>${scoreBar(s.price)}</td>
-      <td><button class="detail-btn" onclick="event.stopPropagation();renderRadarChart(${idx})">▶ 보기</button></td>
-    `;
-    tbody.appendChild(tr);
+
+  // 카테고리 순서: raw → coating (배열 순서 유지)
+  const groups = [];
+  const seen = new Map();
+  suppliers.forEach(s => {
+    const cat = s.category || 'raw';
+    if (!seen.has(cat)) { seen.set(cat, groups.length); groups.push({ cat, items: [] }); }
+    groups[seen.get(cat)].items.push(s);
   });
+
+  const scoreBar = (v) => (typeof v === 'number')
+    ? `<div class="score-mini"><div class="score-mini-bar"><div class="score-mini-fill" style="width:${v}%;"></div></div><span class="score-num">${v}</span></div>`
+    : `<span style="color:var(--text-muted);font-size:0.75rem;">—</span>`;
+
+  let firstRatedIdx = -1;
+
+  groups.forEach(({ cat, items }) => {
+    const meta = CATEGORY_LABELS[cat] || { label: `[${cat}]`, color: '#9aa3ba' };
+    // 카테고리 헤더 row (전체 컬럼 스팬)
+    const headerTr = document.createElement('tr');
+    headerTr.className = 'supplier-cat-header';
+    headerTr.innerHTML = `<td colspan="10" style="background:rgba(255,255,255,0.04);padding:0.55rem 0.9rem;font-weight:700;font-size:0.85rem;color:${meta.color};border-top:2px solid ${meta.color};border-bottom:1px solid rgba(255,255,255,0.06);letter-spacing:0.02em;">${meta.label}</td>`;
+    tbody.appendChild(headerTr);
+
+    items.forEach(s => {
+      const idx = suppliers.indexOf(s);
+      const isUnrated = s.unrated === true || typeof s.score !== 'number';
+      if (!isUnrated && firstRatedIdx === -1) firstRatedIdx = idx;
+
+      const tr = document.createElement('tr');
+      tr.onclick = () => {
+        document.querySelectorAll('#supplier-tbody tr').forEach(r => r.classList.remove('selected'));
+        tr.classList.add('selected');
+        renderRadarChart(idx);
+      };
+
+      // 상태 라벨 (rank 우측)
+      const st = STATUS_LABELS[s.status] || { label: '', cls: '' };
+      const statusChip = st.label
+        ? ` <span style="display:inline-block;margin-left:4px;padding:1px 6px;border-radius:9px;font-size:0.62rem;font-weight:600;background:rgba(255,255,255,0.06);color:var(--text-secondary);border:1px solid rgba(255,255,255,0.1);">${st.label}</span>`
+        : '';
+
+      // benchmark 는 회색·주의 톤
+      const rowStyle = s.status === 'benchmark'
+        ? ' style="opacity:0.72;font-style:italic;"'
+        : s.status === 'hold' ? ' style="opacity:0.72;"' : '';
+
+      const rankHtml = String(s.rank || '-').startsWith('#')
+        ? `<span class="rank-num">${s.rank}</span>`
+        : `<span style="font-size:0.72rem;color:var(--text-secondary);font-weight:600;">${s.rank || '-'}</span>`;
+
+      const scoreCell = isUnrated
+        ? `<span style="color:var(--text-muted);font-size:0.75rem;">미평가</span>`
+        : `<strong style="color:var(--gold);font-size:0.9rem;">${s.score}</strong>`;
+
+      const tierCell = isUnrated
+        ? `<span style="color:var(--text-muted);font-size:0.7rem;">—</span>`
+        : `<span class="tier-badge tier-${s.tier}">Tier ${s.tier}</span>`;
+
+      tr.setAttribute('data-idx', String(idx));
+      tr.innerHTML = `
+        <td${rowStyle}>${rankHtml}${statusChip}</td>
+        <td${rowStyle}><strong>${s.name}</strong></td>
+        <td>${scoreCell}</td>
+        <td>${tierCell}</td>
+        <td>${scoreBar(s.cap)}</td>
+        <td>${scoreBar(s.qual)}</td>
+        <td>${scoreBar(s.fin)}</td>
+        <td>${scoreBar(s.logi)}</td>
+        <td>${scoreBar(s.price)}</td>
+        <td><button class="detail-btn" onclick="event.stopPropagation();renderRadarChart(${idx})">▶ 보기</button></td>
+      `;
+      tbody.appendChild(tr);
+    });
+  });
+
+  // 초기 선택: 첫 평가 완료 업체 (없으면 첫 행)
+  const initial = firstRatedIdx >= 0 ? firstRatedIdx : 0;
+  const targetTr = tbody.querySelector(`tr[data-idx="${initial}"]`);
+  if (targetTr) targetTr.classList.add('selected');
 }
 
 function updateSupplierDetailCard(idx) {
   const s = suppliers[idx];
+  const isUnrated = s.unrated === true || typeof s.score !== 'number';
   document.getElementById('sdc-name').textContent = s.name;
   document.getElementById('sdc-location').textContent = '📍 ' + s.location;
   const tierEl = document.getElementById('sdc-tier');
-  tierEl.textContent = 'Tier ' + s.tier;
-  tierEl.className = 'sdc-tier-badge sdc-tier-' + s.tier;
-  document.getElementById('sdc-score').textContent = '종합점수 ' + s.score + '점';
+  if (isUnrated) {
+    tierEl.textContent = '미평가';
+    tierEl.className = 'sdc-tier-badge sdc-tier-0';
+  } else {
+    tierEl.textContent = 'Tier ' + s.tier;
+    tierEl.className = 'sdc-tier-badge sdc-tier-' + s.tier;
+  }
+  document.getElementById('sdc-score').textContent = isUnrated ? '점수 미평가' : ('종합점수 ' + s.score + '점');
   document.getElementById('sdc-desc').textContent = s.desc;
   document.getElementById('sdc-cert').textContent = s.cert;
   document.getElementById('sdc-email').textContent = s.email;
@@ -5020,15 +5178,39 @@ function updateSupplierDetailCard(idx) {
 }
 
 function renderRadarChart(idx) {
-  document.getElementById('radar-company-name').textContent = suppliers[idx].name;
-  updateSupplierDetailCard(idx);
   const s = suppliers[idx];
+  document.getElementById('radar-company-name').textContent = s.name;
+  updateSupplierDetailCard(idx);
+
+  const isUnrated = s.unrated === true || typeof s.score !== 'number';
+  const canvas = document.getElementById('radarChart');
+  const ctx = canvas.getContext('2d');
+
+  if (radarChart) { radarChart.destroy(); radarChart = null; }
+
+  if (isUnrated) {
+    // 미평가 업체 — 차트 대신 안내 텍스트
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.save();
+    ctx.fillStyle = '#9aa3ba';
+    ctx.font = '600 13px system-ui, -apple-system, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('점수 미평가 업체 — 레이더 표시 불가', canvas.width / 2, canvas.height / 2 - 8);
+    ctx.font = '11px system-ui, -apple-system, sans-serif';
+    ctx.fillStyle = '#6b7280';
+    ctx.fillText('평가 완료 후 재렌더링', canvas.width / 2, canvas.height / 2 + 12);
+    ctx.restore();
+    // Highlight selected row
+    document.querySelectorAll('#supplier-tbody tr').forEach(r => {
+      r.classList.toggle('selected', r.getAttribute('data-idx') === String(idx));
+    });
+    return;
+  }
+
   const data = [s.cap, s.qual, s.fin, s.logi, s.price];
   const labels = ['생산능력', '제품품질', '신용재무', '납기물류', '가격경쟁력'];
 
-  if (radarChart) radarChart.destroy();
-
-  const ctx = document.getElementById('radarChart').getContext('2d');
   radarChart = new Chart(ctx, {
     type: 'radar',
     data: {
