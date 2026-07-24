@@ -1469,6 +1469,36 @@
     font-size: 0.68rem; color: var(--text-muted);
     max-width: 220px; white-space: normal;
   }
+
+  /* v2.4 Phase 2: 시장가 참고·이론 시뮬레이터 접힘 그룹 (견적 비교가 메인) */
+  .legacy-cost-wrap {
+    background: rgba(255,255,255,0.015);
+    border: 1px dashed rgba(255,255,255,0.10);
+    border-radius: 12px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+  }
+  .legacy-cost-wrap > summary {
+    cursor: pointer; list-style: none;
+    padding: 0.35rem 0.4rem;
+    border-radius: 6px;
+    display: flex; align-items: center; flex-wrap: wrap; gap: 0.5rem;
+    font-size: 0.82rem; color: var(--text-secondary); font-weight: 700;
+  }
+  .legacy-cost-wrap > summary::-webkit-details-marker { display: none; }
+  .legacy-cost-wrap > summary:hover { background: rgba(255,255,255,0.03); }
+  .legacy-arrow {
+    display: inline-block; font-size: 0.65rem; color: var(--text-muted);
+    transition: transform 0.2s;
+  }
+  .legacy-cost-wrap[open] .legacy-arrow { transform: rotate(90deg); }
+  .legacy-sub {
+    font-size: 0.7rem; font-weight: 400; color: var(--text-muted);
+  }
+  .legacy-cost-wrap[open] > summary {
+    margin-bottom: 0.9rem; padding-bottom: 0.6rem;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
   .cost-comp-grid {
     display: grid; grid-template-columns: repeat(3, 1fr);
     gap: 0.5rem; margin-bottom: 0.6rem;
@@ -2664,6 +2694,14 @@ Best regards,
       </div>
     </div>
 
+    <!-- v2.4 Phase 2: 시장가 참고·이론 시뮬레이터 접힘 그룹 (견적 비교가 메인) -->
+    <details class="legacy-cost-wrap">
+      <summary>
+        <span class="legacy-arrow">▶</span>
+        📈🧮 참고: 시장가(SHFE·SMM) · 이론 시뮬레이터 (원가 조립식)
+        <span class="legacy-sub">— 위 견적 비교가 메인. 견적이 없는 신규 업체·시장가 시나리오 분석·관세 HS Code 확인이 필요할 때만 펼쳐 사용.</span>
+      </summary>
+
     <!-- SHFE / SMM 참고 패널 -->
     <div class="mkt-ref-panel">
       <div class="mkt-ref-title">📈 알루미늄 시장가 참고 — 중국 단가 협상 시 활용</div>
@@ -3049,6 +3087,7 @@ Best regards,
     </div>
 
     </div><!-- /sqm-mode-area (v2.1) -->
+    </details><!-- /legacy-cost-wrap (v2.4 Phase 2) -->
   </section>
 
 </main>
