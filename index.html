@@ -1341,10 +1341,27 @@
     background: var(--navy-card); border: 1px solid var(--border);
     border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 1rem;
   }
+  /* v2.3: 접힘 패널로 격하 — 견적서 수령 후에는 시장가 조립이 부차적 */
+  details.cost-comp-wrap > summary {
+    cursor: pointer; list-style: none;
+    margin-bottom: 0;
+  }
+  details.cost-comp-wrap > summary::-webkit-details-marker { display: none; }
+  details.cost-comp-wrap[open] > summary { margin-bottom: 0.75rem; }
+  .cost-comp-arrow {
+    display: inline-block; font-size: 0.65rem; color: var(--text-muted);
+    margin-right: 0.5rem; transition: transform 0.2s;
+  }
+  details.cost-comp-wrap[open] .cost-comp-arrow { transform: rotate(90deg); }
+  .cost-comp-sub {
+    font-size: 0.7rem; color: var(--text-muted); font-weight: 400;
+    margin-left: 0.5rem; text-transform: none; letter-spacing: 0;
+  }
   .cost-comp-title {
     font-size: 0.78rem; font-weight: 800; color: var(--text-secondary);
     margin-bottom: 0.75rem; text-transform: uppercase; letter-spacing: 0.4px;
   }
+  details.cost-comp-wrap > summary .cost-comp-title { margin-bottom: 0; }
   .cost-comp-grid {
     display: grid; grid-template-columns: repeat(3, 1fr);
     gap: 0.5rem; margin-bottom: 0.6rem;
@@ -2587,12 +2604,15 @@ Best regards,
     <!-- 시뮬레이터 영역 (모든 카테고리 공통) -->
     <div id="sqm-mode-area">
 
-    <!-- 단가 구성 상세 -->
-    <div class="cost-comp-wrap" id="cost-comp-wrap">
-      <div class="cost-comp-header">
-        <div class="cost-comp-title">📊 중국 단가 구성 (선택 제품 기준) — 수정 가능</div>
-        <button class="cci-reset-btn" onclick="resetCostComp()" title="선택 제품 기본값으로 초기화">↺ 초기화</button>
-      </div>
+    <!-- 단가 구성 상세 (v2.3: 접힘 패널로 격하 — 견적서 수령 시 부차적) -->
+    <details class="cost-comp-wrap" id="cost-comp-wrap">
+      <summary class="cost-comp-header">
+        <div class="cost-comp-title">
+          <span class="cost-comp-arrow">▶</span>🧮 발주 전 시장가 추정 (원료+가공비 조립식)
+          <span class="cost-comp-sub">— 공급자 확정 견적이 있으면 접어 두고, 아래 시뮬레이터의 <strong>중국 단가(CNY/㎡)</strong> 필드에 직접 입력하세요.</span>
+        </div>
+        <button class="cci-reset-btn" onclick="event.stopPropagation();resetCostComp()" title="선택 제품 기본값으로 초기화">↺ 초기화</button>
+      </summary>
       <div class="cost-comp-grid">
         <!-- 입력 가능 -->
         <div class="cost-comp-item cci-editable">
@@ -2655,7 +2675,7 @@ Best regards,
         </div>
       </div>
       <div class="cost-comp-note" id="cost-comp-note">※ 지용성 코팅 = Oil-based coating. HSCODE 7607.19-9000. 한중FTA 7.2%. 비교 기준: 홍지 견적서 2026.03.04 (지용성 0.17mm / ㎡당 2,536원, 부가세 별도)</div>
-    </div>
+    </details>
 
     <!-- 계산기 -->
     <div class="simulator-layout">
@@ -2671,8 +2691,9 @@ Best regards,
             </div>
           </div>
           <div class="form-group">
-            <label class="form-label">중국 단가 (CNY/㎡) <span class="auto-tag">제품선택 자동</span></label>
+            <label class="form-label">중국 단가 (CNY/㎡) <span class="auto-tag">제품선택 자동 · 견적 시 직접 입력</span></label>
             <input class="form-control" type="number" id="sim-cny-sqm" value="11.452" min="1" max="100" step="0.001">
+            <div style="font-size:0.66rem;color:var(--text-muted);margin-top:3px;">공급자 확정 견적을 받았다면 여기에 CNY/㎡ 값을 직접 입력하세요 — 위 접힘 패널의 시장가 추정은 무시됩니다.</div>
           </div>
         </div>
         <div class="form-row">
