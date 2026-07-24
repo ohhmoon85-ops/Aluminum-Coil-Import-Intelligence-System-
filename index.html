@@ -987,6 +987,29 @@
   .tag-p { background: rgba(180,76,201,0.15); color: #d4a0e8; border: 1px solid rgba(180,76,201,0.3); }
   .choose-arrow { color: var(--text-secondary); font-size: 0.8rem; }
 
+  /* v2.4: 참고 패널 접힘 (기술 사양·구매 팁·영문 메일) */
+  details.ref-panel > summary,
+  details.email-panel > summary {
+    cursor: pointer;
+    list-style: none;
+  }
+  details.ref-panel > summary::-webkit-details-marker,
+  details.email-panel > summary::-webkit-details-marker { display: none; }
+  .ref-panel-arrow {
+    display: inline-block; font-size: 0.72rem;
+    color: var(--text-muted); transition: transform 0.2s;
+    margin-right: 0.4rem; vertical-align: middle;
+  }
+  details.ref-panel[open] > summary .ref-panel-arrow,
+  details.email-panel[open] > summary .ref-panel-arrow { transform: rotate(90deg); }
+  details.ref-panel[open] > summary,
+  details.email-panel[open] > summary {
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    padding-bottom: 0.7rem; margin-bottom: 1rem;
+  }
+  details.ref-panel:not([open]) > .ref-panel-sub,
+  details.email-panel:not([open]) .email-cols { display: none; }
+
   /* ===== EMAIL TEMPLATE PANEL ===== */
   .email-panel {
     background: var(--navy-card);
@@ -2439,9 +2462,9 @@
 
     <!-- 기술 사양 가이드 + 구매 팁 -->
     <div class="ref-panels-grid">
-      <!-- 기술 사양 가이드 -->
-      <div class="ref-panel">
-        <div class="ref-panel-title">📐 기술 사양 가이드 — 발주 전 체크리스트</div>
+      <!-- 기술 사양 가이드 (v2.4: 접힘) -->
+      <details class="ref-panel">
+        <summary class="ref-panel-title"><span class="ref-panel-arrow">▶</span>📐 기술 사양 가이드 — 발주 전 체크리스트</summary>
         <div class="ref-panel-sub">표준 사양(원단 발주 기준)과 <strong style="color:#c9a84c;">동원 대체 사양(코팅용 원단)</strong>을 구분해 전달합니다.</div>
         <table class="spec-table">
           <thead>
@@ -2485,11 +2508,11 @@
             </tr>
           </tbody>
         </table>
-      </div>
+      </details>
 
-      <!-- 구매 팁 -->
-      <div class="ref-panel">
-        <div class="ref-panel-title">🛒 구매 실무 팁</div>
+      <!-- 구매 팁 (v2.4: 접힘) -->
+      <details class="ref-panel">
+        <summary class="ref-panel-title"><span class="ref-panel-arrow">▶</span>🛒 구매 실무 팁</summary>
         <div class="ref-panel-sub">중국 업체와 실제 거래 시 참고할 핵심 사항입니다.</div>
 
         <div class="tip-section">
@@ -2523,18 +2546,21 @@
             </div>
           </div>
         </div>
-      </div>
+      </details>
     </div>
 
-    <!-- 영문 문의 메일 초안 -->
-    <div class="email-panel">
-      <div class="email-panel-header">
-        <div>
-          <div class="email-panel-title">✉️ 영문 문의 메일 초안 (PCB 알루미늄 엔트리 시트)</div>
-          <div class="email-panel-sub">[ ] 항목을 실제 값으로 교체 후 발송 — 여러 업체에 동시 발송 후 TDS가 가장 상세한 업체를 우선 검토</div>
+    <!-- 영문 문의 메일 초안 (v2.4: 접힘) -->
+    <details class="email-panel">
+      <summary class="email-panel-header">
+        <div style="display:flex;align-items:flex-start;gap:0.4rem;flex:1;min-width:0;">
+          <span class="ref-panel-arrow" style="margin-top:3px;">▶</span>
+          <div>
+            <div class="email-panel-title">✉️ 영문 문의 메일 초안 (PCB 알루미늄 엔트리 시트)</div>
+            <div class="email-panel-sub">[ ] 항목을 실제 값으로 교체 후 발송 — 여러 업체에 동시 발송 후 TDS가 가장 상세한 업체를 우선 검토</div>
+          </div>
         </div>
-        <button class="copy-btn" id="copy-email-btn" onclick="copyEmailTemplate()">📋 복사</button>
-      </div>
+        <button class="copy-btn" id="copy-email-btn" onclick="event.stopPropagation();copyEmailTemplate()">📋 복사</button>
+      </summary>
       <div class="email-cols">
         <div>
           <div class="email-body" id="email-template-text"><span class="email-field">Subject:</span> Inquiry: Aluminum Entry Sheets for PCB Drilling / [Company Name]
@@ -2593,7 +2619,7 @@ Best regards,
           </div>
         </div>
       </div>
-    </div>
+    </details>
   </section>
 
   <hr class="section-divider">
