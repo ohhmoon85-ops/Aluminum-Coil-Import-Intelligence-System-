@@ -1362,6 +1362,113 @@
     margin-bottom: 0.75rem; text-transform: uppercase; letter-spacing: 0.4px;
   }
   details.cost-comp-wrap > summary .cost-comp-title { margin-bottom: 0; }
+
+  /* ===== v2.4 공급자 견적 상호 비교 카드 ===== */
+  .quote-cmp-panel {
+    background: var(--navy-card); border: 1px solid rgba(201,168,76,0.3);
+    border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 1rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.25);
+  }
+  .quote-cmp-header {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.75rem;
+  }
+  .quote-cmp-title {
+    font-size: 0.95rem; font-weight: 800; color: var(--gold);
+  }
+  .quote-cmp-sub {
+    font-size: 0.72rem; color: var(--text-muted); margin-top: 3px;
+    line-height: 1.4;
+  }
+  .quote-actions { display: flex; align-items: center; gap: 0.4rem; }
+  .quote-add-btn, .quote-reset-btn, .quote-del-btn {
+    background: rgba(255,255,255,0.06); border: 1px solid var(--border);
+    color: var(--text-secondary); border-radius: 6px;
+    cursor: pointer; font-family: inherit;
+  }
+  .quote-add-btn {
+    padding: 0.35rem 0.8rem; font-size: 0.75rem; font-weight: 700;
+  }
+  .quote-add-btn:hover { border-color: var(--gold); color: var(--gold); }
+  .quote-reset-btn {
+    padding: 0.35rem 0.7rem; font-size: 0.72rem;
+  }
+  .quote-reset-btn:hover { border-color: var(--gold-dark); color: var(--gold); }
+  .quote-del-btn { padding: 0.15rem 0.4rem; font-size: 0.85rem; line-height: 1; }
+  .quote-del-btn:hover { border-color: #e74c3c; color: #e74c3c; }
+
+  .quote-param-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 0.55rem; margin-bottom: 0.9rem; padding: 0.75rem 0.9rem;
+    background: rgba(255,255,255,0.03); border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.05);
+  }
+  .quote-param-item label {
+    display: block; font-size: 0.66rem; color: var(--text-secondary);
+    margin-bottom: 3px; line-height: 1.2;
+  }
+  .quote-param-item input {
+    width: 100%; padding: 0.35rem 0.55rem;
+    background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+    color: var(--gold); border-radius: 6px;
+    font-size: 0.82rem; font-weight: 700; font-family: inherit;
+    box-sizing: border-box;
+  }
+  .quote-param-item input:focus { outline: none; border-color: var(--gold); }
+  .quote-param-derived {
+    padding: 0.35rem 0.55rem; font-size: 0.82rem;
+    color: var(--text-secondary); font-weight: 700;
+    background: rgba(255,255,255,0.02); border-radius: 6px;
+    border: 1px dashed rgba(255,255,255,0.08);
+  }
+
+  .quote-tbl-wrap { overflow-x: auto; }
+  .quote-tbl {
+    width: 100%; border-collapse: collapse; font-size: 0.75rem;
+    min-width: 1200px;
+  }
+  .quote-tbl th {
+    background: rgba(255,255,255,0.04); color: var(--text-secondary);
+    font-weight: 700; padding: 0.45rem 0.55rem; text-align: left;
+    border-bottom: 1px solid var(--border); white-space: nowrap;
+    font-size: 0.7rem; letter-spacing: 0.02em;
+  }
+  .quote-tbl td {
+    padding: 0.4rem 0.55rem;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    color: var(--text-primary); vertical-align: middle;
+  }
+  .quote-tbl tr:hover td { background: rgba(255,255,255,0.02); }
+  .quote-tbl input, .quote-tbl select {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    color: inherit; padding: 0.25rem 0.4rem; border-radius: 4px;
+    font-family: inherit; font-size: 0.75rem; box-sizing: border-box;
+  }
+  .quote-tbl input:focus, .quote-tbl select:focus {
+    outline: none; border-color: var(--gold);
+  }
+  .quote-tbl input[type="number"] { width: 90px; text-align: right; }
+  .quote-tbl input[type="text"]   { width: 160px; text-align: left; }
+  .quote-tbl input[type="date"]   { width: 130px; }
+  .quote-tbl select               { width: 100px; }
+  .quote-tbl td.derived {
+    color: var(--text-secondary); text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+  .quote-tbl td.winner { color: #4ec9b0; font-weight: 700; }
+  .quote-tbl td.margin-pos { color: #4ec9b0; font-weight: 700; }
+  .quote-tbl td.margin-neg { color: #e74c3c; font-weight: 700; }
+  .quote-winner-badge {
+    display: inline-block; background: rgba(76,201,130,0.15);
+    color: #4ec9b0; font-size: 0.58rem; font-weight: 700;
+    padding: 1px 5px; border-radius: 3px; margin-left: 4px;
+    vertical-align: middle;
+  }
+  .quote-note-cell {
+    font-size: 0.68rem; color: var(--text-muted);
+    max-width: 220px; white-space: normal;
+  }
   .cost-comp-grid {
     display: grid; grid-template-columns: repeat(3, 1fr);
     gap: 0.5rem; margin-bottom: 0.6rem;
@@ -2466,13 +2573,94 @@ Best regards,
     <div class="section-header">
       <div class="section-num">⑥</div>
       <div class="section-title">PCB 엔트리시트 수입원가 계산기</div>
-      <div class="section-sub">실제 거래 데이터 기반 — 중국 수입원가 vs 국내 구매가 비교 (기준일: 2026.03.04)</div>
+      <div class="section-sub">공급자 견적 상호 비교 (도착원가 기준) — 시장가 참고 · 이론 시뮬레이터 병행</div>
       <!-- v2.2 작업7: 표시 단위 토글 (㎡/kg/MT) -->
       <div class="unit-toggle-group">
         <span class="unit-toggle-label">표시 단위:</span>
         <button class="unit-btn active" id="unit-sqm" onclick="selectUnit('sqm')">㎡</button>
         <button class="unit-btn"        id="unit-kg"  onclick="selectUnit('kg')">kg</button>
         <button class="unit-btn"        id="unit-mt"  onclick="selectUnit('mt')">톤(MT)</button>
+      </div>
+    </div>
+
+    <!-- v2.4 Phase 1: 공급자 견적 상호 비교 (도착원가) -->
+    <div class="quote-cmp-panel" id="quote-cmp-panel">
+      <div class="quote-cmp-header">
+        <div>
+          <div class="quote-cmp-title">📊 공급자 견적 상호 비교 (도착원가 기준)</div>
+          <div class="quote-cmp-sub">공급자로부터 받은 견적(FOB/CIF, USD/CNY)을 입력하면 관세·해상운임·부대비를 포함한 도착원가(원/톤·원/kg·원/㎡)로 자동 정규화·비교합니다. localStorage 저장(브라우저별).</div>
+        </div>
+        <div class="quote-actions">
+          <button class="quote-add-btn" onclick="addQuoteRow()">+ 견적 추가</button>
+          <button class="quote-reset-btn" onclick="resetQuoteData()" title="기본 프리셋(신다통·워스윌 7.24)으로 초기화">↺ 초기화</button>
+        </div>
+      </div>
+
+      <!-- 공통 파라미터 -->
+      <div class="quote-param-grid">
+        <div class="quote-param-item">
+          <label>USD/KRW</label>
+          <input type="number" id="qp-usdkrw" value="1470" step="1" min="800" max="2000" oninput="renderQuoteTable()">
+        </div>
+        <div class="quote-param-item">
+          <label>USD/CNY</label>
+          <input type="number" id="qp-usdcny" value="6.75" step="0.01" min="4" max="10" oninput="renderQuoteTable()">
+        </div>
+        <div class="quote-param-item">
+          <label>CNY/KRW (도출)</label>
+          <div class="quote-param-derived" id="qp-cnykrw">217.8</div>
+        </div>
+        <div class="quote-param-item">
+          <label>FOB→CIF 해상운임+보험 (USD/톤)</label>
+          <input type="number" id="qp-freight" value="39" step="1" min="0" max="500" oninput="renderQuoteTable()">
+        </div>
+        <div class="quote-param-item">
+          <label>부대비 (원/톤)</label>
+          <input type="number" id="qp-overhead" value="35000" step="500" min="0" max="500000" oninput="renderQuoteTable()">
+        </div>
+        <div class="quote-param-item">
+          <label>관세율 % (한중FTA)</label>
+          <input type="number" id="qp-tariff" value="7.2" step="0.1" min="0" max="30" oninput="renderQuoteTable()">
+        </div>
+        <div class="quote-param-item">
+          <label>국내 비교가 (원/kg)</label>
+          <input type="number" id="qp-domestic" value="6500" step="10" min="0" max="30000" oninput="renderQuoteTable()">
+        </div>
+        <div class="quote-param-item">
+          <label>기준 두께 kg/㎡ (0.12mm≈0.3252)</label>
+          <input type="number" id="qp-kgm2" value="0.3252" step="0.001" min="0.05" max="2" oninput="renderQuoteTable()">
+        </div>
+      </div>
+
+      <!-- 견적 비교 테이블 -->
+      <div class="quote-tbl-wrap">
+        <table class="quote-tbl">
+          <thead>
+            <tr>
+              <th>업체</th>
+              <th>제품</th>
+              <th>INCO</th>
+              <th>통화</th>
+              <th style="text-align:right;">톤당 단가</th>
+              <th>절단</th>
+              <th>견적일</th>
+              <th style="text-align:right;">CIF USD/톤</th>
+              <th style="text-align:right;">CIF 원/톤</th>
+              <th style="text-align:right;">관세</th>
+              <th style="text-align:right;">도착 원/톤</th>
+              <th style="text-align:right;">원/kg</th>
+              <th style="text-align:right;">원/㎡</th>
+              <th style="text-align:right;">국내가 대비</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="quote-tbody"></tbody>
+        </table>
+      </div>
+      <div style="font-size:0.68rem;color:var(--text-muted);margin-top:0.6rem;line-height:1.5;">
+        ※ 계산식: <strong>도착원가 원/톤</strong> = (CIF USD × USD/KRW) × (1 + 관세율) + 부대비. FOB 견적은 해상운임+보험을 자동 가산. CNY 견적은 USD/CNY로 USD 환산 후 동일 흐름.<br>
+        ※ 같은 제품 카테고리 내(같은 행 값 이상 존재 시) 최저 도착원가 원/kg에 <span style="color:#4ec9b0;font-weight:700;">최저</span> 배지가 표시됩니다.<br>
+        ※ 신다통·워스윌 프리셋은 2026.7.24 CIF 인천 기준 · 국내 비교가(원/kg) 기본값 6,500은 예시 — 실제 조건으로 수정하세요.
       </div>
     </div>
 
@@ -4004,6 +4192,9 @@ async function startApp() {
   // → 이후 applyCurrentPreset/calculateSimulator 등이 새 값을 사용
   applyAdminQuote();
 
+  // v2.4 Phase 1: 공급자 견적 상호 비교 카드 초기화 (localStorage 로드 → 렌더)
+  initQuoteCompare();
+
   // v2.4: 초기 두께 + 폭 버튼 렌더링 (순도 토글 제거 — 1050 순알 고정)
   renderSizeButtons();
   renderWidthButtons();
@@ -5282,6 +5473,183 @@ function renderRadarChart(idx) {
   document.querySelectorAll('#supplier-tbody tr').forEach((r, i) => {
     r.classList.toggle('selected', i === idx);
   });
+}
+
+// ===================== v2.4: 공급자 견적 상호 비교 (Phase 1) =====================
+// 여러 공급자 견적(FOB/CIF, USD/CNY, 톤당 단가)을 도착원가(원/톤·kg·㎡)로 자동 정규화·비교.
+// localStorage 저장 — 브라우저별. admin 화면과 분리(⑥ 섹션 내에서 직접 편집).
+const LS_QUOTE_CMP = 'acis_quotes_v1';
+
+// input value 속성 안전 이스케이프 (따옴표·꺾쇠 방지)
+function escAttr(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+const QUOTE_PRODUCT_LABELS = {
+  'raw-coil':  '생알 코일',
+  'raw-sheet': '생알 시트',
+  'dos-coil':  'DOS Oil 코일',
+  'dos-sheet': 'DOS Oil 시트',
+  'oil':       '지용성 코팅',
+  'water':     '수용성 코팅',
+};
+
+// 2026.7.24 신다통·워스윌 견적 프리셋 (신다통 견적 비교 보고서 기준)
+const DEFAULT_QUOTES = [
+  { id:'xd-raw-coil',  supplier:'신다통 (Xindatong)',  product:'raw-coil',
+    inco:'CIF', currency:'USD', pricePerTon:4129, cut:false, date:'2026-07-24' },
+  { id:'xd-raw-sheet', supplier:'신다통 (Xindatong)',  product:'raw-sheet',
+    inco:'CIF', currency:'USD', pricePerTon:4203, cut:true,  date:'2026-07-24' },
+  { id:'xd-dos-coil',  supplier:'신다통 (Xindatong)',  product:'dos-coil',
+    inco:'CIF', currency:'USD', pricePerTon:4277, cut:false, date:'2026-07-24' },
+  { id:'ws-raw-coil',  supplier:'워스윌 (Worthwill)',  product:'raw-coil',
+    inco:'CIF', currency:'USD', pricePerTon:4142, cut:false, date:'2026-07-24' },
+  { id:'ws-dos-coil',  supplier:'워스윌 (Worthwill)',  product:'dos-coil',
+    inco:'CIF', currency:'USD', pricePerTon:4408, cut:false, date:'2026-07-24' },
+];
+
+let quotesV4 = [];
+
+function loadQuoteCompareData() {
+  try {
+    const raw = localStorage.getItem(LS_QUOTE_CMP);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) { quotesV4 = parsed; return; }
+    }
+  } catch(e) { console.warn('[QUOTE-CMP] 파싱 실패', e); }
+  quotesV4 = DEFAULT_QUOTES.map(q => ({...q}));
+}
+function saveQuoteCompareData() {
+  try { localStorage.setItem(LS_QUOTE_CMP, JSON.stringify(quotesV4)); }
+  catch(e) { console.warn('[QUOTE-CMP] 저장 실패', e); }
+}
+
+function resetQuoteData() {
+  if (!confirm('견적 비교를 기본 프리셋(신다통·워스윌 2026.7.24)으로 초기화합니다. 진행하시겠습니까?')) return;
+  quotesV4 = DEFAULT_QUOTES.map(q => ({...q}));
+  saveQuoteCompareData();
+  renderQuoteTable();
+}
+function addQuoteRow() {
+  quotesV4.push({
+    id: 'q_' + Date.now().toString(36) + Math.random().toString(36).slice(2,5),
+    supplier: '신규 업체',
+    product: 'raw-coil',
+    inco: 'CIF',
+    currency: 'USD',
+    pricePerTon: 4000,
+    cut: false,
+    date: new Date().toISOString().slice(0,10),
+  });
+  saveQuoteCompareData();
+  renderQuoteTable();
+}
+function delQuoteRow(id) {
+  if (!confirm('이 견적 행을 삭제하시겠습니까?')) return;
+  quotesV4 = quotesV4.filter(q => q.id !== id);
+  saveQuoteCompareData();
+  renderQuoteTable();
+}
+function updateQuoteField(id, field, value) {
+  const q = quotesV4.find(x => x.id === id);
+  if (!q) return;
+  if (field === 'pricePerTon') value = parseFloat(value) || 0;
+  else if (field === 'cut') value = (value === 'true' || value === true);
+  q[field] = value;
+  saveQuoteCompareData();
+  renderQuoteTable();
+}
+
+function getQuoteParams() {
+  const g = (id, def) => {
+    const el = document.getElementById(id);
+    return el ? (parseFloat(el.value) || def) : def;
+  };
+  return {
+    usdKrw:   g('qp-usdkrw',   1470),
+    usdCny:   g('qp-usdcny',   6.75),
+    freight:  g('qp-freight',  39),
+    overhead: g('qp-overhead', 35000),
+    tariff:   g('qp-tariff',   7.2),
+    domestic: g('qp-domestic', 6500),
+    kgm2:     g('qp-kgm2',     0.3252),
+  };
+}
+
+function computeQuote(q, p) {
+  const usdPerTon = q.currency === 'CNY' ? (q.pricePerTon / p.usdCny) : q.pricePerTon;
+  const cifUsd    = q.inco === 'FOB' ? (usdPerTon + p.freight) : usdPerTon;
+  const cifKrw    = cifUsd * p.usdKrw;
+  const tariffKrw = cifKrw * (p.tariff / 100);
+  const totalKrw  = cifKrw + tariffKrw + p.overhead;
+  const perKg     = totalKrw / 1000;
+  const perM2     = perKg * p.kgm2;
+  const marginPct = p.domestic > 0 ? ((p.domestic - perKg) / p.domestic * 100) : 0;
+  return { cifUsd, cifKrw, tariffKrw, totalKrw, perKg, perM2, marginPct };
+}
+
+function renderQuoteTable() {
+  const tbody = document.getElementById('quote-tbody');
+  if (!tbody) return;   // 아직 DOM 미준비 시 no-op
+
+  const p = getQuoteParams();
+  const cnyKrwEl = document.getElementById('qp-cnykrw');
+  if (cnyKrwEl) cnyKrwEl.textContent = (p.usdKrw / p.usdCny).toFixed(1);
+
+  // 같은 product 카테고리 내 최저 원/kg 찾기 (winner)
+  const computed = quotesV4.map(q => ({ q, c: computeQuote(q, p) }));
+  const winners = {};   // product → {id, perKg}
+  computed.forEach(({q, c}) => {
+    const prev = winners[q.product];
+    if (!prev || c.perKg < prev.perKg) winners[q.product] = { id: q.id, perKg: c.perKg };
+  });
+  const productCount = {};
+  computed.forEach(({q}) => { productCount[q.product] = (productCount[q.product] || 0) + 1; });
+
+  const fmt = (n, d=0) => (isFinite(n) ? n.toLocaleString('ko-KR', {maximumFractionDigits: d, minimumFractionDigits: d}) : '—');
+
+  tbody.innerHTML = '';
+  computed.forEach(({q, c}) => {
+    const isWinner = winners[q.product] && winners[q.product].id === q.id && productCount[q.product] >= 2;
+    const productOpts = Object.entries(QUOTE_PRODUCT_LABELS)
+      .map(([k,v]) => `<option value="${k}"${k===q.product?' selected':''}>${v}</option>`).join('');
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input type="text" value="${escAttr(q.supplier)}" onchange="updateQuoteField('${q.id}','supplier',this.value)"></td>
+      <td><select onchange="updateQuoteField('${q.id}','product',this.value)">${productOpts}</select></td>
+      <td><select onchange="updateQuoteField('${q.id}','inco',this.value)">
+        <option value="CIF"${q.inco==='CIF'?' selected':''}>CIF</option>
+        <option value="FOB"${q.inco==='FOB'?' selected':''}>FOB</option>
+      </select></td>
+      <td><select onchange="updateQuoteField('${q.id}','currency',this.value)">
+        <option value="USD"${q.currency==='USD'?' selected':''}>USD</option>
+        <option value="CNY"${q.currency==='CNY'?' selected':''}>CNY</option>
+      </select></td>
+      <td style="text-align:right;"><input type="number" step="1" value="${q.pricePerTon}" onchange="updateQuoteField('${q.id}','pricePerTon',this.value)"></td>
+      <td><select onchange="updateQuoteField('${q.id}','cut',this.value)">
+        <option value="false"${!q.cut?' selected':''}>—</option>
+        <option value="true"${q.cut?' selected':''}>포함</option>
+      </select></td>
+      <td><input type="date" value="${q.date || ''}" onchange="updateQuoteField('${q.id}','date',this.value)"></td>
+      <td class="derived">$${fmt(c.cifUsd, 0)}</td>
+      <td class="derived">${fmt(c.cifKrw, 0)}</td>
+      <td class="derived">${fmt(c.tariffKrw, 0)}</td>
+      <td class="derived${isWinner?' winner':''}">${fmt(c.totalKrw, 0)}</td>
+      <td class="derived${isWinner?' winner':''}">${fmt(c.perKg, 0)}${isWinner?' <span class="quote-winner-badge">최저</span>':''}</td>
+      <td class="derived">${fmt(c.perM2, 0)}</td>
+      <td class="derived ${c.marginPct >= 0 ? 'margin-pos' : 'margin-neg'}">${c.marginPct >= 0 ? '+' : ''}${c.marginPct.toFixed(1)}%</td>
+      <td><button class="quote-del-btn" onclick="delQuoteRow('${q.id}')" title="삭제">×</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function initQuoteCompare() {
+  loadQuoteCompareData();
+  renderQuoteTable();
 }
 
 // ===================== SIMULATOR =====================
