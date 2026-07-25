@@ -2821,7 +2821,7 @@ Best regards,
           <button class="qc-smm-unit-btn active" id="qc-smm-unit-cny" onclick="setQcSmmUnit('cny')">CNY/톤</button>
           <button class="qc-smm-unit-btn" id="qc-smm-unit-usd" onclick="setQcSmmUnit('usd')" title="상단 USD/CNY 환율이 필요합니다">USD/톤</button>
         </div>
-        <input class="qc-smm-input" type="number" id="qc-smm-val" placeholder="시세 입력…" step="10" oninput="updateQcSmmParity()">
+        <input class="qc-smm-input" type="number" id="qc-smm-val" placeholder="시세 입력…" step="10" oninput="updateQcSmmParity();renderQuoteTable()">
         <button class="qc-smm-save-btn" id="qc-smm-save-btn" onclick="saveQcSmm()" title="localStorage에 CNY/MT 기준으로 저장">💾 저장</button>
         <span class="qc-smm-parity" id="qc-smm-parity">≈ 병기 값</span>
         <span class="qc-smm-meta" id="qc-smm-meta">최종 입력: --</span>
@@ -2842,6 +2842,7 @@ Best regards,
               <th>절단</th>
               <th>견적일</th>
               <th style="text-align:right;">CIF USD/톤</th>
+              <th style="text-align:right;" title="CIF를 CNY로 환산 후 SMM 시세와의 차이 · 낮을수록 협상 여지 적음(=적정), 높을수록 재협상 가능">SMM 대비</th>
               <th style="text-align:right;">CIF 원/톤</th>
               <th style="text-align:right;">관세</th>
               <th class="total-cost-th" style="text-align:right;">🎯 도착 원/톤</th>
@@ -2856,6 +2857,7 @@ Best regards,
       </div>
       <div style="font-size:0.68rem;color:var(--text-muted);margin-top:0.6rem;line-height:1.5;">
         ※ 계산식: <strong>도착원가 원/톤</strong> = (CIF USD × USD/KRW) × (1 + 관세율) + 부대비. FOB 견적은 해상운임+보험을 자동 가산. CNY 견적은 USD/CNY로 USD 환산 후 동일 흐름.<br>
+        ※ <strong>SMM 대비</strong> = (CIF USD × USD/CNY) − SMM CNY/톤. 값이 작을수록 시장가와 근접(협상 여지 적음), 클수록 재협상 가능. 같은 제품 카테고리 내 최저 프리미엄에 <span style="color:#4ec9b0;font-weight:700;">최저</span> 배지.<br>
         ※ 같은 제품 카테고리 내(같은 행 값 이상 존재 시) 최저 도착원가 원/kg에 <span style="color:#4ec9b0;font-weight:700;">최저</span> 배지가 표시됩니다.<br>
         ※ 신다통·워스윌 프리셋은 2026.7.24 CIF 인천 기준 · 국내 비교가(원/kg) 기본값 6,500은 예시 — 실제 조건으로 수정하세요.
       </div>
@@ -5811,6 +5813,21 @@ function getQuoteParams() {
   };
 }
 
+// v2.5: 현재 SMM CNY/MT 조회 — 미니 바 입력값 우선(실시간), 없으면 localStorage 저장분
+function getCurrentSmmCny() {
+  const input = document.getElementById('qc-smm-val');
+  const rate  = (typeof getUsdCnyRate === 'function') ? getUsdCnyRate() : 0;
+  if (input && input.value) {
+    const v = parseFloat(input.value);
+    if (v > 0) {
+      if (qcSmmUnit === 'usd' && rate) return v * rate;
+      if (qcSmmUnit === 'cny')          return v;
+    }
+  }
+  const latest = (typeof loadLatestSmm === 'function') ? loadLatestSmm() : null;
+  return latest ? latest.price : null;
+}
+
 function computeQuote(q, p) {
   const usdPerTon = q.currency === 'CNY' ? (q.pricePerTon / p.usdCny) : q.pricePerTon;
   const cifUsd    = q.inco === 'FOB' ? (usdPerTon + p.freight) : usdPerTon;
@@ -5820,7 +5837,12 @@ function computeQuote(q, p) {
   const perKg     = totalKrw / 1000;
   const perM2     = perKg * p.kgm2;
   const marginPct = p.domestic > 0 ? ((p.domestic - perKg) / p.domestic * 100) : 0;
-  return { cifUsd, cifKrw, tariffKrw, totalKrw, perKg, perM2, marginPct };
+  // v2.5: SMM 대비 프리미엄 (CIF CNY - SMM CNY) — SMM 미입력 시 null
+  const smmCny    = getCurrentSmmCny();
+  const cifCny    = cifUsd * p.usdCny;
+  const smmPremiumCny = (smmCny && smmCny > 0) ? (cifCny - smmCny) : null;
+  const smmPremiumPct = (smmCny && smmCny > 0) ? ((cifCny - smmCny) / smmCny * 100) : null;
+  return { cifUsd, cifKrw, tariffKrw, totalKrw, perKg, perM2, marginPct, cifCny, smmPremiumCny, smmPremiumPct };
 }
 
 function renderQuoteTable() {
@@ -5840,9 +5862,14 @@ function renderQuoteTable() {
   // 같은 product 카테고리 내 최저 원/kg 찾기 (winner)
   const computed = quotesV4.map(q => ({ q, c: computeQuote(q, p) }));
   const winners = {};   // product → {id, perKg}
+  const smmWinners = {}; // product → {id, premium} (SMM 대비 최저 프리미엄)
   computed.forEach(({q, c}) => {
     const prev = winners[q.product];
     if (!prev || c.perKg < prev.perKg) winners[q.product] = { id: q.id, perKg: c.perKg };
+    if (c.smmPremiumCny != null) {
+      const prevS = smmWinners[q.product];
+      if (!prevS || c.smmPremiumCny < prevS.premium) smmWinners[q.product] = { id: q.id, premium: c.smmPremiumCny };
+    }
   });
   const productCount = {};
   computed.forEach(({q}) => { productCount[q.product] = (productCount[q.product] || 0) + 1; });
@@ -5851,7 +5878,8 @@ function renderQuoteTable() {
 
   tbody.innerHTML = '';
   computed.forEach(({q, c}) => {
-    const isWinner = winners[q.product] && winners[q.product].id === q.id && productCount[q.product] >= 2;
+    const isWinner    = winners[q.product]    && winners[q.product].id === q.id && productCount[q.product] >= 2;
+    const isSmmWinner = smmWinners[q.product] && smmWinners[q.product].id === q.id && productCount[q.product] >= 2;
     const productOpts = Object.entries(QUOTE_PRODUCT_LABELS)
       .map(([k,v]) => `<option value="${k}"${k===q.product?' selected':''}>${v}</option>`).join('');
     const tr = document.createElement('tr');
@@ -5873,6 +5901,7 @@ function renderQuoteTable() {
       </select></td>
       <td><input type="date" value="${q.date || ''}" onchange="updateQuoteField('${q.id}','date',this.value)"></td>
       <td class="derived">$${fmt(c.cifUsd, 0)}</td>
+      <td class="derived${isSmmWinner ? ' winner' : ''}" title="${c.smmPremiumCny != null ? 'CIF ' + Math.round(c.cifCny).toLocaleString('ko-KR') + ' CNY − SMM ' + Math.round(c.cifCny - c.smmPremiumCny).toLocaleString('ko-KR') + ' CNY' : 'SMM 시세 입력 필요'}">${c.smmPremiumCny == null ? '<span style="color:var(--text-muted);font-size:0.7rem;">SMM 입력</span>' : `+${fmt(c.smmPremiumCny, 0)}<br><small style="opacity:0.75;font-size:0.65rem;">+${c.smmPremiumPct.toFixed(1)}%</small>`}</td>
       <td class="derived">${fmt(c.cifKrw, 0)}</td>
       <td class="derived">${fmt(c.tariffKrw, 0)}</td>
       <td class="derived total-cost${isWinner?' winner':''}">${fmt(c.totalKrw, 0)}</td>
@@ -5920,6 +5949,7 @@ function setQcSmmUnit(unit) {
   }
   if (input) input.placeholder = unit === 'usd' ? '예: 3437' : '예: 23200';
   updateQcSmmParity();
+  if (typeof renderQuoteTable === 'function') renderQuoteTable();
 }
 
 function updateQcSmmParity() {
@@ -5999,6 +6029,7 @@ function saveQcSmm() {
   const meta = document.getElementById('qc-smm-meta');
   if (meta) meta.textContent = `최종 입력: ${dateStr} ${timeStr}`;
   updateQcSmmParity();
+  if (typeof renderQuoteTable === 'function') renderQuoteTable();
 
   // 접힘 안 원본 SMM 카드도 동기 갱신
   if (typeof applyAdminSmm === 'function') applyAdminSmm();
