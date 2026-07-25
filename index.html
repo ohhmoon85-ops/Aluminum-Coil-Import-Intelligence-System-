@@ -2846,7 +2846,7 @@ Best regards,
               <th style="text-align:right;">톤당 단가</th>
               <th>절단</th>
               <th>견적일</th>
-              <th style="text-align:right;">CIF USD/톤</th>
+              <th style="text-align:right;">CIF 톤당<br><small style="opacity:0.7;font-weight:400;">USD · CNY</small></th>
               <th style="text-align:right;" title="견적 접수일 SMM(수정 가능) → 현재 SMM 변동. 하락(▼) 시 공급자에게 직접 들이댈 재협상 근거.">SMM 변동<br><small style="opacity:0.7;font-weight:400;">(견적일 → 현재)</small></th>
               <th class="total-cost-th" style="text-align:right;">🎯 도착 원/톤</th>
               <th style="text-align:right;">원/kg</th>
@@ -5915,7 +5915,7 @@ function renderQuoteTable() {
         <option value="true"${q.cut?' selected':''}>포함</option>
       </select></td>
       <td><input type="date" value="${q.date || ''}" onchange="updateQuoteField('${q.id}','date',this.value)"></td>
-      <td class="derived" title="CIF ${Math.round(c.cifCny).toLocaleString('ko-KR')} CNY · 관세 ${fmt(c.tariffKrw,0)}원 · CIF원가 ${fmt(c.cifKrw,0)}원">$${fmt(c.cifUsd, 0)}</td>
+      <td class="derived" title="CIF USD ${fmt(c.cifUsd,0)} × USD/CNY ${p.usdCny} = ${Math.round(c.cifCny).toLocaleString('ko-KR')} CNY · 관세 ${fmt(c.tariffKrw,0)}원 · CIF원가 ${fmt(c.cifKrw,0)}원">$${fmt(c.cifUsd, 0)}<br><small style="opacity:0.75;font-size:0.68rem;color:#7ec8e3;">¥${fmt(c.cifCny, 0)}</small></td>
       <td class="derived smm-delta-cell" title="${c.smmDeltaCny != null ? '견적일 SMM ' + c.smmAtQuote.toLocaleString('ko-KR') + ' → 현재 ' + Math.round(c.cifCny - c.smmPremiumCny).toLocaleString('ko-KR') : '견적일 SMM 값이 필요합니다 (좌측 input에 입력)'}">
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px;">
           <input type="number" step="10" class="smm-at-quote-input" value="${c.smmAtQuote != null ? c.smmAtQuote : ''}" placeholder="견적일 SMM" onchange="updateQuoteField('${q.id}','smmAtQuote',this.value)" title="견적 접수 시점의 SMM 값 (수정 가능)">
