@@ -2854,7 +2854,7 @@ Best regards,
       </div>
       <div style="font-size:0.68rem;color:var(--text-muted);margin-top:0.6rem;line-height:1.5;">
         ※ <strong>도착 원/톤</strong> = (CIF USD × USD/KRW) × (1 + 관세율) + 부대비. 셀 툴팁에 CIF 원가·관세·부대비 내역.<br>
-        ※ <strong>공임~CIF 프리미엄 (위안/톤)</strong> = 견적서 명기 프리미엄 (공임 + 중국내비용 + 해상운임+보험). 신다통 4,671/5,170/5,670 · 워스윌 4,755/6,555. <strong>두 업체 모두 SMM 23,200 기준</strong>으로 통일. 워스윌 실제 견적일(7/15) SMM은 23,170이었으나, 원자재 상승분 +30 CNY를 CIF에 전가(+4.44 USD)해 시장 정합 시뮬레이션 — 워스윌 CIF USD 4,142→4,146 · 4,408→4,412. 프리미엄(공임·운임)은 시장가와 무관하게 원본 유지. CIF 톤당 USD 셀은 편집 가능(CNY 자동 병기).<br>
+        ※ <strong>공임~CIF 프리미엄 (위안/톤)</strong> = 견적서 명기 프리미엄 (공임 + 중국내비용 + 해상운임+보험). 신다통 4,671/5,170/5,670 · 워스윌 원본 4,755/6,555. <strong>두 업체 모두 SMM 23,200 기준으로 통일</strong> — 워스윌 실제 견적일(7/15) SMM 23,170에서 +30 상승분을 CIF와 프리미엄에 대칭 반영: CIF USD 4,142→4,146·4,408→4,412 (+4.44), 프리미엄 4,755→4,785·6,555→6,585 (+30). CIF 톤당 USD 셀은 편집 가능(CNY 자동 병기).<br>
         ※ <strong>SMM 변동 (견적일 → 현재)</strong> = 현재 SMM − 견적일 SMM. <span style="color:#4ec9b0;font-weight:700;">▼ 하락</span> 시 견적 접수 이후 시장가가 내렸다는 뜻 → 해당 공급자에게 직접 재견적 요청 근거. 견적일 SMM은 셀 안 파란색 input에서 수정.<br>
         ※ <strong>원/kg</strong> = 도착 원/톤 ÷ 1000. 셀 툴팁에 원/㎡·국내가 대비 % 병기. 같은 제품 카테고리 최저에 <span style="color:#4ec9b0;font-weight:700;">최저</span> 배지.<br>
         ※ 모든 견적은 CIF/USD 기본. FOB나 CNY 견적은 상단 파라미터의 해상운임·USD/CNY로 자동 환산 (현 프리셋은 모두 CIF/USD).
@@ -5739,13 +5739,14 @@ const DEFAULT_QUOTES = [
   { id:'xd-dos-coil',  supplier:'신다통 (Xindatong)',  product:'dos-coil',
     inco:'CIF', currency:'USD', pricePerTon:4277, cut:false, date:'2026-07-24', smmAtQuote:23200, cifPremiumCny:5670 },
   // 워스윌 실제 견적일 2026.7.15 (시장 SMM 23,170) — 신다통과 직관 비교를 위해 SMM 23,200 기준으로 시뮬레이션
-  // 원자재 SMM +30 CNY 상승분을 CIF에 그대로 전가 (프리미엄=공임+운임+보험은 시장가와 무관하게 유지)
-  // 워스윌 생알: CIF 4,142 → 4,146.44 USD (+30 CNY / USD·CNY 6.75 = +4.44 USD)
-  // 워스윌 DOS:  CIF 4,408 → 4,412.44 USD (동일 로직)
+  // SMM +30 CNY 상승분을 CIF와 프리미엄에 대칭 반영 → 정합성 확보
+  //   · CIF USD: 4,142 → 4,146.44 (+4.44 = +30 CNY), 4,408 → 4,412.44
+  //   · 프리미엄:  4,755 → 4,785 (+30),              6,555 → 6,585 (+30)
+  //   결과: SMM 23,200 + 프리미엄 = CIF CNY (반올림 오차 <5 CNY)
   { id:'ws-raw-coil',  supplier:'워스윌 (Worthwill)',  product:'raw-coil',
-    inco:'CIF', currency:'USD', pricePerTon:4146.44, cut:false, date:'2026-07-15', smmAtQuote:23200, cifPremiumCny:4755 },
+    inco:'CIF', currency:'USD', pricePerTon:4146.44, cut:false, date:'2026-07-15', smmAtQuote:23200, cifPremiumCny:4785 },
   { id:'ws-dos-coil',  supplier:'워스윌 (Worthwill)',  product:'dos-coil',
-    inco:'CIF', currency:'USD', pricePerTon:4412.44, cut:false, date:'2026-07-15', smmAtQuote:23200, cifPremiumCny:6555 },
+    inco:'CIF', currency:'USD', pricePerTon:4412.44, cut:false, date:'2026-07-15', smmAtQuote:23200, cifPremiumCny:6585 },
 ];
 
 let quotesV4 = [];
