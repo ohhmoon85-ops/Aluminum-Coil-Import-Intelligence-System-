@@ -2843,10 +2843,10 @@ Best regards,
               <th>제품</th>
               <th>INCO</th>
               <th>통화</th>
-              <th style="text-align:right;">톤당 단가</th>
+              <th style="text-align:right;" title="공임(Conversion Cost) + 중국내비용 + 해상운임+보험을 합한 CIF 기준 프리미엄 (SMM 잉곳가 위에 얹혀지는 총 가산액, 위안/톤). 견적서에 명기된 값을 그대로 입력.">공임~CIF 프리미엄<br><small style="opacity:0.7;font-weight:400;">위안/톤</small></th>
               <th>절단</th>
               <th>견적일</th>
-              <th style="text-align:right;">CIF 톤당<br><small style="opacity:0.7;font-weight:400;">USD · CNY</small></th>
+              <th style="text-align:right;" title="편집 가능 — INCO/통화에 따라 원본 견적가(pricePerTon) 자동 역산">CIF 톤당<br><small style="opacity:0.7;font-weight:400;">USD · CNY</small></th>
               <th style="text-align:right;" title="견적 접수일 SMM(수정 가능) → 현재 SMM 변동. 하락(▼) 시 공급자에게 직접 들이댈 재협상 근거.">SMM 변동<br><small style="opacity:0.7;font-weight:400;">(견적일 → 현재)</small></th>
               <th class="total-cost-th" style="text-align:right;">🎯 도착 원/톤</th>
               <th style="text-align:right;">원/kg</th>
@@ -2859,6 +2859,7 @@ Best regards,
       </div>
       <div style="font-size:0.68rem;color:var(--text-muted);margin-top:0.6rem;line-height:1.5;">
         ※ <strong>도착 원/톤</strong> = (CIF USD × USD/KRW) × (1 + 관세율) + 부대비. FOB는 해상운임+보험 자동 가산, CNY는 USD/CNY로 USD 환산 후 동일 흐름. 셀에 마우스 올리면 CIF 원가·관세·부대비 내역 툴팁.<br>
+        ※ <strong>공임~CIF 프리미엄 (위안/톤)</strong> = 견적서 명기 프리미엄 (공임 + 중국내비용 + 해상운임+보험). SMM 잉곳가 위에 얹혀지는 총 가산액. 신다통 견적서에는 별도 명기(4,671/5,170/5,670), 워스윌은 CIF 일체형(4,755/6,555). CIF 톤당 USD 셀은 편집 가능 — INCO/통화에 따라 원본 견적가 자동 역산.<br>
         ※ <strong>SMM 변동 (견적일 → 현재)</strong> = 현재 SMM − 견적일 SMM. <span style="color:#4ec9b0;font-weight:700;">▼ 하락</span> 시 견적 접수 이후 시장가가 내렸다는 뜻 → 해당 공급자에게 직접 재견적 요청 근거. 견적일 SMM은 셀 안 파란색 input에서 수정(신규 견적 추가 시 오늘 SMM 자동 채움).<br>
         ※ <strong>원/kg</strong> = 도착 원/톤 ÷ 1000. 셀 툴팁에 원/㎡ 병기(기준 두께 kg/㎡ 기준). 같은 제품 카테고리 최저에 <span style="color:#4ec9b0;font-weight:700;">최저</span> 배지.<br>
         ※ 프리셋: 신다통 2026.7.24 CIF · 워스윌 2026.7.15 CIF · 국내 비교가(원/kg) 기본값 6,500은 예시 — 실제 조건으로 수정하세요.
@@ -5735,17 +5736,18 @@ const QUOTE_PRODUCT_LABELS = {
 // 2026.7.24 신다통·워스윌 견적 프리셋 (신다통 견적 비교 보고서 기준)
 const DEFAULT_QUOTES = [
   // 신다통 견적일 2026.7.24 · 견적서 명기 SMM 23,200 CNY/톤
+  // cifPremiumCny = 공임(Conversion Cost) + 중국내비용 + 해상운임+보험 (SMM 위 CIF 프리미엄, 위안/톤)
   { id:'xd-raw-coil',  supplier:'신다통 (Xindatong)',  product:'raw-coil',
-    inco:'CIF', currency:'USD', pricePerTon:4129, cut:false, date:'2026-07-24', smmAtQuote:23200 },
+    inco:'CIF', currency:'USD', pricePerTon:4129, cut:false, date:'2026-07-24', smmAtQuote:23200, cifPremiumCny:4671 },
   { id:'xd-raw-sheet', supplier:'신다통 (Xindatong)',  product:'raw-sheet',
-    inco:'CIF', currency:'USD', pricePerTon:4203, cut:true,  date:'2026-07-24', smmAtQuote:23200 },
+    inco:'CIF', currency:'USD', pricePerTon:4203, cut:true,  date:'2026-07-24', smmAtQuote:23200, cifPremiumCny:5170 },
   { id:'xd-dos-coil',  supplier:'신다통 (Xindatong)',  product:'dos-coil',
-    inco:'CIF', currency:'USD', pricePerTon:4277, cut:false, date:'2026-07-24', smmAtQuote:23200 },
+    inco:'CIF', currency:'USD', pricePerTon:4277, cut:false, date:'2026-07-24', smmAtQuote:23200, cifPremiumCny:5670 },
   // 워스윌 견적일 2026.7.15 · 견적일 시점 SMM 23,170 CNY/톤 (사용자 확인치)
   { id:'ws-raw-coil',  supplier:'워스윌 (Worthwill)',  product:'raw-coil',
-    inco:'CIF', currency:'USD', pricePerTon:4142, cut:false, date:'2026-07-15', smmAtQuote:23170 },
+    inco:'CIF', currency:'USD', pricePerTon:4142, cut:false, date:'2026-07-15', smmAtQuote:23170, cifPremiumCny:4755 },
   { id:'ws-dos-coil',  supplier:'워스윌 (Worthwill)',  product:'dos-coil',
-    inco:'CIF', currency:'USD', pricePerTon:4408, cut:false, date:'2026-07-15', smmAtQuote:23170 },
+    inco:'CIF', currency:'USD', pricePerTon:4408, cut:false, date:'2026-07-15', smmAtQuote:23170, cifPremiumCny:6555 },
 ];
 
 let quotesV4 = [];
@@ -5784,6 +5786,7 @@ function addQuoteRow() {
     cut: false,
     date: new Date().toISOString().slice(0,10),
     smmAtQuote: todaySmm ? Math.round(todaySmm) : null,
+    cifPremiumCny: null,
   });
   saveQuoteCompareData();
   renderQuoteTable();
@@ -5798,9 +5801,27 @@ function updateQuoteField(id, field, value) {
   const q = quotesV4.find(x => x.id === id);
   if (!q) return;
   if (field === 'pricePerTon') value = parseFloat(value) || 0;
-  else if (field === 'smmAtQuote') value = value === '' ? null : (parseFloat(value) || null);
+  else if (field === 'smmAtQuote' || field === 'cifPremiumCny') value = value === '' ? null : (parseFloat(value) || null);
   else if (field === 'cut') value = (value === 'true' || value === true);
   q[field] = value;
+  saveQuoteCompareData();
+  renderQuoteTable();
+}
+
+// v2.5: CIF USD 셀 편집 시 INCO/통화 기준 pricePerTon 역산
+//   - CIF/USD:  pricePerTon = cifUsd
+//   - CIF/CNY:  pricePerTon = cifUsd × USD/CNY
+//   - FOB/USD:  pricePerTon = cifUsd − (해상운임+보험)
+//   - FOB/CNY:  pricePerTon = (cifUsd − 운임) × USD/CNY
+function onCifUsdEdit(id, cifUsdValue) {
+  const q = quotesV4.find(x => x.id === id);
+  if (!q) return;
+  const cifUsd = parseFloat(cifUsdValue);
+  if (!(cifUsd > 0)) return;
+  const p = getQuoteParams();
+  const usdPerTon = q.inco === 'FOB' ? (cifUsd - p.freight) : cifUsd;
+  const pricePerTon = q.currency === 'CNY' ? (usdPerTon * p.usdCny) : usdPerTon;
+  q.pricePerTon = Math.round(pricePerTon * 100) / 100;   // 소수 2자리 유지
   saveQuoteCompareData();
   renderQuoteTable();
 }
@@ -5909,13 +5930,18 @@ function renderQuoteTable() {
         <option value="USD"${q.currency==='USD'?' selected':''}>USD</option>
         <option value="CNY"${q.currency==='CNY'?' selected':''}>CNY</option>
       </select></td>
-      <td style="text-align:right;"><input type="number" step="1" value="${q.pricePerTon}" onchange="updateQuoteField('${q.id}','pricePerTon',this.value)"></td>
+      <td style="text-align:right;"><input type="number" step="1" value="${q.cifPremiumCny != null ? q.cifPremiumCny : ''}" placeholder="위안/톤" onchange="updateQuoteField('${q.id}','cifPremiumCny',this.value)" title="공임~CIF 프리미엄 = 공임(Conversion Cost) + 중국내비용 + 해상운임+보험. 견적서 명기치."></td>
       <td><select onchange="updateQuoteField('${q.id}','cut',this.value)">
         <option value="false"${!q.cut?' selected':''}>—</option>
         <option value="true"${q.cut?' selected':''}>포함</option>
       </select></td>
       <td><input type="date" value="${q.date || ''}" onchange="updateQuoteField('${q.id}','date',this.value)"></td>
-      <td class="derived" title="CIF USD ${fmt(c.cifUsd,0)} × USD/CNY ${p.usdCny} = ${Math.round(c.cifCny).toLocaleString('ko-KR')} CNY · 관세 ${fmt(c.tariffKrw,0)}원 · CIF원가 ${fmt(c.cifKrw,0)}원">$${fmt(c.cifUsd, 0)}<br><small style="opacity:0.75;font-size:0.68rem;color:#7ec8e3;">¥${fmt(c.cifCny, 0)}</small></td>
+      <td title="편집 가능 (USD 값) · CIF USD ${fmt(c.cifUsd,0)} × USD/CNY ${p.usdCny} = ${Math.round(c.cifCny).toLocaleString('ko-KR')} CNY · 관세 ${fmt(c.tariffKrw,0)}원 · CIF원가 ${fmt(c.cifKrw,0)}원">
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px;">
+          <input type="number" step="1" value="${Math.round(c.cifUsd)}" onchange="onCifUsdEdit('${q.id}',this.value)" style="width:80px;text-align:right;color:var(--gold);font-weight:700;">
+          <small style="opacity:0.85;font-size:0.68rem;color:#7ec8e3;">¥${fmt(c.cifCny, 0)}</small>
+        </div>
+      </td>
       <td class="derived smm-delta-cell" title="${c.smmDeltaCny != null ? '견적일 SMM ' + c.smmAtQuote.toLocaleString('ko-KR') + ' → 현재 ' + Math.round(c.cifCny - c.smmPremiumCny).toLocaleString('ko-KR') : '견적일 SMM 값이 필요합니다 (좌측 input에 입력)'}">
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px;">
           <input type="number" step="10" class="smm-at-quote-input" value="${c.smmAtQuote != null ? c.smmAtQuote : ''}" placeholder="견적일 SMM" onchange="updateQuoteField('${q.id}','smmAtQuote',this.value)" title="견적 접수 시점의 SMM 값 (수정 가능)">
