@@ -5739,17 +5739,18 @@ const QUOTE_PRODUCT_LABELS = {
 
 // 2026.7.24 신다통·워스윌 견적 프리셋 (신다통 견적 비교 보고서 기준)
 const DEFAULT_QUOTES = [
-  // 견적일 SMM = 2026.7.24 신다통 견적서 명기치 23,200 CNY/톤 (신다통·워스윌 모두 동일 접수일)
+  // 신다통 견적일 2026.7.24 · 견적서 명기 SMM 23,200 CNY/톤
   { id:'xd-raw-coil',  supplier:'신다통 (Xindatong)',  product:'raw-coil',
     inco:'CIF', currency:'USD', pricePerTon:4129, cut:false, date:'2026-07-24', smmAtQuote:23200 },
   { id:'xd-raw-sheet', supplier:'신다통 (Xindatong)',  product:'raw-sheet',
     inco:'CIF', currency:'USD', pricePerTon:4203, cut:true,  date:'2026-07-24', smmAtQuote:23200 },
   { id:'xd-dos-coil',  supplier:'신다통 (Xindatong)',  product:'dos-coil',
     inco:'CIF', currency:'USD', pricePerTon:4277, cut:false, date:'2026-07-24', smmAtQuote:23200 },
+  // 워스윌 견적일 2026.7.15 · 견적서에 SMM 값 미명기 — 사용자가 셀에서 직접 입력
   { id:'ws-raw-coil',  supplier:'워스윌 (Worthwill)',  product:'raw-coil',
-    inco:'CIF', currency:'USD', pricePerTon:4142, cut:false, date:'2026-07-24', smmAtQuote:23200 },
+    inco:'CIF', currency:'USD', pricePerTon:4142, cut:false, date:'2026-07-15', smmAtQuote:null },
   { id:'ws-dos-coil',  supplier:'워스윌 (Worthwill)',  product:'dos-coil',
-    inco:'CIF', currency:'USD', pricePerTon:4408, cut:false, date:'2026-07-24', smmAtQuote:23200 },
+    inco:'CIF', currency:'USD', pricePerTon:4408, cut:false, date:'2026-07-15', smmAtQuote:null },
 ];
 
 let quotesV4 = [];
