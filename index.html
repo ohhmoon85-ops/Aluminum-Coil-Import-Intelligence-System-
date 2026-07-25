@@ -2786,12 +2786,12 @@ Best regards,
       <!-- 공통 파라미터 -->
       <div class="quote-param-grid">
         <div class="quote-param-item">
-          <label>USD/KRW</label>
-          <input type="number" id="qp-usdkrw" value="1470" step="1" min="800" max="2000" oninput="renderQuoteTable()">
+          <label>USD/KRW <span style="font-size:0.65rem;color:var(--text-muted);font-weight:400;">실시간·10분</span></label>
+          <input type="number" id="qp-usdkrw" value="1470" step="0.01" min="800" max="2000" oninput="renderQuoteTable()">
         </div>
         <div class="quote-param-item">
-          <label>USD/CNY</label>
-          <input type="number" id="qp-usdcny" value="6.75" step="0.01" min="4" max="10" oninput="renderQuoteTable()">
+          <label>USD/CNY <span style="font-size:0.65rem;color:var(--text-muted);font-weight:400;">실시간·10분</span></label>
+          <input type="number" id="qp-usdcny" value="6.75" step="0.001" min="4" max="10" oninput="renderQuoteTable()">
         </div>
         <div class="quote-param-item">
           <label>CNY/KRW (도출)</label>
@@ -5953,6 +5953,47 @@ function initQuoteCompare() {
   syncQcSmmFromStorage();
   refreshQcSmmUsdToggleAvailability();
   updateQcSmmParity();
+  // v2.6: /api/rates(Yahoo Finance) 실시간 USD/KRW·USD/CNY → 파라미터 입력창 자동 세팅
+  //       사용자 수동 편집 이후 5분 이내에는 갱신 skip (오버라이드 존중)
+  ['qp-usdkrw', 'qp-usdcny'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el && !el.dataset.liveHooked) {
+      el.addEventListener('input', () => { _liveRateLastUserEdit = Date.now(); });
+      el.dataset.liveHooked = '1';
+    }
+  });
+  hydrateLiveRates({ respectUserEdit: false });   // 진입 즉시 1회
+  if (!window._liveRatesInterval) {
+    window._liveRatesInterval = setInterval(
+      () => hydrateLiveRates({ respectUserEdit: true }),
+      10 * 60 * 1000,   // 10분 주기
+    );
+  }
+}
+
+// v2.6: 실시간 환율 하이드레이션 — OMWIS 견적 카드와 동일한 소스(/api/rates) 로 정렬
+let _liveRateLastUserEdit = 0;   // 사용자가 마지막 수정한 시각 (ms)
+async function hydrateLiveRates({ respectUserEdit = true } = {}) {
+  if (respectUserEdit && Date.now() - _liveRateLastUserEdit < 5 * 60 * 1000) return;
+  try {
+    const res = await fetch('/api/rates', { cache: 'no-store' });
+    if (!res.ok) return;
+    const j = await res.json();
+    const usdKrw = Number(j.currentUsd) || parseFloat(j.usd?.[j.usd.length - 1]?.DATA_VALUE);
+    const cnyKrw = Number(j.currentCny) || parseFloat(j.cny?.[j.cny.length - 1]?.DATA_VALUE);
+    let changed = false;
+    if (usdKrw > 0) {
+      const el = document.getElementById('qp-usdkrw');
+      if (el) { el.value = usdKrw.toFixed(2); changed = true; }
+    }
+    if (usdKrw > 0 && cnyKrw > 0) {
+      const el = document.getElementById('qp-usdcny');
+      if (el) { el.value = (usdKrw / cnyKrw).toFixed(3); changed = true; }
+    }
+    if (changed) renderQuoteTable();
+  } catch (e) {
+    console.warn('[live-rates] hydration failed', e);
+  }
 }
 
 // ===================== v2.5: 견적 비교 카드 내 SMM 미니 바 =====================
