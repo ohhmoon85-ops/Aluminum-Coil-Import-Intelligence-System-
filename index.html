@@ -1515,6 +1515,11 @@
     outline: none; border-color: var(--gold);
   }
   .quote-tbl input[type="number"] { width: 90px; text-align: right; }
+  .quote-tbl input.smm-at-quote-input {
+    width: 90px; font-size: 0.7rem; padding: 0.18rem 0.35rem;
+    color: #7ec8e3; border-color: rgba(76,160,201,0.25);
+  }
+  .quote-tbl input.smm-at-quote-input::placeholder { font-size: 0.65rem; }
   .quote-tbl input[type="text"]   { width: 160px; text-align: left; }
   .quote-tbl input[type="date"]   { width: 130px; }
   .quote-tbl select               { width: 100px; }
@@ -2842,7 +2847,8 @@ Best regards,
               <th>절단</th>
               <th>견적일</th>
               <th style="text-align:right;">CIF USD/톤</th>
-              <th style="text-align:right;" title="CIF를 CNY로 환산 후 SMM 시세와의 차이 · 낮을수록 협상 여지 적음(=적정), 높을수록 재협상 가능">SMM 대비</th>
+              <th style="text-align:right;" title="CIF를 CNY로 환산 후 현재 SMM 시세와의 차이 · 낮을수록 협상 여지 적음, 높을수록 재협상 가능">SMM 대비</th>
+              <th style="text-align:right;" title="견적 접수일 SMM(수정 가능) → 현재 SMM 변동. 하락(▼) 시 공급자에게 직접 들이댈 재협상 근거.">SMM 변동<br><small style="opacity:0.7;font-weight:400;">(견적일 → 현재)</small></th>
               <th style="text-align:right;">CIF 원/톤</th>
               <th style="text-align:right;">관세</th>
               <th class="total-cost-th" style="text-align:right;">🎯 도착 원/톤</th>
@@ -2857,7 +2863,8 @@ Best regards,
       </div>
       <div style="font-size:0.68rem;color:var(--text-muted);margin-top:0.6rem;line-height:1.5;">
         ※ 계산식: <strong>도착원가 원/톤</strong> = (CIF USD × USD/KRW) × (1 + 관세율) + 부대비. FOB 견적은 해상운임+보험을 자동 가산. CNY 견적은 USD/CNY로 USD 환산 후 동일 흐름.<br>
-        ※ <strong>SMM 대비</strong> = (CIF USD × USD/CNY) − SMM CNY/톤. 값이 작을수록 시장가와 근접(협상 여지 적음), 클수록 재협상 가능. 같은 제품 카테고리 내 최저 프리미엄에 <span style="color:#4ec9b0;font-weight:700;">최저</span> 배지.<br>
+        ※ <strong>SMM 대비</strong> = (CIF USD × USD/CNY) − 현재 SMM CNY/톤. 값이 작을수록 시장가와 근접(협상 여지 적음), 클수록 재협상 가능. 같은 제품 카테고리 내 최저 프리미엄에 <span style="color:#4ec9b0;font-weight:700;">최저</span> 배지.<br>
+        ※ <strong>SMM 변동 (견적일 → 현재)</strong> = 현재 SMM − 견적일 SMM. <span style="color:#4ec9b0;font-weight:700;">▼ 하락</span> 시 견적 접수 이후 시장가가 내렸다는 뜻 — 해당 공급자에게 직접 재견적 요청 근거. 견적일 SMM은 셀 안의 파란색 input에서 수정 가능(신규 견적 추가 시 오늘 SMM 자동 채움).<br>
         ※ 같은 제품 카테고리 내(같은 행 값 이상 존재 시) 최저 도착원가 원/kg에 <span style="color:#4ec9b0;font-weight:700;">최저</span> 배지가 표시됩니다.<br>
         ※ 신다통·워스윌 프리셋은 2026.7.24 CIF 인천 기준 · 국내 비교가(원/kg) 기본값 6,500은 예시 — 실제 조건으로 수정하세요.
       </div>
@@ -5732,16 +5739,17 @@ const QUOTE_PRODUCT_LABELS = {
 
 // 2026.7.24 신다통·워스윌 견적 프리셋 (신다통 견적 비교 보고서 기준)
 const DEFAULT_QUOTES = [
+  // 견적일 SMM = 2026.7.24 신다통 견적서 명기치 23,200 CNY/톤 (신다통·워스윌 모두 동일 접수일)
   { id:'xd-raw-coil',  supplier:'신다통 (Xindatong)',  product:'raw-coil',
-    inco:'CIF', currency:'USD', pricePerTon:4129, cut:false, date:'2026-07-24' },
+    inco:'CIF', currency:'USD', pricePerTon:4129, cut:false, date:'2026-07-24', smmAtQuote:23200 },
   { id:'xd-raw-sheet', supplier:'신다통 (Xindatong)',  product:'raw-sheet',
-    inco:'CIF', currency:'USD', pricePerTon:4203, cut:true,  date:'2026-07-24' },
+    inco:'CIF', currency:'USD', pricePerTon:4203, cut:true,  date:'2026-07-24', smmAtQuote:23200 },
   { id:'xd-dos-coil',  supplier:'신다통 (Xindatong)',  product:'dos-coil',
-    inco:'CIF', currency:'USD', pricePerTon:4277, cut:false, date:'2026-07-24' },
+    inco:'CIF', currency:'USD', pricePerTon:4277, cut:false, date:'2026-07-24', smmAtQuote:23200 },
   { id:'ws-raw-coil',  supplier:'워스윌 (Worthwill)',  product:'raw-coil',
-    inco:'CIF', currency:'USD', pricePerTon:4142, cut:false, date:'2026-07-24' },
+    inco:'CIF', currency:'USD', pricePerTon:4142, cut:false, date:'2026-07-24', smmAtQuote:23200 },
   { id:'ws-dos-coil',  supplier:'워스윌 (Worthwill)',  product:'dos-coil',
-    inco:'CIF', currency:'USD', pricePerTon:4408, cut:false, date:'2026-07-24' },
+    inco:'CIF', currency:'USD', pricePerTon:4408, cut:false, date:'2026-07-24', smmAtQuote:23200 },
 ];
 
 let quotesV4 = [];
@@ -5768,6 +5776,8 @@ function resetQuoteData() {
   renderQuoteTable();
 }
 function addQuoteRow() {
+  // 신규 견적 추가 시, 오늘자 SMM 값이 있으면 smmAtQuote로 자동 채움
+  const todaySmm = (typeof getCurrentSmmCny === 'function') ? getCurrentSmmCny() : null;
   quotesV4.push({
     id: 'q_' + Date.now().toString(36) + Math.random().toString(36).slice(2,5),
     supplier: '신규 업체',
@@ -5777,6 +5787,7 @@ function addQuoteRow() {
     pricePerTon: 4000,
     cut: false,
     date: new Date().toISOString().slice(0,10),
+    smmAtQuote: todaySmm ? Math.round(todaySmm) : null,
   });
   saveQuoteCompareData();
   renderQuoteTable();
@@ -5791,6 +5802,7 @@ function updateQuoteField(id, field, value) {
   const q = quotesV4.find(x => x.id === id);
   if (!q) return;
   if (field === 'pricePerTon') value = parseFloat(value) || 0;
+  else if (field === 'smmAtQuote') value = value === '' ? null : (parseFloat(value) || null);
   else if (field === 'cut') value = (value === 'true' || value === true);
   q[field] = value;
   saveQuoteCompareData();
@@ -5842,7 +5854,14 @@ function computeQuote(q, p) {
   const cifCny    = cifUsd * p.usdCny;
   const smmPremiumCny = (smmCny && smmCny > 0) ? (cifCny - smmCny) : null;
   const smmPremiumPct = (smmCny && smmCny > 0) ? ((cifCny - smmCny) / smmCny * 100) : null;
-  return { cifUsd, cifKrw, tariffKrw, totalKrw, perKg, perM2, marginPct, cifCny, smmPremiumCny, smmPremiumPct };
+  // v2.5: 견적일 대비 현재 SMM 변동 (재협상 근거)
+  const smmAtQuote = (typeof q.smmAtQuote === 'number' && q.smmAtQuote > 0) ? q.smmAtQuote : null;
+  let smmDeltaCny = null, smmDeltaPct = null;
+  if (smmAtQuote && smmCny && smmCny > 0) {
+    smmDeltaCny = smmCny - smmAtQuote;                    // + = 상승(구매자 불리), − = 하락(재협상 유리)
+    smmDeltaPct = (smmDeltaCny / smmAtQuote) * 100;
+  }
+  return { cifUsd, cifKrw, tariffKrw, totalKrw, perKg, perM2, marginPct, cifCny, smmPremiumCny, smmPremiumPct, smmAtQuote, smmDeltaCny, smmDeltaPct };
 }
 
 function renderQuoteTable() {
@@ -5902,6 +5921,18 @@ function renderQuoteTable() {
       <td><input type="date" value="${q.date || ''}" onchange="updateQuoteField('${q.id}','date',this.value)"></td>
       <td class="derived">$${fmt(c.cifUsd, 0)}</td>
       <td class="derived${isSmmWinner ? ' winner' : ''}" title="${c.smmPremiumCny != null ? 'CIF ' + Math.round(c.cifCny).toLocaleString('ko-KR') + ' CNY − SMM ' + Math.round(c.cifCny - c.smmPremiumCny).toLocaleString('ko-KR') + ' CNY' : 'SMM 시세 입력 필요'}">${c.smmPremiumCny == null ? '<span style="color:var(--text-muted);font-size:0.7rem;">SMM 입력</span>' : `+${fmt(c.smmPremiumCny, 0)}<br><small style="opacity:0.75;font-size:0.65rem;">+${c.smmPremiumPct.toFixed(1)}%</small>`}</td>
+      <td class="derived smm-delta-cell" title="${c.smmDeltaCny != null ? '견적일 SMM ' + c.smmAtQuote.toLocaleString('ko-KR') + ' → 현재 ' + Math.round(c.cifCny - c.smmPremiumCny).toLocaleString('ko-KR') : '견적일 SMM 값이 필요합니다 (좌측 input에 입력)'}">
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px;">
+          <input type="number" step="10" class="smm-at-quote-input" value="${c.smmAtQuote != null ? c.smmAtQuote : ''}" placeholder="견적일 SMM" onchange="updateQuoteField('${q.id}','smmAtQuote',this.value)" title="견적 접수 시점의 SMM 값 (수정 가능)">
+          ${c.smmDeltaCny == null
+            ? '<small style="color:var(--text-muted);font-size:0.62rem;">— vs 현재</small>'
+            : (c.smmDeltaCny === 0
+                ? '<small style="color:var(--text-muted);font-size:0.65rem;">변동 없음</small>'
+                : (c.smmDeltaCny < 0
+                    ? `<small style="color:#4ec9b0;font-weight:700;font-size:0.7rem;">▼ ${fmt(Math.abs(c.smmDeltaCny),0)} · ${c.smmDeltaPct.toFixed(1)}%</small>`
+                    : `<small style="color:#e74c3c;font-weight:700;font-size:0.7rem;">▲ +${fmt(c.smmDeltaCny,0)} · +${c.smmDeltaPct.toFixed(1)}%</small>`))}
+        </div>
+      </td>
       <td class="derived">${fmt(c.cifKrw, 0)}</td>
       <td class="derived">${fmt(c.tariffKrw, 0)}</td>
       <td class="derived total-cost${isWinner?' winner':''}">${fmt(c.totalKrw, 0)}</td>
