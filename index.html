@@ -1491,7 +1491,7 @@
   .quote-tbl-wrap { overflow-x: auto; }
   .quote-tbl {
     width: 100%; border-collapse: collapse; font-size: 0.75rem;
-    min-width: 1200px;
+    min-width: 980px;
   }
   .quote-tbl th {
     background: rgba(255,255,255,0.04); color: var(--text-secondary);
@@ -2847,13 +2847,9 @@ Best regards,
               <th>절단</th>
               <th>견적일</th>
               <th style="text-align:right;">CIF USD/톤</th>
-              <th style="text-align:right;" title="CIF를 CNY로 환산 후 현재 SMM 시세와의 차이 · 낮을수록 협상 여지 적음, 높을수록 재협상 가능">SMM 대비</th>
               <th style="text-align:right;" title="견적 접수일 SMM(수정 가능) → 현재 SMM 변동. 하락(▼) 시 공급자에게 직접 들이댈 재협상 근거.">SMM 변동<br><small style="opacity:0.7;font-weight:400;">(견적일 → 현재)</small></th>
-              <th style="text-align:right;">CIF 원/톤</th>
-              <th style="text-align:right;">관세</th>
               <th class="total-cost-th" style="text-align:right;">🎯 도착 원/톤</th>
               <th style="text-align:right;">원/kg</th>
-              <th style="text-align:right;">원/㎡</th>
               <th style="text-align:right;">국내가 대비</th>
               <th></th>
             </tr>
@@ -2862,11 +2858,10 @@ Best regards,
         </table>
       </div>
       <div style="font-size:0.68rem;color:var(--text-muted);margin-top:0.6rem;line-height:1.5;">
-        ※ 계산식: <strong>도착원가 원/톤</strong> = (CIF USD × USD/KRW) × (1 + 관세율) + 부대비. FOB 견적은 해상운임+보험을 자동 가산. CNY 견적은 USD/CNY로 USD 환산 후 동일 흐름.<br>
-        ※ <strong>SMM 대비</strong> = (CIF USD × USD/CNY) − 현재 SMM CNY/톤. 값이 작을수록 시장가와 근접(협상 여지 적음), 클수록 재협상 가능. 같은 제품 카테고리 내 최저 프리미엄에 <span style="color:#4ec9b0;font-weight:700;">최저</span> 배지.<br>
-        ※ <strong>SMM 변동 (견적일 → 현재)</strong> = 현재 SMM − 견적일 SMM. <span style="color:#4ec9b0;font-weight:700;">▼ 하락</span> 시 견적 접수 이후 시장가가 내렸다는 뜻 — 해당 공급자에게 직접 재견적 요청 근거. 견적일 SMM은 셀 안의 파란색 input에서 수정 가능(신규 견적 추가 시 오늘 SMM 자동 채움).<br>
-        ※ 같은 제품 카테고리 내(같은 행 값 이상 존재 시) 최저 도착원가 원/kg에 <span style="color:#4ec9b0;font-weight:700;">최저</span> 배지가 표시됩니다.<br>
-        ※ 신다통·워스윌 프리셋은 2026.7.24 CIF 인천 기준 · 국내 비교가(원/kg) 기본값 6,500은 예시 — 실제 조건으로 수정하세요.
+        ※ <strong>도착 원/톤</strong> = (CIF USD × USD/KRW) × (1 + 관세율) + 부대비. FOB는 해상운임+보험 자동 가산, CNY는 USD/CNY로 USD 환산 후 동일 흐름. 셀에 마우스 올리면 CIF 원가·관세·부대비 내역 툴팁.<br>
+        ※ <strong>SMM 변동 (견적일 → 현재)</strong> = 현재 SMM − 견적일 SMM. <span style="color:#4ec9b0;font-weight:700;">▼ 하락</span> 시 견적 접수 이후 시장가가 내렸다는 뜻 → 해당 공급자에게 직접 재견적 요청 근거. 견적일 SMM은 셀 안 파란색 input에서 수정(신규 견적 추가 시 오늘 SMM 자동 채움).<br>
+        ※ <strong>원/kg</strong> = 도착 원/톤 ÷ 1000. 셀 툴팁에 원/㎡ 병기(기준 두께 kg/㎡ 기준). 같은 제품 카테고리 최저에 <span style="color:#4ec9b0;font-weight:700;">최저</span> 배지.<br>
+        ※ 프리셋: 신다통 2026.7.24 CIF · 워스윌 2026.7.15 CIF · 국내 비교가(원/kg) 기본값 6,500은 예시 — 실제 조건으로 수정하세요.
       </div>
     </div>
 
@@ -5746,11 +5741,11 @@ const DEFAULT_QUOTES = [
     inco:'CIF', currency:'USD', pricePerTon:4203, cut:true,  date:'2026-07-24', smmAtQuote:23200 },
   { id:'xd-dos-coil',  supplier:'신다통 (Xindatong)',  product:'dos-coil',
     inco:'CIF', currency:'USD', pricePerTon:4277, cut:false, date:'2026-07-24', smmAtQuote:23200 },
-  // 워스윌 견적일 2026.7.15 · 견적서에 SMM 값 미명기 — 사용자가 셀에서 직접 입력
+  // 워스윌 견적일 2026.7.15 · 견적일 시점 SMM 23,170 CNY/톤 (사용자 확인치)
   { id:'ws-raw-coil',  supplier:'워스윌 (Worthwill)',  product:'raw-coil',
-    inco:'CIF', currency:'USD', pricePerTon:4142, cut:false, date:'2026-07-15', smmAtQuote:null },
+    inco:'CIF', currency:'USD', pricePerTon:4142, cut:false, date:'2026-07-15', smmAtQuote:23170 },
   { id:'ws-dos-coil',  supplier:'워스윌 (Worthwill)',  product:'dos-coil',
-    inco:'CIF', currency:'USD', pricePerTon:4408, cut:false, date:'2026-07-15', smmAtQuote:null },
+    inco:'CIF', currency:'USD', pricePerTon:4408, cut:false, date:'2026-07-15', smmAtQuote:23170 },
 ];
 
 let quotesV4 = [];
@@ -5920,8 +5915,7 @@ function renderQuoteTable() {
         <option value="true"${q.cut?' selected':''}>포함</option>
       </select></td>
       <td><input type="date" value="${q.date || ''}" onchange="updateQuoteField('${q.id}','date',this.value)"></td>
-      <td class="derived">$${fmt(c.cifUsd, 0)}</td>
-      <td class="derived${isSmmWinner ? ' winner' : ''}" title="${c.smmPremiumCny != null ? 'CIF ' + Math.round(c.cifCny).toLocaleString('ko-KR') + ' CNY − SMM ' + Math.round(c.cifCny - c.smmPremiumCny).toLocaleString('ko-KR') + ' CNY' : 'SMM 시세 입력 필요'}">${c.smmPremiumCny == null ? '<span style="color:var(--text-muted);font-size:0.7rem;">SMM 입력</span>' : `+${fmt(c.smmPremiumCny, 0)}<br><small style="opacity:0.75;font-size:0.65rem;">+${c.smmPremiumPct.toFixed(1)}%</small>`}</td>
+      <td class="derived" title="CIF ${Math.round(c.cifCny).toLocaleString('ko-KR')} CNY · 관세 ${fmt(c.tariffKrw,0)}원 · CIF원가 ${fmt(c.cifKrw,0)}원">$${fmt(c.cifUsd, 0)}</td>
       <td class="derived smm-delta-cell" title="${c.smmDeltaCny != null ? '견적일 SMM ' + c.smmAtQuote.toLocaleString('ko-KR') + ' → 현재 ' + Math.round(c.cifCny - c.smmPremiumCny).toLocaleString('ko-KR') : '견적일 SMM 값이 필요합니다 (좌측 input에 입력)'}">
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px;">
           <input type="number" step="10" class="smm-at-quote-input" value="${c.smmAtQuote != null ? c.smmAtQuote : ''}" placeholder="견적일 SMM" onchange="updateQuoteField('${q.id}','smmAtQuote',this.value)" title="견적 접수 시점의 SMM 값 (수정 가능)">
@@ -5934,11 +5928,8 @@ function renderQuoteTable() {
                     : `<small style="color:#e74c3c;font-weight:700;font-size:0.7rem;">▲ +${fmt(c.smmDeltaCny,0)} · +${c.smmDeltaPct.toFixed(1)}%</small>`))}
         </div>
       </td>
-      <td class="derived">${fmt(c.cifKrw, 0)}</td>
-      <td class="derived">${fmt(c.tariffKrw, 0)}</td>
-      <td class="derived total-cost${isWinner?' winner':''}">${fmt(c.totalKrw, 0)}</td>
-      <td class="derived${isWinner?' winner':''}">${fmt(c.perKg, 0)}${isWinner?' <span class="quote-winner-badge">최저</span>':''}</td>
-      <td class="derived">${fmt(c.perM2, 0)}</td>
+      <td class="derived total-cost${isWinner?' winner':''}" title="CIF원가 ${fmt(c.cifKrw,0)} + 관세 ${fmt(c.tariffKrw,0)} + 부대비 ${fmt(p.overhead,0)}">${fmt(c.totalKrw, 0)}</td>
+      <td class="derived${isWinner?' winner':''}" title="원/㎡ ${fmt(c.perM2,0)} (kg/㎡ ${p.kgm2})">${fmt(c.perKg, 0)}${isWinner?' <span class="quote-winner-badge">최저</span>':''}</td>
       <td class="derived ${c.marginPct >= 0 ? 'margin-pos' : 'margin-neg'}">${c.marginPct >= 0 ? '+' : ''}${c.marginPct.toFixed(1)}%</td>
       <td><button class="quote-del-btn" onclick="delQuoteRow('${q.id}')" title="삭제">×</button></td>
     `;
