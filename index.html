@@ -910,6 +910,17 @@
   .sdc-tier-1 { background: rgba(201,168,76,0.2); color: var(--gold); border: 1px solid var(--gold-dark); }
   .sdc-tier-2 { background: rgba(160,160,160,0.15); color: #b0b8cc; border: 1px solid #666; }
   .sdc-score { font-size: 0.78rem; color: var(--text-secondary); }
+  /* v2.4: 상세 카드 본문 접힘 토글 */
+  .sdc-toggle-btn {
+    background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+    color: var(--text-secondary); padding: 0.28rem 0.7rem;
+    border-radius: 6px; cursor: pointer; font-family: inherit;
+    font-size: 0.7rem; font-weight: 700; transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .sdc-toggle-btn:hover { border-color: var(--gold); color: var(--gold); background: rgba(201,168,76,0.05); }
+  .supplier-detail-card.sdc-collapsed .sdc-header { border-bottom: none; padding-bottom: 0; margin-bottom: 0; }
+  .supplier-detail-card.sdc-collapsed .sdc-body { display: none; }
   .sdc-desc { font-size: 0.82rem; color: var(--text-primary); line-height: 1.65; margin-bottom: 1rem; }
   .sdc-grid {
     display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -1480,6 +1491,24 @@
     font-variant-numeric: tabular-nums;
   }
   .quote-tbl td.winner { color: #4ec9b0; font-weight: 700; }
+  /* v2.4: 도착 원/톤 컬럼 강조 (핵심 비교 값) */
+  .quote-tbl th.total-cost-th {
+    color: var(--gold); background: rgba(201,168,76,0.10);
+    font-size: 0.75rem; font-weight: 800;
+  }
+  .quote-tbl td.total-cost {
+    font-size: 0.98rem; font-weight: 800; color: var(--gold);
+    background: rgba(201,168,76,0.08);
+    border-left: 1px solid rgba(201,168,76,0.25);
+    border-right: 1px solid rgba(201,168,76,0.25);
+    padding-top: 0.5rem; padding-bottom: 0.5rem;
+  }
+  .quote-tbl td.total-cost.winner {
+    color: #4ec9b0;
+    background: rgba(76,201,130,0.14);
+    border-left: 1px solid rgba(76,201,130,0.5);
+    border-right: 1px solid rgba(76,201,130,0.5);
+  }
   .quote-tbl td.margin-pos { color: #4ec9b0; font-weight: 700; }
   .quote-tbl td.margin-neg { color: #e74c3c; font-weight: 700; }
   .quote-winner-badge {
@@ -2389,7 +2418,7 @@
     <div class="section-header">
       <div class="section-num">⑤</div>
       <div class="section-title">공급업체 종합 평가 — 원단 / 코팅 트랙 분리</div>
-      <div class="section-sub">원단 1순위 신다통(2026.7.24 CIF 견적 접수 완료 · 1050 H18) · 2순위 HNFS(견적 대기) · 코팅 가공사 4사(Chalco·TMR·鑫华快捷·科鑫) — 클릭하여 상세 확인</div>
+      <div class="section-sub">원단 1순위 신다통 · 2순위 워스윌 (2026.7.24 CIF 견적 접수 완료 · 신다통 1050 H18 vs 워스윌 1100 H18) · 백업 HNFS(견적 대기) · 코팅 가공사 4사(Chalco·TMR·鑫华快捷·科鑫) — 클릭하여 상세 확인</div>
     </div>
     <div class="data-source-bar source-bar-ref"><span class="data-badge badge-ref">● 참고용</span> 업체명은 실제 존재하는 기업이나, 평가 점수는 수동 입력값입니다. 실제 업무 적용 전 D&amp;B · SGS · 阿里巴巴 등 공식 데이터로 검증이 필요합니다.</div>
     <div class="supplier-layout">
@@ -2427,6 +2456,7 @@
           <span class="sdc-location" id="sdc-location"></span>
           <span class="sdc-tier-badge" id="sdc-tier"></span>
           <span class="sdc-score" id="sdc-score"></span>
+          <button class="sdc-toggle-btn" id="sdc-toggle-btn" onclick="toggleSupplierDetailBody()" title="업체 소개 접기/펼치기">▼ 접기</button>
         </div>
       </div>
       <div class="sdc-body">
@@ -2703,7 +2733,7 @@ Best regards,
               <th style="text-align:right;">CIF USD/톤</th>
               <th style="text-align:right;">CIF 원/톤</th>
               <th style="text-align:right;">관세</th>
-              <th style="text-align:right;">도착 원/톤</th>
+              <th class="total-cost-th" style="text-align:right;">🎯 도착 원/톤</th>
               <th style="text-align:right;">원/kg</th>
               <th style="text-align:right;">원/㎡</th>
               <th style="text-align:right;">국내가 대비</th>
@@ -4144,15 +4174,25 @@ let suppliers = [
     tips:'7.21~22 사장 방한 담판 완료. 7.24 CIF 인천 견적 접수(1050 H18, CTP Base Coil): 생알 코일 4,129 USD/톤 · 절단 시트 4,203 · DOS Oil 4,277 (FOB 청도 각 4,090/4,164/4,238). 실측 확정 4종 — 절단비 500위안/톤(㎡당 약 36원, 단 0.10mm는 절단 불가), 20ft 적재 20톤, 청도→인천 해상운임+보험 39 USD/톤, SMM 7/24 23,200위안/톤. 회신 필요: ① 1050↔1100 사양 정합 ② 알칼리 세정 포함 여부 ③ CTP 베이스와 PCB 엔트리 표면 사양 동일 여부 ④ 0.12mm 압연 가부(공표 범위 0.15~0.2mm 하한 밖). 【평가 근거】 생산능력 82: 잉곳-박 일관 3라인·종업원 1,000명(궁이 클러스터 중견급) / 제품품질 86: 대만 유니플러스 LAE 납품 실적(품질 간접 검증)·ISO 9001 / 신용재무 65: 비상장 민영기업·K-SURE 신용조사 대기 중(검증 전 잠정치) / 납기물류 82: 궁이-청도항 확립·해상운임 39 USD/톤 확정 / 가격경쟁력 90: 7.24 견적 워스윌 대비 생알 동률·DOS 21만원/톤 우위.',
     moq:'10톤 시험 주문(T/T 분할·환율 기준일 협상) → 본계약. 초도 500kg~1MT 샘플 드릴테스트 선행.',
     contact:'전화 +86-371-6396-5568 · 이메일(Iris Zhang) · 궁이 공장 실사 초청 수락 상태' },
-  { category:'raw', status:'lead', rank:'#2', score:74.4, tier:2,
+  { category:'raw', status:'lead', rank:'#2', score:72.0, tier:2,
+    cap:72, qual:75, fin:60, logi:80, price:75,
+    name:'워스윌 (Worthwill)', nameShort:'Worthwill',
+    location:'허난성 궁이(巩义) — 신다통·HNFS와 동일 클러스터',
+    desc:'궁이 알루미늄 클러스터 소재. 1100 H18 생알미늄·DOS Oil 도포품 대응. 2026.7.24 신다통과 함께 CIF 인천 견적 접수 완료 — 실질적 견적 대결 구도.',
+    cert:'별도 확인 필요 (ISO/RoHS 인증서 미수령)',
+    email:'회신 확인 필요', website:'회신 확인 필요',
+    tips:'2026.7.24 CIF 인천 견적 접수 완료: 생알 코일 4,142 USD/톤(프리미엄 4,755위안 CIF) · DOS Oil 코일 4,408 USD/톤(프리미엄 6,555위안 CIF). 신다통 대비 생알 사실상 동률(약 84위안 열세), DOS는 톤당 약 885위안(≈21만 원) 열세. 사양 정합 확인 필수 — 워스윌 견적은 1100 H18, 신다통·홍지 기준은 1050 H18. 워스윌 옵션 1은 알칼리 세정 명시(신다통은 raw material). 신다통 협상 시 비교 카드로 활용. 【평가 근거】 생산능력 72: 궁이 클러스터 모공장·규모 정보 부족 잠정 / 제품품질 75: 생알+DOS 라인 보유·샘플 미확인 / 신용재무 60: 재무 미확인 잠정 / 납기물류 80: 궁이-청도항 확립 / 가격경쟁력 75: 신다통 대비 생알 근소 열세·DOS 21만원/톤 열세.',
+    moq:'신다통과 함께 시험 주문 협상 가능',
+    contact:'이메일 회신 확인 필요 (담당자 정보 별도 수집)' },
+  { category:'raw', status:'backup', rank:'백업', score:74.4, tier:2,
     cap:75, qual:78, fin:62, logi:80, price:78,
     name:'HNFS (河南佛山铝业, 허난 궁이)', nameShort:'HNFS',
-    location:'허난성 궁이(巩义) — 신다통·워스윌 모공장과 동일 클러스터(공장 실사 1일 동선)',
-    desc:'1050 코일 0.1~10mm·H18 압연. 한국 수출 실적 보유. 코일·시트 광폭 대응. 궁이 클러스터의 원단 2순위.',
+    location:'허난성 궁이(巩义) — 신다통·워스윌과 동일 클러스터(공장 실사 1일 동선)',
+    desc:'1050 코일 0.1~10mm·H18 압연. 한국 수출 실적 보유. 코일·시트 광폭 대응. 궁이 클러스터의 원단 백업.',
     cert:'한국 수출 실적 기반 (인증서 목록 별도 요청 필요)',
     email:'cassie@hnfsaluminum.com (Cassie Tang)', website:'www.hnfsaluminum.com',
-    tips:'견적 회신 대기 중(2026.7월). 계약 시 무역법인(Henan Xiangxin)과 생산법인 명의 일치 확인 필수 — 명함에 무역법인이 병기되어 있음. 송금 계좌 명의도 반드시 크로스체크. 신다통 견적 확정 시 비교 견적으로 활용 → 2차 인하 협상 카드. 【평가 근거】 생산능력 75: 1050 코일 0.1~10mm 광범위 두께 대응 / 제품품질 78: 한국 수출 실적 보유(제3자 검증 부분적) / 신용재무 62: 무역법인 병기 명함(검증 필요)·재무 미확인 / 납기물류 80: 궁이 클러스터·청도항 접근 / 가격경쟁력 78: 견적 회신 대기(잠정치).',
-    moq:'협의 (10톤 시험 주문 기준 협의 예정)', contact:'이메일(Cassie Tang) — 회신 대기' },
+    tips:'견적 회신 대기 중(2026.7월). 신다통·워스윌 견적 접수에 따라 임시 백업으로 강등 — 실제 견적 회신 시 재평가 후 상위 승격 검토. 계약 시 무역법인(Henan Xiangxin)과 생산법인 명의 일치 확인 필수. 【평가 근거】 생산능력 75: 1050 코일 0.1~10mm 광범위 두께 / 제품품질 78: 한국 수출 실적 / 신용재무 62: 무역법인 병기·재무 미확인 / 납기물류 80: 궁이 클러스터·청도항 접근 / 가격경쟁력 78: 견적 회신 대기(잠정치).',
+    moq:'협의 (견적 회신 후 재검토)', contact:'이메일(Cassie Tang) — 회신 대기' },
   { category:'raw', status:'backup', rank:'백업', unrated:true,
     name:'Mingtai (安徽明泰)', nameShort:'Mingtai',
     location:'안후이성',
@@ -4187,14 +4227,6 @@ let suppliers = [
     email:'alu@haomeicn.com', website:'www.haomeicn.com',
     tips:'DOS 전용 라인 운영 — 가격 협상 카드로 유지 가치. 소량 샘플·긴급 오더 대응 강점.',
     moq:'소량 가능 (해외 샘플 대응 우수)', contact:'이메일 → 해외영업 담당자' },
-  { category:'raw', status:'hold', rank:'보류', unrated:true,
-    name:'Worthwill / Jurun (워스윌 / 쥬룬)', nameShort:'Worthwill/Jurun',
-    location:'중국 (지역 미확정)',
-    desc:'공식 제품군은 건축·장식용 알루미늄 — PCB 엔트리 시트 생산 가부 서면 확인 대기.',
-    cert:'미확인',
-    email:'별도 확인 필요', website:'별도 확인 필요',
-    tips:'엔트리 시트 라인 유무 서면 회신 전까지 활성 후보 아님.',
-    moq:'미정', contact:'알리바바' },
   { category:'raw', status:'benchmark', rank:'벤치마크', unrated:true,
     name:'류신 (柳鑫, Newccess)', nameShort:'Newccess',
     location:'중국 (본사) / 글로벌 판매',
@@ -5434,9 +5466,22 @@ function renderSupplierTable() {
   if (targetTr) targetTr.classList.add('selected');
 }
 
+function toggleSupplierDetailBody() {
+  const card = document.getElementById('supplier-detail-card');
+  const btn = document.getElementById('sdc-toggle-btn');
+  if (!card || !btn) return;
+  const collapsed = card.classList.toggle('sdc-collapsed');
+  btn.textContent = collapsed ? '▶ 펼치기' : '▼ 접기';
+}
+
 function updateSupplierDetailCard(idx) {
   const s = suppliers[idx];
   const isUnrated = s.unrated === true || typeof s.score !== 'number';
+  // 새 업체 선택 시 상세 본문을 펼침 상태로 초기화
+  const card = document.getElementById('supplier-detail-card');
+  const toggleBtn = document.getElementById('sdc-toggle-btn');
+  if (card) card.classList.remove('sdc-collapsed');
+  if (toggleBtn) toggleBtn.textContent = '▼ 접기';
   document.getElementById('sdc-name').textContent = s.name;
   document.getElementById('sdc-location').textContent = '📍 ' + s.location;
   const tierEl = document.getElementById('sdc-tier');
@@ -5702,7 +5747,7 @@ function renderQuoteTable() {
       <td class="derived">$${fmt(c.cifUsd, 0)}</td>
       <td class="derived">${fmt(c.cifKrw, 0)}</td>
       <td class="derived">${fmt(c.tariffKrw, 0)}</td>
-      <td class="derived${isWinner?' winner':''}">${fmt(c.totalKrw, 0)}</td>
+      <td class="derived total-cost${isWinner?' winner':''}">${fmt(c.totalKrw, 0)}</td>
       <td class="derived${isWinner?' winner':''}">${fmt(c.perKg, 0)}${isWinner?' <span class="quote-winner-badge">최저</span>':''}</td>
       <td class="derived">${fmt(c.perM2, 0)}</td>
       <td class="derived ${c.marginPct >= 0 ? 'margin-pos' : 'margin-neg'}">${c.marginPct >= 0 ? '+' : ''}${c.marginPct.toFixed(1)}%</td>
