@@ -35,12 +35,19 @@ const DEFAULTS = {
   kgm2:     0.3252,    // 0.17mm 기준 kg/㎡
 };
 
+// v2.7: DOS 오일은 별도 관세율(1.2%) — index.html 의 quoteTariffPct 와 동일 규칙 (값 복제)
+const DOS_TARIFF_PCT = 1.2;
+function quoteTariffPct(product, globalPct) {
+  return (typeof product === 'string' && product.startsWith('dos')) ? DOS_TARIFF_PCT : globalPct;
+}
+
 // index.html 5872~ computeQuote 그대로
 function computeQuote(q, p, smmCurrentCny) {
   const usdPerTon = q.currency === 'CNY' ? (q.pricePerTon / p.usdCny) : q.pricePerTon;
   const cifUsd    = q.inco === 'FOB' ? (usdPerTon + p.freight) : usdPerTon;
   const cifKrw    = cifUsd * p.usdKrw;
-  const tariffKrw = cifKrw * (p.tariff / 100);
+  const tariffPct = quoteTariffPct(q.product, p.tariff);   // DOS 1.2% / 그 외 7.2%
+  const tariffKrw = cifKrw * (tariffPct / 100);
   const totalKrw  = cifKrw + tariffKrw + p.overhead;    // 견적 확정치
   const perKg     = totalKrw / 1000;
   const perM2     = perKg * p.kgm2;
@@ -54,13 +61,13 @@ function computeQuote(q, p, smmCurrentCny) {
     const adjCifCny = cifCny + smmDeltaCny;
     const adjCifUsd = p.usdCny > 0 ? (adjCifCny / p.usdCny) : cifUsd;
     const adjCifKrw = adjCifUsd * p.usdKrw;
-    smmAdjTotalKrw = adjCifKrw * (1 + p.tariff / 100) + p.overhead;
+    smmAdjTotalKrw = adjCifKrw * (1 + tariffPct / 100) + p.overhead;
     smmAdjPerKg = smmAdjTotalKrw / 1000;
   }
 
   return {
     ...q,
-    cifUsd, cifKrw, tariffKrw,
+    cifUsd, cifKrw, tariffKrw, tariffPct,   // v2.7: 적용 관세율(%) — DOS 1.2% / 그 외 7.2%
     totalKrw,         // 견적 확정치 (SMM 반영 전)
     perKg,
     perM2,
