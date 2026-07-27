@@ -2819,7 +2819,7 @@ Best regards,
           <input type="number" id="qp-overhead" value="35000" step="500" min="0" max="500000" oninput="renderQuoteTable()">
         </div>
         <div class="quote-param-item">
-          <label title="생알·코팅 제품에 적용. DOS Oil 제품은 별도 1.2% 자동 적용(이 값 무관).">관세율 % (한중FTA) <span style="font-size:0.62rem;color:var(--text-muted);">· DOS는 1.2% 별도</span></label>
+          <label title="생알·코팅 제품에 적용. DOS Oil 제품은 별도 1.6% 자동 적용(이 값 무관).">관세율 % (한중FTA) <span style="font-size:0.62rem;color:var(--text-muted);">· DOS는 1.6% 별도</span></label>
           <input type="number" id="qp-tariff" value="7.2" step="0.1" min="0" max="30" oninput="renderQuoteTable()">
         </div>
         <div class="quote-param-item">
@@ -3254,7 +3254,7 @@ Best regards,
         <tbody id="customs-tbody">
           <tr id="hs-7606"><td>알미늄 판·시트</td><td>7606.xx</td><td>8%</td><td class="hs-rate-ref">—</td><td>두께 ≥ 0.2mm <em style="color:var(--text-muted);">(참고용 — ACIS 미사용)</em></td></tr>
           <tr id="hs-7607-raw"><td>생알미늄 호일</td><td>7607.11-9000</td><td>8%</td><td class="hs-rate-pos">7.2%</td><td>1050/1235/8079 모두 해당 (합금 여부 무관) · 두께 &lt; 0.2mm <strong style="color:var(--gold);">★ 실제 수입</strong></td></tr>
-          <tr id="hs-7607-dos"><td>DOS 오일 도포품</td><td>7607.11-9000</td><td>8%</td><td class="hs-rate-pos">1.2%</td><td>방청·윤활 유막은 분류에 영향 없음 (표면처리 법리) · <strong>한중FTA 1.2% 적용</strong> <strong style="color:var(--gold);">★ 실제 수입</strong></td></tr>
+          <tr id="hs-7607-dos"><td>DOS 오일 도포품</td><td>7607.11-9000</td><td>8%</td><td class="hs-rate-pos">1.6%</td><td>방청·윤활 유막은 분류에 영향 없음 (표면처리 법리) · <strong>한중FTA 1.6% 적용</strong> <strong style="color:var(--gold);">★ 실제 수입</strong></td></tr>
           <tr id="hs-7607-coat"><td>지용성 코팅품</td><td>7607.19-9000</td><td>8%</td><td class="hs-rate-pos">7.2%</td><td>도포·경화 코팅은 '뒷면 부착' 부인정 (국내외 선례 일치) <strong style="color:var(--gold);">★ 실제 수입</strong></td></tr>
           <tr id="hs-7607-backed" class="hs-row-ref"><td>(참고) 뒷면 합지품</td><td>7607.20-9000</td><td>8%</td><td class="hs-rate-ref">1.6%</td><td>별도 필름·종이 접착 합지품만 해당 → 당사 미해당</td></tr>
           <tr id="hs-7607-1000" class="hs-row-ref"><td>(참고) 초고순도 99.99%↑</td><td>7607.xx-1000</td><td>8%</td><td class="hs-rate-ref">0%</td><td>전해 콘덴서용 등 특수품 → 당사 미해당</td></tr>
@@ -3266,7 +3266,7 @@ Best regards,
         당사 1050(99.5%)·1235(99.35%)는 전부 <strong>9000 라인</strong> → 합금 여부와 세율 무관.<br>
         ※ 한중FTA 7.2%는 <strong>원산지증명서(C/O) 구비 시</strong> 적용. 미구비 시 기본세율 8%.
         (관세법령정보포털 CLIP 2026년 조회 확정, 세율은 FTA 이행 스케줄에 따라 매년 1.1. 변동 가능)<br>
-        ※ <strong>DOS 오일 도포품은 한중FTA 1.2% 적용</strong> (HS 코드는 생알과 동일 7607.11-9000, 세율만 상이). 견적 비교표의 DOS Oil 제품도 1.2%로 계산됩니다.<br>
+        ※ <strong>DOS 오일 도포품은 한중FTA 1.6% 적용</strong> (HS 코드는 생알과 동일 7607.11-9000, 세율만 상이). 견적 비교표의 DOS Oil 제품도 1.6%로 계산됩니다.<br>
         ※ 지용성 코팅품의 7607.19 분류는 국내외 선례 기반 유력 판단 — 법적 확정은 품목분류 사전심사로 진행 중.
         단, 어느 라인이든 <strong>세관 리스크는 하방</strong>(20호 인정 시 1.6%로 절감)뿐입니다.<br>
         ※ 위 관세율 외 <strong>부가세 10% 별도 부과</strong> (수입자의 매입세액공제 대상이므로 시각 미반영).<br>
@@ -5742,10 +5742,10 @@ const QUOTE_PRODUCT_LABELS = {
   'water':     '수용성 코팅',
 };
 
-// v2.7: DOS 오일 도포품은 별도 관세율(1.2%) 적용 — 그 외 제품은 상단 관세율 파라미터(qp-tariff, 기본 7.2%).
+// v2.7: DOS 오일 도포품은 별도 관세율(1.6%) 적용 — 그 외 제품은 상단 관세율 파라미터(qp-tariff, 기본 7.2%).
 //        HS 코드는 생알과 동일 7607.11-9000 유지(사용자 확정). 세율만 분리.
 //        관세율을 읽는 모든 견적 계산은 이 함수만 사용할 것.
-const DOS_TARIFF_PCT = 1.2;
+const DOS_TARIFF_PCT = 1.6;
 function quoteTariffPct(product, globalPct) {
   return (typeof product === 'string' && product.startsWith('dos')) ? DOS_TARIFF_PCT : globalPct;
 }
@@ -5882,7 +5882,7 @@ function computeQuote(q, p) {
   const usdPerTon = q.currency === 'CNY' ? (q.pricePerTon / p.usdCny) : q.pricePerTon;
   const cifUsd    = q.inco === 'FOB' ? (usdPerTon + p.freight) : usdPerTon;
   const cifKrw    = cifUsd * p.usdKrw;
-  // v2.7: DOS 오일은 1.2%, 그 외는 상단 파라미터(7.2%) — 제품별 관세율
+  // v2.7: DOS 오일은 1.6%, 그 외는 상단 파라미터(7.2%) — 제품별 관세율
   const tariffPct = quoteTariffPct(q.product, p.tariff);
   const tariffKrw = cifKrw * (tariffPct / 100);
   const totalKrw  = cifKrw + tariffKrw + p.overhead;
