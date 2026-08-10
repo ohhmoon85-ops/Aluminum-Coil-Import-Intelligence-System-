@@ -590,6 +590,18 @@
   .section-sub {
     font-size: 0.75rem; color: var(--text-secondary); margin-left: auto;
   }
+  /* v2.8: 섹션 접기(details) — ⑤ 공급업체 평가 등 평소 접힘 유지 */
+  .section-collapse > summary {
+    cursor: pointer; list-style: none;
+  }
+  .section-collapse > summary::-webkit-details-marker { display: none; }
+  .section-collapse > summary:hover .section-title { color: var(--gold); }
+  .section-collapse:not([open]) > summary { margin-bottom: 0; }
+  .section-collapse-arrow {
+    display: inline-block; font-size: 0.7rem; color: var(--text-muted);
+    transition: transform 0.2s; flex-shrink: 0;
+  }
+  .section-collapse[open] .section-collapse-arrow { transform: rotate(90deg); }
 
   /* ===== KPI CARDS ===== */
   .kpi-grid {
@@ -2527,13 +2539,15 @@
 
   <hr class="section-divider">
 
-  <!-- ⑤ Supplier Evaluation -->
+  <!-- ⑤ Supplier Evaluation (v2.8: 평소 접힘 — 클릭 시 펼침) -->
   <section class="section" id="sec-supplier">
-    <div class="section-header">
+    <details class="section-collapse" id="sec-supplier-details" ontoggle="onSupplierSectionToggle(this)">
+    <summary class="section-header">
+      <span class="section-collapse-arrow">▶</span>
       <div class="section-num">⑤</div>
       <div class="section-title">공급업체 종합 평가 — 원단 / 코팅 트랙 분리</div>
-      <div class="section-sub">원단 1순위 신다통 · 2순위 워스윌 (2026.7.24 CIF 견적 접수 완료 · 신다통 1050 H18 vs 워스윌 1100 H18) · 백업 HNFS(견적 대기) · 코팅 가공사 4사(Chalco·TMR·鑫华快捷·科鑫) — 클릭하여 상세 확인</div>
-    </div>
+      <div class="section-sub">원단 1순위 신다통 · 2순위 워스윌 (2026.7.24 CIF 견적 접수 완료 · 신다통 1050 H18 vs 워스윌 1100 H18) · 백업 HNFS(견적 대기) · 코팅 가공사 4사(Chalco·TMR·鑫华快捷·科鑫) — 클릭하여 펼치기</div>
+    </summary>
     <div class="data-source-bar source-bar-ref"><span class="data-badge badge-ref">● 참고용</span> 업체명은 실제 존재하는 기업이나, 평가 점수는 수동 입력값입니다. 실제 업무 적용 전 D&amp;B · SGS · 阿里巴巴 등 공식 데이터로 검증이 필요합니다.</div>
     <div class="supplier-layout">
       <div class="table-card">
@@ -2764,6 +2778,7 @@ Best regards,
         </div>
       </div>
     </details>
+    </details><!-- /section-collapse (v2.8: ⑤ 평소 접힘) -->
   </section>
 
   <hr class="section-divider">
@@ -4559,7 +4574,7 @@ async function startApp() {
   initFxChart();
   renderSupplierTable();
   renderRadarChart(0);
-  updateSupplierDetailCard(0);
+  updateSupplierDetailCard(0, true);   // v2.8: 초기 로드 시 신다통 상세 접힘 유지
 
   // 송금환율 자동 적용 — 시뮬레이터 및 환율 표시 업데이트
   document.getElementById('sim-cny').value = remitCny.toFixed(1);
@@ -5609,14 +5624,23 @@ function toggleSupplierDetailBody() {
   btn.textContent = collapsed ? '▶ 펼치기' : '▼ 접기';
 }
 
-function updateSupplierDetailCard(idx) {
+// v2.8: ⑤ 섹션 details 펼침 시 레이더 차트 리사이즈 (접힘 상태에서 생성되어 0px로 잡힘 방지)
+function onSupplierSectionToggle(el) {
+  if (el && el.open && typeof radarChart !== 'undefined' && radarChart) {
+    // 레이아웃 반영 후 리사이즈
+    requestAnimationFrame(() => { try { radarChart.resize(); } catch (e) {} });
+  }
+}
+
+// v2.8: startCollapsed=true 면 상세 본문을 접힌 상태로 초기화 (초기 로드 시 신다통 접힘 유지)
+function updateSupplierDetailCard(idx, startCollapsed = false) {
   const s = suppliers[idx];
   const isUnrated = s.unrated === true || typeof s.score !== 'number';
-  // 새 업체 선택 시 상세 본문을 펼침 상태로 초기화
+  // 업체 선택 시 상세 본문 접힘/펼침 초기화 (사용자가 직접 선택하면 펼침, 초기 로드는 접힘)
   const card = document.getElementById('supplier-detail-card');
   const toggleBtn = document.getElementById('sdc-toggle-btn');
-  if (card) card.classList.remove('sdc-collapsed');
-  if (toggleBtn) toggleBtn.textContent = '▼ 접기';
+  if (card) card.classList.toggle('sdc-collapsed', startCollapsed);
+  if (toggleBtn) toggleBtn.textContent = startCollapsed ? '▶ 펼치기' : '▼ 접기';
   document.getElementById('sdc-name').textContent = s.name;
   document.getElementById('sdc-location').textContent = '📍 ' + s.location;
   const tierEl = document.getElementById('sdc-tier');
