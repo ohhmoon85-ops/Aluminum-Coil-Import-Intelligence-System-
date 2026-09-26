@@ -18,10 +18,11 @@
 // ============================================================================
 
 // ── 프리셋 견적 (index.html 5744~ 와 동일 · smmAtQuote 포함) ────────────────
+// ※ 신다통은 2026.9 첫 거래 확정 — PI HCL2601 (raw 4,129 USD/톤 그대로), HCL2601-1 (DOS 4,385, 7.24 견적 4,277 대비 +108)
 const DEFAULT_QUOTES = [
-  { id:'xd-raw-coil',  supplier:'신다통 (Xindatong)', product:'raw-coil',  inco:'CIF', currency:'USD', pricePerTon:4129,    cut:false, date:'2026-07-24', smmAtQuote:23200 },
+  { id:'xd-raw-coil',  supplier:'신다통 (Xindatong)', product:'raw-coil',  inco:'CIF', currency:'USD', pricePerTon:4129,    cut:false, date:'2026-07-24', smmAtQuote:23200, confirmedPricePerTon:4129, confirmedDate:'2026-09-11', confirmedPi:'HCL2601',   confirmedQtyMt:11.085 },
   { id:'xd-raw-sheet', supplier:'신다통 (Xindatong)', product:'raw-sheet', inco:'CIF', currency:'USD', pricePerTon:4203,    cut:true,  date:'2026-07-24', smmAtQuote:23200 },
-  { id:'xd-dos-coil',  supplier:'신다통 (Xindatong)', product:'dos-coil',  inco:'CIF', currency:'USD', pricePerTon:4277,    cut:false, date:'2026-07-24', smmAtQuote:23200 },
+  { id:'xd-dos-coil',  supplier:'신다통 (Xindatong)', product:'dos-coil',  inco:'CIF', currency:'USD', pricePerTon:4277,    cut:false, date:'2026-07-24', smmAtQuote:23200, confirmedPricePerTon:4385, confirmedDate:'2026-09-11', confirmedPi:'HCL2601-1', confirmedQtyMt:0.535  },
   { id:'ws-raw-coil',  supplier:'워스윌 (Worthwill)', product:'raw-coil',  inco:'CIF', currency:'USD', pricePerTon:4146.44, cut:false, date:'2026-07-15', smmAtQuote:23200 },
   { id:'ws-dos-coil',  supplier:'워스윌 (Worthwill)', product:'dos-coil',  inco:'CIF', currency:'USD', pricePerTon:4412.44, cut:false, date:'2026-07-15', smmAtQuote:23200 },
 ];
