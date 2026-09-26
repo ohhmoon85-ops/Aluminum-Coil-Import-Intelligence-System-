@@ -2891,6 +2891,7 @@ Best regards,
         ※ <strong>공임~CIF 프리미엄 (위안/톤)</strong> = 견적서 명기 프리미엄 (공임 + 중국내비용 + 해상운임+보험). 신다통 4,671/5,170/5,670 · 워스윌 원본 4,755/6,555. <strong>두 업체 모두 SMM 23,200 기준으로 통일</strong> — 워스윌 실제 견적일(7/15) SMM 23,170에서 +30 상승분을 CIF와 프리미엄에 대칭 반영: CIF USD 4,142→4,146·4,408→4,412 (+4.44), 프리미엄 4,755→4,785·6,555→6,585 (+30). CIF 톤당 USD 셀은 편집 가능(CNY 자동 병기).<br>
         ※ <strong>SMM 변동 (견적일 → 현재)</strong> = 현재 SMM − 견적일 SMM. <span style="color:#4ec9b0;font-weight:700;">▼ 하락</span> 시 견적 접수 이후 시장가가 내렸다는 뜻 → 해당 공급자에게 직접 재견적 요청 근거. 견적일 SMM은 셀 안 파란색 input에서 수정.<br>
         ※ <strong>원/kg</strong> = 도착 원/톤 ÷ 1000. 셀 툴팁에 원/㎡·국내가 대비 % 병기. 같은 제품 카테고리 최저에 <span style="color:#4ec9b0;font-weight:700;">최저</span> 배지.<br>
+        ※ <strong>+ VAT (자본 잠금)</strong> = 통관 시 대납 부가세 = <em>(CIF + 관세) × 10%</em>. <strong style="color:#8a94a6;">매입세액공제 대상 → 최종 원가 미반영</strong>이지만 통관 시점 현금 선지출 발생. 부가세 신고 시 매출세액과 상계 (국내판매) 또는 환급 (수출 영세율 매출). HCL2601 실측 7,041,570원 = 이론 7,008,940원 오차 &lt;0.5% 검증 완료. <strong>실질 환급 여부·금액은 매출 부가세와의 관계로 결정되므로 ACIS 자동 계산 불가</strong> — 세무 신고 시점 별도 확인.<br>
         ※ 모든 견적은 CIF/USD 기본. FOB나 CNY 견적은 상단 파라미터의 해상운임·USD/CNY로 자동 환산 (현 프리셋은 모두 CIF/USD).
       </div>
     </div>
@@ -5944,11 +5945,11 @@ function computeQuote(q, p) {
   // v2.6: SMM 반영 도착 원/톤 — SMM 변동분을 CIF에 전가 후 재계산 (회장 보고용 실시간 총액)
   //   조정 CIF CNY = 원본 CIF CNY + SMM 변동분(CNY/톤)
   //   → USD 환산 → KRW 환산 → 관세·부대비 가산
-  let smmAdjTotalKrw = null, smmAdjPerKg = null, smmAdjCifUsd = null, smmAdjCifCny = null;
+  let smmAdjTotalKrw = null, smmAdjPerKg = null, smmAdjCifUsd = null, smmAdjCifCny = null, smmAdjCifKrw = cifKrw;
   if (smmDeltaCny != null) {
     smmAdjCifCny = cifCny + smmDeltaCny;
     smmAdjCifUsd = p.usdCny > 0 ? (smmAdjCifCny / p.usdCny) : cifUsd;
-    const smmAdjCifKrw = smmAdjCifUsd * p.usdKrw;
+    smmAdjCifKrw = smmAdjCifUsd * p.usdKrw;
     smmAdjTotalKrw = smmAdjCifKrw * (1 + p.tariff / 100) + p.overhead;
     smmAdjPerKg = smmAdjTotalKrw / 1000;
   } else {
@@ -5958,7 +5959,12 @@ function computeQuote(q, p) {
     smmAdjCifUsd = cifUsd;
     smmAdjCifCny = cifCny;
   }
-  return { cifUsd, cifKrw, tariffKrw, totalKrw, perKg, perM2, marginPct, cifCny, smmCny, smmPremiumCny, smmPremiumPct, smmAtQuote, smmDeltaCny, smmDeltaPct, smmAdjTotalKrw, smmAdjPerKg, smmAdjCifUsd, smmAdjCifCny };
+  // 통관 시점 부가세 (매입세액공제 대상) — 원가 아님, 자본 잠금.
+  //   과세표준 = SMM 반영 CIF + 관세 (부대비는 각 세금계산서 별도 처리 → 여기선 제외)
+  //   HCL2601 실측 7,041,570원 = CIF 65.4M × 1.072 × 0.10 ≈ 7.0M (오차 <0.5%) 검증 완료.
+  const vatKrw = (smmAdjCifKrw * (1 + p.tariff / 100)) * 0.10;
+  const vatPerKg = vatKrw / 1000;
+  return { cifUsd, cifKrw, tariffKrw, totalKrw, perKg, perM2, marginPct, cifCny, smmCny, smmPremiumCny, smmPremiumPct, smmAtQuote, smmDeltaCny, smmDeltaPct, smmAdjTotalKrw, smmAdjPerKg, smmAdjCifUsd, smmAdjCifCny, vatKrw, vatPerKg };
 }
 
 function renderQuoteTable() {
@@ -6021,7 +6027,7 @@ function renderQuoteTable() {
                     : `<small style="color:#e74c3c;font-weight:700;font-size:0.7rem;">▲ +${fmt(c.smmDeltaCny,0)} · +${c.smmDeltaPct.toFixed(1)}%</small>`))}
         </div>
       </td>
-      <td class="derived total-cost${isWinner?' winner':''}" title="${c.smmCny && c.smmCny > 0 ? '현재 SMM ' + Math.round(c.smmCny).toLocaleString('ko-KR') + ' CNY/MT 반영 실시간 총액' + (c.smmDeltaCny != null && c.smmDeltaCny !== 0 ? ' · 견적일 SMM ' + c.smmAtQuote.toLocaleString('ko-KR') + ' → 현재 ' + Math.round(c.smmCny).toLocaleString('ko-KR') + ' (' + (c.smmDeltaCny >= 0 ? '+' : '') + c.smmDeltaCny + ' CNY) · 견적서 CIF 원본 기준 견적 확정치 ' + fmt(c.totalKrw, 0) + '원' : ' · SMM 변동 없음 (견적 확정치와 동일)') : '견적 확정치 (SMM 미입력 — 상단 SMM 시세 저장 시 실시간 반영)'}">${fmt(c.smmAdjTotalKrw, 0)}${c.smmCny && c.smmCny > 0 ? '<br><small style="font-size:0.62rem;font-weight:600;color:#7ec8e3;">SMM ' + fmt(c.smmCny, 0) + ' 기준</small>' : '<br><small style="font-size:0.62rem;color:var(--text-muted);">SMM 미입력</small>'}</td>
+      <td class="derived total-cost${isWinner?' winner':''}" title="${c.smmCny && c.smmCny > 0 ? '현재 SMM ' + Math.round(c.smmCny).toLocaleString('ko-KR') + ' CNY/MT 반영 실시간 총액' + (c.smmDeltaCny != null && c.smmDeltaCny !== 0 ? ' · 견적일 SMM ' + c.smmAtQuote.toLocaleString('ko-KR') + ' → 현재 ' + Math.round(c.smmCny).toLocaleString('ko-KR') + ' (' + (c.smmDeltaCny >= 0 ? '+' : '') + c.smmDeltaCny + ' CNY) · 견적서 CIF 원본 기준 견적 확정치 ' + fmt(c.totalKrw, 0) + '원' : ' · SMM 변동 없음 (견적 확정치와 동일)') : '견적 확정치 (SMM 미입력 — 상단 SMM 시세 저장 시 실시간 반영)'} · 부가세(참고) ${fmt(c.vatKrw, 0)}원/톤 = (CIF+관세)×10% · 매입세액공제 대상, 원가 아님. 통관 시 선지출 → 부가세 신고 시 매출세액과 상계·환급.">${fmt(c.smmAdjTotalKrw, 0)}${c.smmCny && c.smmCny > 0 ? '<br><small style="font-size:0.62rem;font-weight:600;color:#7ec8e3;">SMM ' + fmt(c.smmCny, 0) + ' 기준</small>' : '<br><small style="font-size:0.62rem;color:var(--text-muted);">SMM 미입력</small>'}<br><small style="font-size:0.62rem;font-style:italic;color:#8a94a6;" title="통관 시 부가세 대납액 (자본 잠금). 매출 부가세 신고 시 상계·환급 대상 → 최종 원가 미반영.">+ VAT ${fmt(c.vatKrw, 0)} <span style="opacity:0.7;">(자본 잠금)</span></small></td>
       <td class="derived${isWinner?' winner':''}" title="원/㎡ ${fmt(c.smmAdjPerKg * p.kgm2,0)} (kg/㎡ ${p.kgm2}) · 국내가 대비 ${(p.domestic > 0 ? ((p.domestic - c.smmAdjPerKg) / p.domestic * 100) : 0).toFixed(1)}% · 견적 확정 원/kg ${fmt(c.perKg,0)}">${fmt(c.smmAdjPerKg, 0)}${isWinner?' <span class="quote-winner-badge">최저</span>':''}</td>
       <td><button class="quote-del-btn" onclick="delQuoteRow('${q.id}')" title="삭제">×</button></td>
     `;
